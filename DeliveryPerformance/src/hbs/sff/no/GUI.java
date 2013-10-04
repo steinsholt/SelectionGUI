@@ -4,7 +4,10 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,6 +19,7 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.table.TableColumn;
 
 public class GUI {
 
@@ -38,6 +42,9 @@ public class GUI {
 	private JTable table_1;
 	private JScrollPane scrollPane_3;
 	private JTable table_2;
+	private SelectionTableModel stm_comp;
+	private SelectionTableModel stm_proj;
+	private SelectionTableModel stm_stat;
 	
 	public JFrame getFrame() {
 		return frame;
@@ -46,7 +53,7 @@ public class GUI {
 	public GUI() {
 		initialize();
 	}
-	
+			
 	private void initialize() {
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -59,153 +66,154 @@ public class GUI {
 			e.printStackTrace();
 		}
 		
-		frame = new JFrame();
-		frame.setBounds(100, 100, 989, 906);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		SpringLayout springLayout = new SpringLayout();
-		frame.getContentPane().setLayout(springLayout);
-		frame.getContentPane().setBackground(Color.white);
+		SpringLayout springLayout = createFrame();
 		
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 		Font errorMessage = new Font("Serif", Font.PLAIN, 14);
 								
-		JPanel panel_1 = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, panel_1, 10,
-				SpringLayout.NORTH, frame.getContentPane());
-		springLayout.putConstraint(SpringLayout.WEST, panel_1, 10, 
-				SpringLayout.WEST, frame.getContentPane());
-		springLayout.putConstraint(SpringLayout.SOUTH, panel_1, -10,
-				SpringLayout.SOUTH, frame.getContentPane());
-		springLayout.putConstraint(SpringLayout.EAST, panel_1, -499, 
-				SpringLayout.EAST, frame.getContentPane());
-		panel_1.setBackground(Color.white);
-		frame.getContentPane().add(panel_1);
-
-		JPanel panel_2 = new JPanel();
-		springLayout.putConstraint(SpringLayout.NORTH, panel_2, 10,
-				SpringLayout.NORTH, frame.getContentPane());
-		springLayout.putConstraint(SpringLayout.WEST, panel_2, 6, 
-				SpringLayout.EAST, panel_1);
-		springLayout.putConstraint(SpringLayout.SOUTH, panel_2, 0, 
-				SpringLayout.SOUTH, panel_1);
-		springLayout.putConstraint(SpringLayout.EAST, panel_2, -10, 
-				SpringLayout.EAST, frame.getContentPane());
+		JPanel panel_1 = createPanelOne(springLayout);
+		JPanel panel_2 = createPanelTwo(springLayout, panel_1);
+		
 		SpringLayout sl_panel_1 = new SpringLayout();
 		panel_1.setLayout(sl_panel_1);
 
-		JLabel lblSelectCustomers = new JLabel("Select Customers");
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblSelectCustomers, 0, 
-				SpringLayout.NORTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblSelectCustomers, 0, 
-				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, lblSelectCustomers, 50, 
-				SpringLayout.NORTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.EAST, lblSelectCustomers, 203, 
-				SpringLayout.WEST, panel_1);
-		lblSelectCustomers.setFont(headline);
-		panel_1.add(lblSelectCustomers);
-
-		textField = new JTextField();
-		sl_panel_1.putConstraint(SpringLayout.NORTH, textField, 16, 
-				SpringLayout.SOUTH, lblSelectCustomers);
-		sl_panel_1.putConstraint(SpringLayout.EAST, textField, -130, 
-				SpringLayout.EAST, panel_1);
-		panel_1.add(textField);
-		textField.setColumns(10);
-
-		textField_1 = new JTextField();
-		sl_panel_1.putConstraint(SpringLayout.EAST, textField_1, -130, 
-				SpringLayout.EAST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField, -6,
-				SpringLayout.NORTH, textField_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField_1, -706,
-				SpringLayout.SOUTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, textField_1, 107,
-				SpringLayout.NORTH, panel_1);
-		panel_1.add(textField_1);
-		textField_1.setColumns(10);
-
-		lblCustomerId = new JLabel("Customer ID");
-		sl_panel_1.putConstraint(SpringLayout.WEST, textField, 59, 
-				SpringLayout.EAST, lblCustomerId);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblCustomerId, 4, 
-				SpringLayout.NORTH, textField);
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblCustomerId, 10, 
-				SpringLayout.WEST, panel_1);
-		lblCustomerId.setFont(subheadline);
-		panel_1.add(lblCustomerId);
-
-		lblCustomerName = new JLabel("Customer name");
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblCustomerName, 10, 
-				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.WEST, textField_1, 43,
-				SpringLayout.EAST, lblCustomerName);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblCustomerName, 4, 
-				SpringLayout.NORTH, textField_1);
-		lblCustomerName.setFont(subheadline);
-		panel_1.add(lblCustomerName);
-
-		btnSearch = new JButton("Search");
-		sl_panel_1.putConstraint(SpringLayout.WEST, btnSearch, 364,
-				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnSearch, -664, SpringLayout.SOUTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.EAST, btnSearch, -26, 
-				SpringLayout.EAST, panel_1);
-		btnSearch.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		panel_1.add(btnSearch);
-		
-		lblInvalidInput = new JLabel("Invalid input");
-		lblInvalidInput.setForeground(Color.red);
-		lblInvalidInput.setFont(errorMessage);
-		lblInvalidInput.setVisible(false);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblInvalidInput, 10, 
-				SpringLayout.NORTH, textField);
-		panel_1.add(lblInvalidInput);
-		
-		lblInvalidInput_1 = new JLabel("Invalid input");
-		lblInvalidInput_1.setForeground(Color.red);
-		lblInvalidInput_1.setFont(errorMessage);
-		lblInvalidInput_1.setVisible(false);
-		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
-				SpringLayout.EAST, lblInvalidInput_1);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 10, 
-				SpringLayout.NORTH, textField_1);
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 6,
-				SpringLayout.EAST, textField_1);
-		panel_1.add(lblInvalidInput_1);
-		
-		scrollPane = new JScrollPane();
-		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-		sl_panel_1.putConstraint(SpringLayout.NORTH, scrollPane, 13, SpringLayout.SOUTH, btnSearch);
-		sl_panel_1.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, scrollPane, -33, SpringLayout.SOUTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, panel_1);
-		panel_1.add(scrollPane);
-		
-		table_3 = new JTable();
-		scrollPane.setViewportView(table_3);
+		JLabel lblSelectCustomers = createCustomerLabel(headline, panel_1,
+				sl_panel_1);
+		createIdField(panel_1, sl_panel_1, lblSelectCustomers);
+		createNameField(panel_1, sl_panel_1);
+		createIdLabel(subheadline, panel_1, sl_panel_1);
+		createNameLabel(subheadline, panel_1, sl_panel_1);
+		createSearchButton(panel_1, sl_panel_1);		
+		createErrorLabelOne(errorMessage, panel_1, sl_panel_1);		
+		createErrorLabelTwo(errorMessage, panel_1, sl_panel_1);		
 		
 		frame.getContentPane().add(panel_2);
 		SpringLayout sl_panel_2 = new SpringLayout();
 		panel_2.setLayout(sl_panel_2);
 
-		JLabel lblSelected = new JLabel("Selected");
-		sl_panel_2.putConstraint(SpringLayout.NORTH, lblSelected, 10, 
-				SpringLayout.NORTH, panel_2);
-		lblSelected.setFont(headline);
-		panel_2.add(lblSelected);
+		JLabel lblSelected = createSelectedHeadline(headline, panel_2,
+				sl_panel_2);
 
-		btnExit = new JButton("Exit");
-		btnExit.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+		createExitButton(panel_2);
+
+		createHelpButton(panel_2, sl_panel_2, lblSelected);
+
+		createReportButton(panel_2, sl_panel_2);				
+		
+		addScrollPaneOne(panel_2, sl_panel_2, lblSelected);
+		
+		String[] colNames_comp = {"", "ID", "Company"};
+		Object[][] data = {};
+		stm_comp = new SelectionTableModel(colNames_comp, data);
+		table = new JTable(stm_comp);
+		scrollPane_1.setViewportView(table);
+		scrollPane_1.getViewport().setBackground(Color.white);		
+		
+		addScrollPane(panel_1, sl_panel_1);
+		
+		table_3 = new JTable(stm_comp);
+		table_3.getColumnModel().getColumn(0).setMaxWidth(80);
+		table_3.getTableHeader().setReorderingAllowed(false);
+		table_3.getTableHeader().setResizingAllowed(false);
+		TableColumn tc_1 = table_3.getColumnModel().getColumn(0);
+		tc_1.setCellEditor(table_3.getDefaultEditor(Boolean.class));
+		tc_1.setCellRenderer(table_3.getDefaultRenderer(Boolean.class));
+		tc_1.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
+		scrollPane.setViewportView(table_3);
+		scrollPane.getViewport().setBackground(Color.white);
+		
+		addScrollPaneTwo(panel_2, sl_panel_2);
+		
+		String[] colNames_proj = {"", "Project"};
+		stm_proj = new SelectionTableModel(colNames_proj, data);
+		table_1 = new JTable(stm_proj);
+		scrollPane_2.setViewportView(table_1);
+		scrollPane_2.getViewport().setBackground(Color.white);
+		
+		addScrollPaneThree(panel_2, sl_panel_2);
+		
+		String[] colNames_stat = {"", "Status"};
+		stm_stat = new SelectionTableModel(colNames_stat, data);
+		table_2 = new JTable(stm_stat);
+		scrollPane_3.setViewportView(table_2);
+		scrollPane_3.getViewport().setBackground(Color.white);
+		
+		// TODO: Pull tables out into a new class along with the item listeners
+	}
+
+	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
+		scrollPane_3 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_3, 27, 
+				SpringLayout.SOUTH, scrollPane_2);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_3, 10, 
+				SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_3, 227, 
+				SpringLayout.SOUTH, scrollPane_2);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_3, 454, 
+				SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_3);
+	}
+
+	private void addScrollPaneTwo(JPanel panel_2, SpringLayout sl_panel_2) {
+		scrollPane_2 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_2, 318, 
+				SpringLayout.NORTH, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_2, 10, 
+				SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_2, 230, 
+				SpringLayout.SOUTH, scrollPane_1);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_2, 454, 
+				SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_2);
+	}
+
+	private void addScrollPane(JPanel panel_1, SpringLayout sl_panel_1) {
+		scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
+		sl_panel_1.putConstraint(SpringLayout.NORTH, scrollPane, 13, 
+				SpringLayout.SOUTH, btnSearch);
+		sl_panel_1.putConstraint(SpringLayout.WEST, scrollPane, 10, 
+				SpringLayout.WEST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, scrollPane, -33, 
+				SpringLayout.SOUTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.EAST, scrollPane, 454, 
+				SpringLayout.WEST, panel_1);
+		panel_1.add(scrollPane);
+	}
+
+	private void addScrollPaneOne(JPanel panel_2, SpringLayout sl_panel_2,
+			JLabel lblSelected) {
+		scrollPane_1 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_1, 46, 
+				SpringLayout.SOUTH, lblSelected);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_1, 10, 
+				SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_1, -560, 
+				SpringLayout.SOUTH, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_1, 454, 
+				SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_1);
+	}
+
+	private void createReportButton(JPanel panel_2, SpringLayout sl_panel_2) {
+		btnGenerateReport = new JButton("Generate report");
+		sl_panel_2.putConstraint(SpringLayout.EAST, btnGenerateReport, -29, 
+				SpringLayout.EAST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.WEST, btnHelp, 0, 
+				SpringLayout.WEST, btnGenerateReport);
+		btnGenerateReport.setForeground(Color.blue);
+		btnGenerateReport.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
 			}
 		});
-		panel_2.add(btnExit);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,
+				SpringLayout.SOUTH, panel_2);
+		panel_2.add(btnGenerateReport);
+	}
 
+	private void createHelpButton(JPanel panel_2, SpringLayout sl_panel_2,
+			JLabel lblSelected) {
 		btnHelp = new JButton("Help");
 		sl_panel_2.putConstraint(SpringLayout.EAST, lblSelected, -83,
 				SpringLayout.WEST, btnHelp);
@@ -220,48 +228,180 @@ public class GUI {
 			}
 		});
 		panel_2.add(btnHelp);
+	}
 
-		btnGenerateReport = new JButton("Generate report");
-		sl_panel_2.putConstraint(SpringLayout.EAST, btnGenerateReport, -29, SpringLayout.EAST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.WEST, btnHelp, 0, 
-				SpringLayout.WEST, btnGenerateReport);
-		btnGenerateReport.setForeground(Color.blue);
-		btnGenerateReport.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
+	private void createExitButton(JPanel panel_2) {
+		btnExit = new JButton("Exit");
+		btnExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,
-				SpringLayout.SOUTH, panel_2);
-		panel_2.add(btnGenerateReport);
-		
-		scrollPane_1 = new JScrollPane();
-		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_1, 46, SpringLayout.SOUTH, lblSelected);
-		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_1, 10, SpringLayout.WEST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_1, -560, SpringLayout.SOUTH, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_1, 454, SpringLayout.WEST, panel_2);
-		panel_2.add(scrollPane_1);
-		
-		table = new JTable();
-		scrollPane_1.setViewportView(table);
-		
-		scrollPane_2 = new JScrollPane();
-		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_2, 318, SpringLayout.NORTH, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_2, 10, SpringLayout.WEST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_2, 230, SpringLayout.SOUTH, scrollPane_1);
-		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_2, 454, SpringLayout.WEST, panel_2);
-		panel_2.add(scrollPane_2);
-		
-		table_1 = new JTable();
-		scrollPane_2.setViewportView(table_1);
-		
-		scrollPane_3 = new JScrollPane();
-		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_3, 27, SpringLayout.SOUTH, scrollPane_2);
-		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_3, 10, SpringLayout.WEST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_3, 227, SpringLayout.SOUTH, scrollPane_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_3, 454, SpringLayout.WEST, panel_2);
-		panel_2.add(scrollPane_3);
-		
-		table_2 = new JTable();
-		scrollPane_3.setViewportView(table_2);
+		panel_2.add(btnExit);
+	}
+
+	private JLabel createSelectedHeadline(Font headline, JPanel panel_2,
+			SpringLayout sl_panel_2) {
+		JLabel lblSelected = new JLabel("Selected");
+		sl_panel_2.putConstraint(SpringLayout.NORTH, lblSelected, 10, 
+				SpringLayout.NORTH, panel_2);
+		lblSelected.setFont(headline);
+		panel_2.add(lblSelected);
+		return lblSelected;
+	}
+
+	private void createErrorLabelTwo(Font errorMessage, JPanel panel_1,
+			SpringLayout sl_panel_1) {
+		lblInvalidInput_1 = new JLabel("Invalid input");
+		lblInvalidInput_1.setForeground(Color.red);
+		lblInvalidInput_1.setFont(errorMessage);
+		lblInvalidInput_1.setVisible(false);
+		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
+				SpringLayout.EAST, lblInvalidInput_1);
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 10, 
+				SpringLayout.NORTH, textField_1);
+		sl_panel_1.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 6,
+				SpringLayout.EAST, textField_1);
+		panel_1.add(lblInvalidInput_1);
+	}
+
+	private void createErrorLabelOne(Font errorMessage, JPanel panel_1,
+			SpringLayout sl_panel_1) {
+		lblInvalidInput = new JLabel("Invalid input");
+		lblInvalidInput.setForeground(Color.red);
+		lblInvalidInput.setFont(errorMessage);
+		lblInvalidInput.setVisible(false);
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblInvalidInput, 10, 
+				SpringLayout.NORTH, textField);
+		panel_1.add(lblInvalidInput);
+	}
+
+	private void createSearchButton(JPanel panel_1, SpringLayout sl_panel_1) {
+		btnSearch = new JButton("Search");
+		sl_panel_1.putConstraint(SpringLayout.WEST, btnSearch, 364,
+				SpringLayout.WEST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnSearch, -664, 
+				SpringLayout.SOUTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.EAST, btnSearch, -26, 
+				SpringLayout.EAST, panel_1);
+		btnSearch.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		panel_1.add(btnSearch);
+	}
+
+	private void createNameLabel(Font subheadline, JPanel panel_1,
+			SpringLayout sl_panel_1) {
+		lblCustomerName = new JLabel("Customer name");
+		sl_panel_1.putConstraint(SpringLayout.WEST, lblCustomerName, 10, 
+				SpringLayout.WEST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.WEST, textField_1, 43,
+				SpringLayout.EAST, lblCustomerName);
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblCustomerName, 4, 
+				SpringLayout.NORTH, textField_1);
+		lblCustomerName.setFont(subheadline);
+		panel_1.add(lblCustomerName);
+	}
+
+	private void createIdLabel(Font subheadline, JPanel panel_1,
+			SpringLayout sl_panel_1) {
+		lblCustomerId = new JLabel("Customer ID");
+		sl_panel_1.putConstraint(SpringLayout.WEST, textField, 59, 
+				SpringLayout.EAST, lblCustomerId);
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblCustomerId, 4, 
+				SpringLayout.NORTH, textField);
+		sl_panel_1.putConstraint(SpringLayout.WEST, lblCustomerId, 10, 
+				SpringLayout.WEST, panel_1);
+		lblCustomerId.setFont(subheadline);
+		panel_1.add(lblCustomerId);
+	}
+
+	private void createNameField(JPanel panel_1, SpringLayout sl_panel_1) {
+		textField_1 = new JTextField();
+		sl_panel_1.putConstraint(SpringLayout.EAST, textField_1, -130, 
+				SpringLayout.EAST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField, -6,
+				SpringLayout.NORTH, textField_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField_1, -706,
+				SpringLayout.SOUTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.NORTH, textField_1, 107,
+				SpringLayout.NORTH, panel_1);
+		panel_1.add(textField_1);
+		textField_1.setColumns(10);
+	}
+
+	private void createIdField(JPanel panel_1, SpringLayout sl_panel_1,
+			JLabel lblSelectCustomers) {
+		textField = new JTextField();
+		sl_panel_1.putConstraint(SpringLayout.NORTH, textField, 16, 
+				SpringLayout.SOUTH, lblSelectCustomers);
+		sl_panel_1.putConstraint(SpringLayout.EAST, textField, -130, 
+				SpringLayout.EAST, panel_1);
+		panel_1.add(textField);
+		textField.setColumns(10);
+	}
+
+	private JLabel createCustomerLabel(Font headline, JPanel panel_1,
+			SpringLayout sl_panel_1) {
+		JLabel lblSelectCustomers = new JLabel("Select Customers");
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblSelectCustomers, 0, 
+				SpringLayout.NORTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.WEST, lblSelectCustomers, 0, 
+				SpringLayout.WEST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, lblSelectCustomers, 50, 
+				SpringLayout.NORTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.EAST, lblSelectCustomers, 203, 
+				SpringLayout.WEST, panel_1);
+		lblSelectCustomers.setFont(headline);
+		panel_1.add(lblSelectCustomers);
+		return lblSelectCustomers;
+	}
+
+	private JPanel createPanelTwo(SpringLayout springLayout, JPanel panel_1) {
+		JPanel panel_2 = new JPanel();
+		springLayout.putConstraint(SpringLayout.NORTH, panel_2, 10,
+				SpringLayout.NORTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, panel_2, 6, 
+				SpringLayout.EAST, panel_1);
+		springLayout.putConstraint(SpringLayout.SOUTH, panel_2, 0, 
+				SpringLayout.SOUTH, panel_1);
+		springLayout.putConstraint(SpringLayout.EAST, panel_2, -10, 
+				SpringLayout.EAST, frame.getContentPane());
+		return panel_2;
+	}
+
+	private JPanel createPanelOne(SpringLayout springLayout) {
+		JPanel panel_1 = new JPanel();
+		springLayout.putConstraint(SpringLayout.NORTH, panel_1, 10,
+				SpringLayout.NORTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.WEST, panel_1, 10, 
+				SpringLayout.WEST, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.SOUTH, panel_1, -10,
+				SpringLayout.SOUTH, frame.getContentPane());
+		springLayout.putConstraint(SpringLayout.EAST, panel_1, -499, 
+				SpringLayout.EAST, frame.getContentPane());
+		panel_1.setBackground(Color.white);
+		frame.getContentPane().add(panel_1);
+		return panel_1;
+	}
+
+	private SpringLayout createFrame() {
+		frame = new JFrame();
+		frame.setBounds(100, 100, 989, 906);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		SpringLayout springLayout = new SpringLayout();
+		frame.getContentPane().setLayout(springLayout);
+		frame.getContentPane().setBackground(Color.white);
+		return springLayout;
+	}
+	class MyItemListener implements ItemListener{
+		public void itemStateChanged(ItemEvent e){
+			Object source = e.getSource();
+			if(source instanceof AbstractButton == false) return;
+			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
+			for(int x = 0, y = table.getRowCount(); x < y; x++){
+				table.setValueAt(new Boolean(checked), x, 0);
+			}
+		}
 	}
 }

@@ -8,8 +8,9 @@ public class SelectionTableModel extends AbstractTableModel {
 	private Object rowData[][];
 	
 	
-	public SelectionTableModel(String[] columnNames){
-		
+	public SelectionTableModel(String[] columnNames, Object[][] rowData){
+		this.columnNames = columnNames;
+		this.rowData = rowData;
 	}
 	public Object[][] getRowData() {
 		return rowData;
