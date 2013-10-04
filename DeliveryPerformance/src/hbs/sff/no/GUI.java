@@ -35,17 +35,17 @@ public class GUI {
 	private JLabel lblInvalidInput;
 	private JLabel lblInvalidInput_1;
 	private JScrollPane scrollPane;
-	private JTable table_3;
+	private JTable table_selection;
 	private JScrollPane scrollPane_1;
-	private JTable table;
+	private JTable table_customers;
 	private JScrollPane scrollPane_2;
-	private JTable table_1;
+	private JTable table_projects;
 	private JScrollPane scrollPane_3;
-	private JTable table_2;
+	private JTable table_statuses;
 	private SelectionTableModel stm_comp;
 	private SelectionTableModel stm_proj;
 	private SelectionTableModel stm_stat;
-	
+
 	public JFrame getFrame() {
 		return frame;
 	}
@@ -53,7 +53,7 @@ public class GUI {
 	public GUI() {
 		initialize();
 	}
-			
+
 	private void initialize() {
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -65,16 +65,16 @@ public class GUI {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		SpringLayout springLayout = createFrame();
-		
+
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 		Font errorMessage = new Font("Serif", Font.PLAIN, 14);
-								
+
 		JPanel panel_1 = createPanelOne(springLayout);
 		JPanel panel_2 = createPanelTwo(springLayout, panel_1);
-		
+
 		SpringLayout sl_panel_1 = new SpringLayout();
 		panel_1.setLayout(sl_panel_1);
 
@@ -87,7 +87,7 @@ public class GUI {
 		createSearchButton(panel_1, sl_panel_1);		
 		createErrorLabelOne(errorMessage, panel_1, sl_panel_1);		
 		createErrorLabelTwo(errorMessage, panel_1, sl_panel_1);		
-		
+
 		frame.getContentPane().add(panel_2);
 		SpringLayout sl_panel_2 = new SpringLayout();
 		panel_2.setLayout(sl_panel_2);
@@ -96,50 +96,82 @@ public class GUI {
 				sl_panel_2);
 
 		createExitButton(panel_2);
-
 		createHelpButton(panel_2, sl_panel_2, lblSelected);
-
 		createReportButton(panel_2, sl_panel_2);				
-		
-		addScrollPaneOne(panel_2, sl_panel_2, lblSelected);
-		
-		String[] colNames_comp = {"", "ID", "Company"};
-		Object[][] data = {};
-		stm_comp = new SelectionTableModel(colNames_comp, data);
-		table = new JTable(stm_comp);
-		scrollPane_1.setViewportView(table);
-		scrollPane_1.getViewport().setBackground(Color.white);		
-		
-		addScrollPane(panel_1, sl_panel_1);
-		
-		table_3 = new JTable(stm_comp);
-		table_3.getColumnModel().getColumn(0).setMaxWidth(80);
-		table_3.getTableHeader().setReorderingAllowed(false);
-		table_3.getTableHeader().setResizingAllowed(false);
-		TableColumn tc_1 = table_3.getColumnModel().getColumn(0);
-		tc_1.setCellEditor(table_3.getDefaultEditor(Boolean.class));
-		tc_1.setCellRenderer(table_3.getDefaultRenderer(Boolean.class));
-		tc_1.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
-		scrollPane.setViewportView(table_3);
-		scrollPane.getViewport().setBackground(Color.white);
-		
-		addScrollPaneTwo(panel_2, sl_panel_2);
-		
-		String[] colNames_proj = {"", "Project"};
-		stm_proj = new SelectionTableModel(colNames_proj, data);
-		table_1 = new JTable(stm_proj);
-		scrollPane_2.setViewportView(table_1);
-		scrollPane_2.getViewport().setBackground(Color.white);
-		
-		addScrollPaneThree(panel_2, sl_panel_2);
-		
+
+		addScrollPaneOne(panel_2, sl_panel_2, lblSelected);		
+		addTableCustomers();				
+		addScrollPane(panel_1, sl_panel_1);		
+		addTableSelection();		
+		addScrollPaneTwo(panel_2, sl_panel_2);		
+		addTableProjects();		
+		addScrollPaneThree(panel_2, sl_panel_2);		
+		addTableStatuses();		
+	}
+
+	private void addTableStatuses() {
 		String[] colNames_stat = {"", "Status"};
+		Object[][] data = {{true, "ALL"}};
 		stm_stat = new SelectionTableModel(colNames_stat, data);
-		table_2 = new JTable(stm_stat);
-		scrollPane_3.setViewportView(table_2);
+		table_statuses = new JTable(stm_stat);
+		table_statuses.setAutoCreateRowSorter(true);
+		table_statuses.getColumnModel().getColumn(0).setMaxWidth(80);
+		table_statuses.getTableHeader().setReorderingAllowed(false);
+		table_statuses.getTableHeader().setResizingAllowed(false);
+		TableColumn tc_1 = table_statuses.getColumnModel().getColumn(0);
+		tc_1.setCellEditor(table_statuses.getDefaultEditor(Boolean.class));
+		tc_1.setCellRenderer(table_statuses.getDefaultRenderer(Boolean.class));
+		scrollPane_3.setViewportView(table_statuses);
 		scrollPane_3.getViewport().setBackground(Color.white);
-		
-		// TODO: Pull tables out into a new class along with the item listeners
+	}
+
+	private void addTableProjects() {
+		String[] colNames_proj = {"", "Project"};
+		Object[][] data = {{true, "ALL"}};
+		stm_proj = new SelectionTableModel(colNames_proj, data);
+		table_projects = new JTable(stm_proj);
+		table_projects.setAutoCreateRowSorter(true);
+		table_projects.getColumnModel().getColumn(0).setMaxWidth(80);
+		table_projects.getTableHeader().setReorderingAllowed(false);
+		table_projects.getTableHeader().setResizingAllowed(false);
+		TableColumn tc_1 = table_projects.getColumnModel().getColumn(0);
+		tc_1.setCellEditor(table_projects.getDefaultEditor(Boolean.class));
+		tc_1.setCellRenderer(table_projects.getDefaultRenderer(Boolean.class));
+		scrollPane_2.setViewportView(table_projects);
+		scrollPane_2.getViewport().setBackground(Color.white);
+	}
+
+	private Object[][] addTableCustomers() {
+		String[] colNames_comp = {"", "ID", "Company"};
+		Object[][] data = {{true, "ALL", ""}};
+		stm_comp = new SelectionTableModel(colNames_comp, data);
+		table_customers = new JTable(stm_comp);
+		table_customers.setAutoCreateRowSorter(true);
+		table_customers.getColumnModel().getColumn(0).setMaxWidth(80);
+		table_customers.getTableHeader().setReorderingAllowed(false);
+		table_customers.getTableHeader().setResizingAllowed(false);
+		TableColumn tc_1 = table_customers.getColumnModel().getColumn(0);
+		tc_1.setCellEditor(table_customers.getDefaultEditor(Boolean.class));
+		tc_1.setCellRenderer(table_customers.getDefaultRenderer(Boolean.class));
+		scrollPane_1.setViewportView(table_customers);
+		scrollPane_1.getViewport().setBackground(Color.white);
+		return data;
+	}
+
+	private void addTableSelection() {
+		String[] colNames_sComp = {"", "ID", "Company"};
+		Object[][] data = {};
+		stm_comp = new SelectionTableModel(colNames_sComp, data);
+		table_selection = new JTable(stm_comp);
+		table_selection.getColumnModel().getColumn(0).setMaxWidth(80);
+		table_selection.getTableHeader().setReorderingAllowed(false);
+		table_selection.getTableHeader().setResizingAllowed(false);
+		TableColumn tc_1 = table_selection.getColumnModel().getColumn(0);
+		tc_1.setCellEditor(table_selection.getDefaultEditor(Boolean.class));
+		tc_1.setCellRenderer(table_selection.getDefaultRenderer(Boolean.class));
+		tc_1.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
+		scrollPane.setViewportView(table_selection);
+		scrollPane.getViewport().setBackground(Color.white);
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -394,13 +426,14 @@ public class GUI {
 		frame.getContentPane().setBackground(Color.white);
 		return springLayout;
 	}
+
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
 			Object source = e.getSource();
 			if(source instanceof AbstractButton == false) return;
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
-			for(int x = 0, y = table.getRowCount(); x < y; x++){
-				table.setValueAt(new Boolean(checked), x, 0);
+			for(int x = 0, y = table_customers.getRowCount(); x < y; x++){
+				table_customers.setValueAt(new Boolean(checked), x, 0);
 			}
 		}
 	}
