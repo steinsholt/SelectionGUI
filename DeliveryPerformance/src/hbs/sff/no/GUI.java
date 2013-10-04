@@ -1,7 +1,6 @@
 package hbs.sff.no;
 
 import java.awt.Color;
-import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,21 +10,16 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableColumn;
 
 public class GUI {
 
 	private JFrame frame;
-	private JTable table;
-	private JTable table_1;
-	private JTable table_2;
-	private JTable table_3;
 	private JButton btnExit;
 	private JButton btnHelp;
 	private JButton btnGenerateReport;
@@ -36,28 +30,23 @@ public class GUI {
 	private JButton btnSearch;
 	private JLabel lblInvalidInput;
 	private JLabel lblInvalidInput_1;
-	private DefaultTableModel dtm;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					GUI window = new GUI();
-					window.frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
+	private JScrollPane scrollPane;
+	private JTable table_3;
+	private JScrollPane scrollPane_1;
+	private JTable table;
+	private JScrollPane scrollPane_2;
+	private JTable table_1;
+	private JScrollPane scrollPane_3;
+	private JTable table_2;
+	
+	public JFrame getFrame() {
+		return frame;
 	}
 
 	public GUI() {
 		initialize();
 	}
-
+	
 	private void initialize() {
 		try {
 			for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
@@ -76,10 +65,6 @@ public class GUI {
 		SpringLayout springLayout = new SpringLayout();
 		frame.getContentPane().setLayout(springLayout);
 		frame.getContentPane().setBackground(Color.white);
-
-		Object selectedCompaniesCol[] = {"", "ID", "Company"};
-		Object [][][] selectedCompaniesData = {};
-		dtm = new DefaultTableModel(selectedCompaniesData, selectedCompaniesCol);
 		
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
@@ -121,16 +106,6 @@ public class GUI {
 		lblSelectCustomers.setFont(headline);
 		panel_1.add(lblSelectCustomers);
 
-		table_3 = new JTable();
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, table_3, -10, 
-				SpringLayout.SOUTH, panel_1);
-		table_3.setBorder(BorderFactory.createLineBorder(Color.black));
-		sl_panel_1.putConstraint(SpringLayout.WEST, table_3, 10, 
-				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.EAST, table_3, 438, 
-				SpringLayout.WEST, panel_1);
-		panel_1.add(table_3);
-
 		textField = new JTextField();
 		sl_panel_1.putConstraint(SpringLayout.NORTH, textField, 16, 
 				SpringLayout.SOUTH, lblSelectCustomers);
@@ -144,8 +119,6 @@ public class GUI {
 				SpringLayout.EAST, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField, -6,
 				SpringLayout.NORTH, textField_1);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, table_3, 48, 
-				SpringLayout.SOUTH, textField_1);
 		sl_panel_1.putConstraint(SpringLayout.SOUTH, textField_1, -706,
 				SpringLayout.SOUTH, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.NORTH, textField_1, 107,
@@ -176,8 +149,7 @@ public class GUI {
 		btnSearch = new JButton("Search");
 		sl_panel_1.putConstraint(SpringLayout.WEST, btnSearch, 364,
 				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnSearch, -6, 
-				SpringLayout.NORTH, table_3);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnSearch, -664, SpringLayout.SOUTH, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.EAST, btnSearch, -26, 
 				SpringLayout.EAST, panel_1);
 		btnSearch.addActionListener(new ActionListener() {
@@ -206,45 +178,22 @@ public class GUI {
 				SpringLayout.EAST, textField_1);
 		panel_1.add(lblInvalidInput_1);
 		
+		scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
+		sl_panel_1.putConstraint(SpringLayout.NORTH, scrollPane, 13, SpringLayout.SOUTH, btnSearch);
+		sl_panel_1.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, scrollPane, -33, SpringLayout.SOUTH, panel_1);
+		sl_panel_1.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, panel_1);
+		panel_1.add(scrollPane);
+		
+		table_3 = new JTable();
+		scrollPane.setViewportView(table_3);
+		
 		frame.getContentPane().add(panel_2);
 		SpringLayout sl_panel_2 = new SpringLayout();
 		panel_2.setLayout(sl_panel_2);
 
-		table = new JTable();
-		table.setBorder(BorderFactory.createLineBorder(Color.black));
-		sl_panel_2.putConstraint(SpringLayout.WEST, table, 10,
-				SpringLayout.WEST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, table, -559, 
-				SpringLayout.SOUTH, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, table, -29,
-				SpringLayout.EAST, panel_2);
-		panel_2.add(table);
-
-		table_1 = new JTable();
-		table_1.setBorder(BorderFactory.createLineBorder(Color.black));
-		sl_panel_2.putConstraint(SpringLayout.NORTH, table_1, 17,
-				SpringLayout.SOUTH, table);
-		sl_panel_2.putConstraint(SpringLayout.WEST, table_1, 0,
-				SpringLayout.WEST, table);
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, table_1, -327, 
-				SpringLayout.SOUTH, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, table_1, 454, 
-				SpringLayout.WEST, panel_2);
-		panel_2.add(table_1);
-
-		table_2 = new JTable();
-		table_2.setBorder(BorderFactory.createLineBorder(Color.black));
-		sl_panel_2.putConstraint(SpringLayout.NORTH, table_2, 21,
-				SpringLayout.SOUTH, table_1);
-		sl_panel_2.putConstraint(SpringLayout.WEST, table_2, 10, 
-				SpringLayout.WEST, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, table_2, 454, 
-				SpringLayout.WEST, panel_2);
-		panel_2.add(table_2);
-
 		JLabel lblSelected = new JLabel("Selected");
-		sl_panel_2.putConstraint(SpringLayout.NORTH, table, 29,
-				SpringLayout.SOUTH, lblSelected);
 		sl_panel_2.putConstraint(SpringLayout.NORTH, lblSelected, 10, 
 				SpringLayout.NORTH, panel_2);
 		lblSelected.setFont(headline);
@@ -273,8 +222,7 @@ public class GUI {
 		panel_2.add(btnHelp);
 
 		btnGenerateReport = new JButton("Generate report");
-		sl_panel_2.putConstraint(SpringLayout.SOUTH, table_2, -58, 
-				SpringLayout.NORTH, btnGenerateReport);
+		sl_panel_2.putConstraint(SpringLayout.EAST, btnGenerateReport, -29, SpringLayout.EAST, panel_2);
 		sl_panel_2.putConstraint(SpringLayout.WEST, btnHelp, 0, 
 				SpringLayout.WEST, btnGenerateReport);
 		btnGenerateReport.setForeground(Color.blue);
@@ -284,8 +232,36 @@ public class GUI {
 		});
 		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,
 				SpringLayout.SOUTH, panel_2);
-		sl_panel_2.putConstraint(SpringLayout.EAST, btnGenerateReport, 0,
-				SpringLayout.EAST, table);
 		panel_2.add(btnGenerateReport);
+		
+		scrollPane_1 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_1, 46, SpringLayout.SOUTH, lblSelected);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_1, 10, SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_1, -560, SpringLayout.SOUTH, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_1, 454, SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_1);
+		
+		table = new JTable();
+		scrollPane_1.setViewportView(table);
+		
+		scrollPane_2 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_2, 318, SpringLayout.NORTH, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_2, 10, SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_2, 230, SpringLayout.SOUTH, scrollPane_1);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_2, 454, SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_2);
+		
+		table_1 = new JTable();
+		scrollPane_2.setViewportView(table_1);
+		
+		scrollPane_3 = new JScrollPane();
+		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPane_3, 27, SpringLayout.SOUTH, scrollPane_2);
+		sl_panel_2.putConstraint(SpringLayout.WEST, scrollPane_3, 10, SpringLayout.WEST, panel_2);
+		sl_panel_2.putConstraint(SpringLayout.SOUTH, scrollPane_3, 227, SpringLayout.SOUTH, scrollPane_2);
+		sl_panel_2.putConstraint(SpringLayout.EAST, scrollPane_3, 454, SpringLayout.WEST, panel_2);
+		panel_2.add(scrollPane_3);
+		
+		table_2 = new JTable();
+		scrollPane_3.setViewportView(table_2);
 	}
 }
