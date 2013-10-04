@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -114,6 +115,8 @@ public class GUI {
 		Object[][] data = {{true, "ALL"}};
 		stm_stat = new SelectionTableModel(colNames_stat, data);
 		table_statuses = new JTable(stm_stat);
+		table_statuses.setSelectionMode(
+				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table_statuses.setAutoCreateRowSorter(true);
 		table_statuses.getColumnModel().getColumn(0).setMaxWidth(80);
 		table_statuses.getTableHeader().setReorderingAllowed(false);
@@ -130,6 +133,8 @@ public class GUI {
 		Object[][] data = {{true, "ALL"}};
 		stm_proj = new SelectionTableModel(colNames_proj, data);
 		table_projects = new JTable(stm_proj);
+		table_projects.setSelectionMode(
+				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table_projects.setAutoCreateRowSorter(true);
 		table_projects.getColumnModel().getColumn(0).setMaxWidth(80);
 		table_projects.getTableHeader().setReorderingAllowed(false);
@@ -146,6 +151,8 @@ public class GUI {
 		Object[][] data = {{true, "ALL", ""}};
 		stm_comp = new SelectionTableModel(colNames_comp, data);
 		table_customers = new JTable(stm_comp);
+		table_customers.setSelectionMode(
+				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table_customers.setAutoCreateRowSorter(true);
 		table_customers.getColumnModel().getColumn(0).setMaxWidth(80);
 		table_customers.getTableHeader().setReorderingAllowed(false);
@@ -163,6 +170,8 @@ public class GUI {
 		Object[][] data = {};
 		stm_comp = new SelectionTableModel(colNames_sComp, data);
 		table_selection = new JTable(stm_comp);
+		table_selection.setSelectionMode(
+				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table_selection.getColumnModel().getColumn(0).setMaxWidth(80);
 		table_selection.getTableHeader().setReorderingAllowed(false);
 		table_selection.getTableHeader().setResizingAllowed(false);
