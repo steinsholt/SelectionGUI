@@ -52,7 +52,11 @@ public class GUI {
 	private JToolBar toolBar;
 	private JPanel panel;
 	private SpringLayout sl_panel;
-
+	private JButton bCustomers;
+	private JButton bProjects;
+	private JButton bStatuses;
+	private JLabel lblSelection;
+	
 	public JFrame getFrame() {
 		return frame;
 	}
@@ -84,7 +88,7 @@ public class GUI {
 		sl_panel.putConstraint(SpringLayout.EAST, toolBar, 334, SpringLayout.WEST, panel);
 		panel_1.setLayout(sl_panel);
 
-		JLabel lblSelectCustomers = createCustomerLabel(headline, panel_1,
+		JLabel lblSelectCustomers = createSelectionLabel(headline, panel_1,
 				sl_panel);
 		createIdField(panel_1, sl_panel, lblSelectCustomers);
 		createNameField(panel_1, sl_panel);
@@ -388,20 +392,20 @@ public class GUI {
 		idField.setColumns(10);
 	}
 
-	private JLabel createCustomerLabel(Font headline, JPanel panel_1,
+	private JLabel createSelectionLabel(Font headline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
-		JLabel lblSelectCustomers = new JLabel("Select Customers");
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblSelectCustomers, 0, 
+		lblSelection = new JLabel("Select Customers");
+		sl_panel_1.putConstraint(SpringLayout.NORTH, lblSelection, 0, 
 				SpringLayout.NORTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblSelectCustomers, 0, 
+		sl_panel_1.putConstraint(SpringLayout.WEST, lblSelection, 0, 
 				SpringLayout.WEST, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.SOUTH, lblSelectCustomers, 50, 
+		sl_panel_1.putConstraint(SpringLayout.SOUTH, lblSelection, 50, 
 				SpringLayout.NORTH, panel_1);
-		sl_panel_1.putConstraint(SpringLayout.EAST, lblSelectCustomers, 203, 
+		sl_panel_1.putConstraint(SpringLayout.EAST, lblSelection, 203, 
 				SpringLayout.WEST, panel_1);
-		lblSelectCustomers.setFont(headline);
-		panel_1.add(lblSelectCustomers);
-		return lblSelectCustomers;
+		lblSelection.setFont(headline);
+		panel_1.add(lblSelection);
+		return lblSelection;
 	}
 
 	private JPanel createPanelTwo(SpringLayout springLayout, JPanel panel_1) {
@@ -429,7 +433,7 @@ public class GUI {
 				SpringLayout.EAST, frame.getContentPane());
 		panel.setBackground(Color.white);
 		frame.getContentPane().add(panel);
-		
+
 		toolBar = new JToolBar();
 		toolBar.setLayout(new GridLayout());
 		toolBar.setFloatable(false);
@@ -437,14 +441,29 @@ public class GUI {
 		panel.add(toolBar);
 		return panel;
 	}
-	
+
 	private void addButtons(JToolBar toolBar) {
-		JButton bCustomers = new JButton("Customers");
+		bCustomers = new JButton("Customers");
+		bCustomers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				customerSelection();
+			}
+		});
 		bCustomers.setSelected(true);
 		toolBar.add(bCustomers);
-		JButton bProjects = new JButton("Projects");
+		bProjects = new JButton("Projects");
+		bProjects.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				projectSelection();
+			}
+		});
 		toolBar.add(bProjects);
-		JButton bStatuses = new JButton("Statuses");
+		bStatuses = new JButton("Statuses");
+		bStatuses.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				statusSelection();
+			}
+		});
 		toolBar.add(bStatuses);
 	}
 
@@ -470,15 +489,41 @@ public class GUI {
 	}
 
 	private void customerSelection(){
+		lblSelection.setText("Select Customer");
 		lblName.setVisible(true);
-		lblName.setText("Customer ID");
+		lblName.setText("Customer Name");
 		lblID.setVisible(true);
-		lblID.setText("Customer name");
+		lblID.setText("Customer ID");
 		nameField.setVisible(true);
 		idField.setVisible(true);
 		table_selection.setModel(stm_select);
 		table_projects.setForeground(Color.gray);
 		table_statuses.setForeground(Color.gray);
-
+		bCustomers.setSelected(true);
+	}
+	
+	private void projectSelection(){
+		lblSelection.setText("Select Project");
+		lblName.setVisible(true);
+		lblName.setText("Project Name");
+		lblID.setVisible(false);
+		nameField.setVisible(true);
+		idField.setVisible(false);
+		
+		table_customers.setForeground(Color.gray);
+		table_statuses.setForeground(Color.gray);
+		bProjects.setSelected(true);
+	}
+	
+	private void statusSelection(){
+		lblSelection.setText("Select Status");
+		lblName.setVisible(false);
+		lblID.setVisible(false);
+		nameField.setVisible(false);
+		idField.setVisible(false);
+		
+		table_customers.setForeground(Color.gray);
+		table_statuses.setForeground(Color.gray);
+		bProjects.setSelected(true);
 	}
 }
