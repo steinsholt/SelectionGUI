@@ -45,7 +45,7 @@ public class GUI {
 	private JTable table_projects;
 	private JScrollPane scrollPaneStatuses;
 	private JTable table_statuses;
-	private SelectionTableModel stm_comp;
+	private SelectionTableModel stm_cust;
 	private SelectionTableModel stm_proj;
 	private SelectionTableModel stm_stat;
 	private SelectionTableModel stm_select;
@@ -56,6 +56,7 @@ public class GUI {
 	private JButton bProjects;
 	private JButton bStatuses;
 	private JLabel lblSelection;
+	private CheckBoxHeader header;
 	
 	public JFrame getFrame() {
 		return frame;
@@ -142,8 +143,8 @@ public class GUI {
 	private void addTableCustomers() {
 		String[] colNames_comp = {"", "ID", "Company"};
 		Object[][] data = {{true, "ALL", ""}};
-		stm_comp = new SelectionTableModel(colNames_comp, data);
-		table_customers = new JTable(stm_comp);
+		stm_cust = new SelectionTableModel(colNames_comp, data);
+		table_customers = new JTable(stm_cust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
@@ -153,15 +154,9 @@ public class GUI {
 		Object[][] data = {};
 		stm_select = new SelectionTableModel(colNames_sComp, data);
 		table_selection = new JTable(stm_select);
-		table_selection.setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table_selection.getColumnModel().getColumn(0).setMaxWidth(80);
-		table_selection.getTableHeader().setReorderingAllowed(false);
-		table_selection.getTableHeader().setResizingAllowed(false);
-		TableColumn tc = table_selection.getColumnModel().getColumn(0);
-		tc.setCellEditor(table_selection.getDefaultEditor(Boolean.class));
-		tc.setCellRenderer(table_selection.getDefaultRenderer(Boolean.class));
-		tc.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
+		TableColumn tc = configureTableColumns(table_selection);
+		header = new CheckBoxHeader(new MyItemListener());
+		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
 		
@@ -319,7 +314,7 @@ public class GUI {
 
 	private void createNameLabel(Font subheadline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
-		lblName = new JLabel("Customer name");
+		lblName = new JLabel("Customer Name");
 		sl_panel.putConstraint(SpringLayout.NORTH, lblName, 4, SpringLayout.NORTH, nameField);
 		sl_panel.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, toolBar);
 		lblName.setFont(subheadline);
@@ -449,14 +444,14 @@ public class GUI {
 			Object source = e.getSource();
 			if(source instanceof AbstractButton == false) return;
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
-			for(int x = 0, y = table_customers.getRowCount(); x < y; x++){
-				table_customers.setValueAt(new Boolean(checked), x, 0);
+			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
+				table_selection.setValueAt(new Boolean(checked), x, 0);
 			}
 		}
 	}
 
 	private void customerSelection(){
-		lblSelection.setText("Select Customer");
+		lblSelection.setText("Select Customers");
 		lblName.setVisible(true);
 		lblName.setText("Customer Name");
 		lblID.setVisible(true);
@@ -464,16 +459,14 @@ public class GUI {
 		nameField.setVisible(true);
 		idField.setVisible(true);
 		
-		String[] columnNames = {"", "ID", "Customers"};
-		stm_select.setColumnNames(columnNames);
-		stm_select.fireTableStructureChanged();
+				
 		
-		table_selection.setModel(stm_select);
 		enableCustomerSelection();
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
 		
+		// TODO: Use header to change column names || One model for each selection
 		// TODO: Merge selection with configureTableColumns
 		// TODO: Mark disabled fields at startup
 		// TODO: Make disabled fields editable
@@ -486,19 +479,19 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.white);
+		
+		// TODO: Disable edit in other frames completely, not just visually
 	}
 	
 	private void projectSelection(){
-		lblSelection.setText("Select Project");
+		lblSelection.setText("Select Projects");
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
 		lblID.setVisible(false);
 		nameField.setVisible(true);
 		idField.setVisible(false);
 		
-		String[] columnNames = {"", "Projects"};
-		stm_select.setColumnNames(columnNames);
-		stm_select.fireTableStructureChanged();
+		
 		
 		enableProjectSelection();
 		bCustomers.setSelected(false);
@@ -516,15 +509,13 @@ public class GUI {
 	}
 	
 	private void statusSelection(){
-		lblSelection.setText("Select Status");
+		lblSelection.setText("Select Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
 		nameField.setVisible(false);
 		idField.setVisible(false);
 		
-		String[] columnNames = {"", "Statuses"};
-		stm_select.setColumnNames(columnNames);
-		stm_select.fireTableStructureChanged();
+		
 		
 		enableStatusSelection();
 		bCustomers.setSelected(false);
@@ -543,7 +534,7 @@ public class GUI {
 	
 	
 
-	private void configureTableColumns(JTable table) {
+	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(
 				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		table.setAutoCreateRowSorter(true);
@@ -553,5 +544,6 @@ public class GUI {
 		TableColumn tc = table.getColumnModel().getColumn(0);
 		tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
+		return tc;
 	}
 }
