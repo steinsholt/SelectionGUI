@@ -117,6 +117,8 @@ public class GUI {
 		addTableProjects();		
 		addScrollPaneThree(panel_2, sl_panel_2);		
 		addTableStatuses();		
+		enableCustomerSelection();
+		
 	}
 
 	private void addTableStatuses() {
@@ -124,35 +126,17 @@ public class GUI {
 		Object[][] data = {{true, "ALL"}};
 		stm_stat = new SelectionTableModel(colNames_stat, data);
 		table_statuses = new JTable(stm_stat);
-		table_statuses.setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table_statuses.setAutoCreateRowSorter(true);
-		table_statuses.getColumnModel().getColumn(0).setMaxWidth(80);
-		table_statuses.getTableHeader().setReorderingAllowed(false);
-		table_statuses.getTableHeader().setResizingAllowed(false);
-		TableColumn tc_1 = table_statuses.getColumnModel().getColumn(0);
-		tc_1.setCellEditor(table_statuses.getDefaultEditor(Boolean.class));
-		tc_1.setCellRenderer(table_statuses.getDefaultRenderer(Boolean.class));
+		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
-		scrollPaneStatuses.getViewport().setBackground(Color.white);
-	}
+	}	
 
 	private void addTableProjects() {
 		String[] colNames_proj = {"", "Project"};
 		Object[][] data = {{true, "ALL"}};
 		stm_proj = new SelectionTableModel(colNames_proj, data);
 		table_projects = new JTable(stm_proj);
-		table_projects.setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table_projects.setAutoCreateRowSorter(true);
-		table_projects.getColumnModel().getColumn(0).setMaxWidth(80);
-		table_projects.getTableHeader().setReorderingAllowed(false);
-		table_projects.getTableHeader().setResizingAllowed(false);
-		TableColumn tc_1 = table_projects.getColumnModel().getColumn(0);
-		tc_1.setCellEditor(table_projects.getDefaultEditor(Boolean.class));
-		tc_1.setCellRenderer(table_projects.getDefaultRenderer(Boolean.class));
+		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
-		scrollPaneProjects.getViewport().setBackground(Color.white);
 	}
 
 	private void addTableCustomers() {
@@ -160,21 +144,12 @@ public class GUI {
 		Object[][] data = {{true, "ALL", ""}};
 		stm_comp = new SelectionTableModel(colNames_comp, data);
 		table_customers = new JTable(stm_comp);
-		table_customers.setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table_customers.setAutoCreateRowSorter(true);
-		table_customers.getColumnModel().getColumn(0).setMaxWidth(80);
-		table_customers.getTableHeader().setReorderingAllowed(false);
-		table_customers.getTableHeader().setResizingAllowed(false);
-		TableColumn tc_1 = table_customers.getColumnModel().getColumn(0);
-		tc_1.setCellEditor(table_customers.getDefaultEditor(Boolean.class));
-		tc_1.setCellRenderer(table_customers.getDefaultRenderer(Boolean.class));
+		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
-		scrollPaneCustomers.getViewport().setBackground(Color.white);
 	}
 
 	private void addTableSelection() {
-		String[] colNames_sComp = {"", "ID", "Company"};
+		String[] colNames_sComp = {"", "ID", "Customers"};
 		Object[][] data = {};
 		stm_select = new SelectionTableModel(colNames_sComp, data);
 		table_selection = new JTable(stm_select);
@@ -183,12 +158,14 @@ public class GUI {
 		table_selection.getColumnModel().getColumn(0).setMaxWidth(80);
 		table_selection.getTableHeader().setReorderingAllowed(false);
 		table_selection.getTableHeader().setResizingAllowed(false);
-		TableColumn tc_1 = table_selection.getColumnModel().getColumn(0);
-		tc_1.setCellEditor(table_selection.getDefaultEditor(Boolean.class));
-		tc_1.setCellRenderer(table_selection.getDefaultRenderer(Boolean.class));
-		tc_1.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
+		TableColumn tc = table_selection.getColumnModel().getColumn(0);
+		tc.setCellEditor(table_selection.getDefaultEditor(Boolean.class));
+		tc.setCellRenderer(table_selection.getDefaultRenderer(Boolean.class));
+		tc.setHeaderRenderer(new CheckBoxHeader(new MyItemListener()));
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
+		
+		// TODO: Merge this with configureTableColumn
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -486,17 +463,29 @@ public class GUI {
 		lblID.setText("Customer ID");
 		nameField.setVisible(true);
 		idField.setVisible(true);
+		
+		String[] columnNames = {"", "ID", "Customers"};
+		stm_select.setColumnNames(columnNames);
+		stm_select.fireTableStructureChanged();
+		
 		table_selection.setModel(stm_select);
+		enableCustomerSelection();
+		bCustomers.setSelected(true);
+		bProjects.setSelected(false);
+		bStatuses.setSelected(false);
+		
+		// TODO: Merge selection with configureTableColumns
+		// TODO: Mark disabled fields at startup
+		// TODO: Make disabled fields editable
+	}
+
+	private void enableCustomerSelection() {
 		table_customers.setBackground(Color.white);
 		table_projects.setBackground(Color.lightGray);
 		table_statuses.setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.white);
-		bCustomers.setSelected(true);
-		bProjects.setSelected(false);
-		bStatuses.setSelected(false);	
-		// TODO: Fix text field alignment
 	}
 	
 	private void projectSelection(){
@@ -507,15 +496,23 @@ public class GUI {
 		nameField.setVisible(true);
 		idField.setVisible(false);
 		
+		String[] columnNames = {"", "Projects"};
+		stm_select.setColumnNames(columnNames);
+		stm_select.fireTableStructureChanged();
+		
+		enableProjectSelection();
+		bCustomers.setSelected(false);
+		bProjects.setSelected(true);
+		bStatuses.setSelected(false);	
+	}
+
+	private void enableProjectSelection() {
 		table_projects.setBackground(Color.white);
 		table_customers.setBackground(Color.lightGray);
 		table_statuses.setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.white);
-		bCustomers.setSelected(false);
-		bProjects.setSelected(true);
-		bStatuses.setSelected(false);	
 	}
 	
 	private void statusSelection(){
@@ -525,14 +522,36 @@ public class GUI {
 		nameField.setVisible(false);
 		idField.setVisible(false);
 		
+		String[] columnNames = {"", "Statuses"};
+		stm_select.setColumnNames(columnNames);
+		stm_select.fireTableStructureChanged();
+		
+		enableStatusSelection();
+		bCustomers.setSelected(false);
+		bProjects.setSelected(false);
+		bStatuses.setSelected(true);		
+	}
+
+	private void enableStatusSelection() {
 		table_statuses.setBackground(Color.white);
 		table_customers.setBackground(Color.lightGray);
 		table_projects.setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.white);
-		bCustomers.setSelected(false);
-		bProjects.setSelected(false);
-		bStatuses.setSelected(true);		
+	}
+	
+	
+
+	private void configureTableColumns(JTable table) {
+		table.setSelectionMode(
+				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+		table.setAutoCreateRowSorter(true);
+		table.getColumnModel().getColumn(0).setMaxWidth(80);
+		table.getTableHeader().setReorderingAllowed(false);
+		table.getTableHeader().setResizingAllowed(false);
+		TableColumn tc = table.getColumnModel().getColumn(0);
+		tc.setCellEditor(table.getDefaultEditor(Boolean.class));
+		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 	}
 }
