@@ -7,6 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -23,6 +27,7 @@ import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 public class GUI {
 
@@ -48,9 +53,7 @@ public class GUI {
 	private SelectionTableModel stm_cust;
 	private SelectionTableModel stm_proj;
 	private SelectionTableModel stm_stat;
-	private SelectionTableModel stm_select_cust;
-	private SelectionTableModel stm_select_proj;
-	private SelectionTableModel stm_select_stat;
+	private SelectionTableModel stm_select;
 	private JToolBar toolBar;
 	private JPanel panel;
 	private SpringLayout sl_panel;
@@ -59,7 +62,7 @@ public class GUI {
 	private JButton bStatuses;
 	private JLabel lblSelection;
 	private CheckBoxHeader header;
-	
+
 	public JFrame getFrame() {
 		return frame;
 	}
@@ -120,9 +123,8 @@ public class GUI {
 		addTableCustomers();				
 		addTableSelection();		
 		addTableProjects();		
-		
-		enableCustomerSelection();
-		
+
+		enableCustomerSelection();		
 	}
 
 	private void addTableStatuses() {
@@ -155,14 +157,14 @@ public class GUI {
 	private void addTableSelection() {
 		String[] colNames_sComp = {"", "ID", "Customers"};
 		Object[][] data = {};
-		stm_select_cust = new SelectionTableModel(colNames_sComp, data);
-		table_selection = new JTable(stm_select_cust);
+		stm_select = new SelectionTableModel(colNames_sComp, data);
+		table_selection = new JTable(stm_select);
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
-		
+
 		// TODO: Merge this with configureTableColumn
 	}
 
@@ -465,16 +467,22 @@ public class GUI {
 		lblID.setText("Customer ID");
 		nameField.setVisible(true);
 		idField.setVisible(true);
-		
-				
-		
+
+		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
+		cm.getColumn(1).setHeaderValue("ID");		
+		if(cm.getColumnCount() < 3){
+			TableColumn tc = new TableColumn();
+			tc.setHeaderValue("Customer");
+			cm.addColumn(tc);
+		}
+
+
 		enableCustomerSelection();
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
-		
-		// TODO: Use header to change column names || One model for each selection
-		// TODO: Merge selection with configureTableColumns
+
+		// TODO: Sortable headers causes crash in selection
 		// TODO: Mark disabled fields at startup
 		// TODO: Make disabled fields editable
 	}
@@ -486,10 +494,10 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.white);
-		
+
 		// TODO: Disable edit in other frames completely, not just visually
 	}
-	
+
 	private void projectSelection(){
 		lblSelection.setText("Select Projects");
 		lblName.setVisible(true);
@@ -497,9 +505,13 @@ public class GUI {
 		lblID.setVisible(false);
 		nameField.setVisible(true);
 		idField.setVisible(false);
-		
-		
-		
+
+		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
+		cm.getColumn(1).setHeaderValue("Projects");
+		if(cm.getColumnCount() > 2)cm.removeColumn(cm.getColumn(2));
+		table_selection.getTableHeader().repaint();
+
+
 		enableProjectSelection();
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
@@ -514,16 +526,19 @@ public class GUI {
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.white);
 	}
-	
+
 	private void statusSelection(){
 		lblSelection.setText("Select Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
 		nameField.setVisible(false);
 		idField.setVisible(false);
-		
-		
-		
+
+		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
+		cm.getColumn(1).setHeaderValue("Statuses");
+		if(cm.getColumnCount() > 2)cm.removeColumn(cm.getColumn(2));
+		table_selection.getTableHeader().repaint();
+				
 		enableStatusSelection();
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
@@ -538,8 +553,8 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.white);
 	}
-	
-	
+
+
 
 	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(

@@ -20,7 +20,16 @@ public class SelectionTableModel extends AbstractTableModel {
 		Entries.put(key, value);
 	}
 	
-	public void voidLoadData(){
+	public void addMap(HashMap<Integer, String> Entries){
+		this.Entries = Entries;
+	}
+	
+	public HashMap<Integer, String> getMap(){
+		return Entries;
+	}
+	
+	public void LoadData(){
+		for(int i = 0; i < 10; i++)Entries.put(i, "Test");
 		// TODO: Selects the data from the database and adds to the HashMap
 	}
 	

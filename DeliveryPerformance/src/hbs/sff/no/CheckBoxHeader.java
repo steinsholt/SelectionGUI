@@ -50,7 +50,6 @@ implements TableCellRenderer, MouseListener  {
 	public int getColumn(){
 		return column;
 	}
-
 	
 	protected void handleClickEvent(MouseEvent e){
 		if(mousePressed){
