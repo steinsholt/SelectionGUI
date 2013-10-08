@@ -1,38 +1,20 @@
 package hbs.sff.no;
 
-import java.util.HashMap;
-
 import javax.swing.table.AbstractTableModel;
 
 public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private String columnNames[];
 	private Object rowData[][];
-	private HashMap<Integer, String> Entries;
+	private int columnCount;
+	
 	
 	public SelectionTableModel(String[] columnNames, Object[][] rowData){
 		this.columnNames = columnNames;
-		this.rowData = rowData;
-		Entries = new HashMap<Integer, String>();
+		this.rowData = rowData;	
+		this.columnCount = columnNames.length;
 	}
-	
-	public void addEntry(Integer key, String value){
-		Entries.put(key, value);
-	}
-	
-	public void addMap(HashMap<Integer, String> Entries){
-		this.Entries = Entries;
-	}
-	
-	public HashMap<Integer, String> getMap(){
-		return Entries;
-	}
-	
-	public void LoadData(){
-		for(int i = 0; i < 10; i++)Entries.put(i, "Test");
-		// TODO: Selects the data from the database and adds to the HashMap
-	}
-	
+		
 	public Object[][] getRowData() {
 		return rowData;
 	}
@@ -59,7 +41,11 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public int getColumnCount() {
-		return columnNames.length;
+		return columnCount;
+	}
+	
+	public void setColumnCount(int adjustment){
+		columnCount += adjustment;
 	}
 
 	public int getRowCount() {

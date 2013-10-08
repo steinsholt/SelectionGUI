@@ -7,10 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -62,6 +58,7 @@ public class GUI {
 	private JButton bStatuses;
 	private JLabel lblSelection;
 	private CheckBoxHeader header;
+	private Data data;
 
 	public JFrame getFrame() {
 		return frame;
@@ -122,8 +119,10 @@ public class GUI {
 		addTableStatuses();		
 		addTableCustomers();				
 		addTableSelection();		
-		addTableProjects();		
-
+		addTableProjects();	
+		data = new Data();
+		data.LoadData();
+		
 		enableCustomerSelection();		
 	}
 
@@ -474,8 +473,13 @@ public class GUI {
 			TableColumn tc = new TableColumn();
 			tc.setHeaderValue("Customer");
 			cm.addColumn(tc);
+			stm_select.setColumnCount(1);
 		}
 
+		Object[][] rowData = new Object[data.getSize(Data.Type.CUSTOMER)][3];
+		data.putData(rowData, Data.Type.CUSTOMER);
+		stm_select.setRowData(rowData);
+		stm_select.fireTableDataChanged();
 
 		enableCustomerSelection();
 		bCustomers.setSelected(true);
@@ -508,9 +512,16 @@ public class GUI {
 
 		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
 		cm.getColumn(1).setHeaderValue("Projects");
-		if(cm.getColumnCount() > 2)cm.removeColumn(cm.getColumn(2));
+		if(cm.getColumnCount() > 2){
+			cm.removeColumn(cm.getColumn(2));
+			stm_select.setColumnCount(-1);
+		}
 		table_selection.getTableHeader().repaint();
-
+		
+		Object[][] rowData = new Object[data.getSize(Data.Type.PROJECT)][2];
+		data.putData(rowData, Data.Type.PROJECT);
+		stm_select.setRowData(rowData);
+		stm_select.fireTableDataChanged();
 
 		enableProjectSelection();
 		bCustomers.setSelected(false);
@@ -536,8 +547,17 @@ public class GUI {
 
 		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
 		cm.getColumn(1).setHeaderValue("Statuses");
-		if(cm.getColumnCount() > 2)cm.removeColumn(cm.getColumn(2));
+		if(cm.getColumnCount() > 2){
+			cm.removeColumn(cm.getColumn(2));
+			stm_select.setColumnCount(-1);
+		}
 		table_selection.getTableHeader().repaint();
+		
+		Object[][] rowData = new Object[data.getSize(Data.Type.STATUS)][2];
+		data.putData(rowData, Data.Type.STATUS);
+		stm_select.setRowData(rowData);
+		
+		stm_select.fireTableDataChanged();
 				
 		enableStatusSelection();
 		bCustomers.setSelected(false);
