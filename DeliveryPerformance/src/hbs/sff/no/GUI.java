@@ -412,8 +412,10 @@ public class GUI {
 			}
 		});
 		bCustomers.setSelected(true);
+		bCustomers.setBorder(BorderFactory.createSoftBevelBorder(0));
 		toolBar.add(bCustomers);
 		bProjects = new JButton("Projects");
+		bProjects.setBorder(BorderFactory.createSoftBevelBorder(0));
 		bProjects.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				projectSelection();
@@ -421,6 +423,7 @@ public class GUI {
 		});
 		toolBar.add(bProjects);
 		bStatuses = new JButton("Statuses");
+		bStatuses.setBorder(BorderFactory.createSoftBevelBorder(0));
 		bStatuses.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				statusSelection();
