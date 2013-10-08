@@ -486,7 +486,6 @@ public class GUI {
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
 
-		// TODO: Sortable headers causes crash in selection
 		// TODO: Mark disabled fields at startup
 		// TODO: Make disabled fields editable
 	}
@@ -579,7 +578,9 @@ public class GUI {
 	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(
 				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		table.setAutoCreateRowSorter(true);
+		// TODO: set row sorter after searches 
+		// watch out for interaction with select all
+		// table.setAutoCreateRowSorter(true);
 		table.getColumnModel().getColumn(0).setMaxWidth(80);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
@@ -588,4 +589,6 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
+	
+	// TODO: Try creating separate table models and headers
 }
