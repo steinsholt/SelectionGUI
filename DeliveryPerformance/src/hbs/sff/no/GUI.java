@@ -48,7 +48,9 @@ public class GUI {
 	private SelectionTableModel stm_cust;
 	private SelectionTableModel stm_proj;
 	private SelectionTableModel stm_stat;
-	private SelectionTableModel stm_select;
+	private SelectionTableModel stm_select_cust;
+	private SelectionTableModel stm_select_proj;
+	private SelectionTableModel stm_select_stat;
 	private JToolBar toolBar;
 	private JPanel panel;
 	private SpringLayout sl_panel;
@@ -111,13 +113,14 @@ public class GUI {
 		createReportButton(panel_2, sl_panel_2);				
 
 		addScrollPaneOne(panel_2, sl_panel_2, lblSelected);		
-		addTableCustomers();				
 		addScrollPane(panel_1, sl_panel);		
-		addTableSelection();		
 		addScrollPaneTwo(panel_2, sl_panel_2);		
-		addTableProjects();		
 		addScrollPaneThree(panel_2, sl_panel_2);		
 		addTableStatuses();		
+		addTableCustomers();				
+		addTableSelection();		
+		addTableProjects();		
+		
 		enableCustomerSelection();
 		
 	}
@@ -152,8 +155,8 @@ public class GUI {
 	private void addTableSelection() {
 		String[] colNames_sComp = {"", "ID", "Customers"};
 		Object[][] data = {};
-		stm_select = new SelectionTableModel(colNames_sComp, data);
-		table_selection = new JTable(stm_select);
+		stm_select_cust = new SelectionTableModel(colNames_sComp, data);
+		table_selection = new JTable(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
@@ -256,6 +259,7 @@ public class GUI {
 		btnExit = new JButton("Exit");
 		btnExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				System.exit(0);
 			}
 		});
 		panel_2.add(btnExit);
