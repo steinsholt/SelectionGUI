@@ -480,9 +480,8 @@ public class GUI {
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
 				table_selection.setValueAt(new Boolean(checked), x, 0);
 			}
-			SelectionTableModel tm = 
-					(SelectionTableModel) table_selection.getModel();
-			tm.fireTableDataChanged();
+			((SelectionTableModel) table_selection.getModel()).
+			fireTableDataChanged();
 		}
 	}
 
