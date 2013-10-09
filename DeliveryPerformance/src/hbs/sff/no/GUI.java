@@ -118,9 +118,7 @@ public class GUI {
 		addScrollPane(panel_1, sl_panel);		
 		addScrollPaneTwo(panel_2, sl_panel_2);		
 		addScrollPaneThree(panel_2, sl_panel_2);	
-		createCustomerSelectionModel();
-		createProjectSelectionModel();
-		createStatusSelectionModel();
+		createSelectionModels();
 		addTableStatuses();		
 		addTableCustomers();				
 		addTableSelection();		
@@ -157,7 +155,16 @@ public class GUI {
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
-
+	
+	private void addTableSelection() {
+		table_selection = new JTable(stm_select_cust);
+		TableColumn tc = configureTableColumns(table_selection);
+		header = new CheckBoxHeader(new MyItemListener());
+		tc.setHeaderRenderer(header);
+		scrollPane.setViewportView(table_selection);
+		scrollPane.getViewport().setBackground(Color.white);		
+	}
+	
 	private void setCustomerSelectionModel(){		
 		table_selection.setModel(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);		
@@ -176,34 +183,16 @@ public class GUI {
 		tc.setHeaderRenderer(header);
 	}
 
-	private void createCustomerSelectionModel() {
+	private void createSelectionModels(){
 		String[] colNames_sComp = {"", "ID", "Customers"};
 		Object[][] rowData = {};
 		stm_select_cust = new SelectionTableModel(colNames_sComp, rowData);
+		String[] colNames_sProj = {"", "Project"};
+		stm_select_proj = new SelectionTableModel(colNames_sProj, rowData);
+		String[] colNames_sStat = {"", "Status"};
+		stm_select_stat = new SelectionTableModel(colNames_sStat, rowData);
 	}
-
-	private void createProjectSelectionModel() {
-		String[] colNames_sComp = {"", "Project"};
-		Object[][] rowData = {};
-		stm_select_proj = new SelectionTableModel(colNames_sComp, rowData);
-	}
-
-	private void createStatusSelectionModel() {
-		String[] colNames_sComp = {"", "Status"};
-		Object[][] rowData = {};
-		stm_select_stat = new SelectionTableModel(colNames_sComp, rowData);
-		// TODO: All model creation in one function
-	}
-
-	private void addTableSelection() {
-		table_selection = new JTable(stm_select_cust);
-		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new MyItemListener());
-		tc.setHeaderRenderer(header);
-		scrollPane.setViewportView(table_selection);
-		scrollPane.getViewport().setBackground(Color.white);		
-	}
-
+	
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
 		scrollPaneStatuses = new JScrollPane();
 		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPaneStatuses, 27, 
@@ -591,6 +580,4 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
-
-	// TODO: Try creating separate table models and headers
 }
