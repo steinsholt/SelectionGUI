@@ -548,6 +548,10 @@ public class GUI {
 		idField.setVisible(false);
 
 		setStatusSelectionModel();
+		Object[][] rowData = new Object[data.getSize(Data.Type.STATUS)][2];
+		data.putData(rowData, Data.Type.STATUS);
+		stm_select_stat.setRowData(rowData);
+		stm_select_stat.fireTableDataChanged();
 
 		enableStatusSelection();
 		bCustomers.setSelected(false);
