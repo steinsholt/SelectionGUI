@@ -154,7 +154,7 @@ public class GUI {
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
-	
+
 	private void addTableSelection() {
 		table_selection = new JTable(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);
@@ -163,7 +163,7 @@ public class GUI {
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);		
 	}
-	
+
 	private void setCustomerSelectionModel(){		
 		table_selection.setModel(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);		
@@ -191,7 +191,7 @@ public class GUI {
 		String[] colNames_sStat = {"", "Status"};
 		stm_select_stat = new SelectionTableModel(colNames_sStat, rowData);
 	}
-	
+
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
 		scrollPaneStatuses = new JScrollPane();
 		sl_panel_2.putConstraint(SpringLayout.NORTH, scrollPaneStatuses, 27, 
@@ -479,8 +479,10 @@ public class GUI {
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
 				table_selection.setValueAt(new Boolean(checked), x, 0);
-				System.out.println(table_selection.getModel().getValueAt(x, 0));
 			}
+			SelectionTableModel tm = 
+					(SelectionTableModel) table_selection.getModel();
+			tm.fireTableDataChanged();
 		}
 	}
 
