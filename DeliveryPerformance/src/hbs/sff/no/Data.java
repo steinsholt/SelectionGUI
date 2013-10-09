@@ -31,7 +31,7 @@ public class Data {
 			for (Map.Entry<Integer, String> entry : statusData.entrySet()){
 				// TODO: Load status data
 				data[entry.getKey()][1] = entry.getValue();
-				data[entry.getKey()][0] = true;
+				data[entry.getKey()][0] = new Boolean(false);
 			}
 			break;
 		case CUSTOMER:
@@ -39,14 +39,14 @@ public class Data {
 				// TODO: Load customer data
 				data[entry.getKey()][1] = entry.getKey();
 				data[entry.getKey()][2] = entry.getValue();
-				data[entry.getKey()][0] = true;
+				data[entry.getKey()][0] = new Boolean(false);
 			}
 			break;
 		case PROJECT:
 			for (Map.Entry<Integer, String> entry : projectData.entrySet()){
 				// TODO: Load project data
 				data[entry.getKey()][1] = entry.getValue();
-				data[entry.getKey()][0] = true;
+				data[entry.getKey()][0] = new Boolean(false);
 			}	
 			break;
 		}

@@ -23,7 +23,6 @@ import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 public class GUI {
 
@@ -131,7 +130,7 @@ public class GUI {
 
 	private void addTableStatuses() {
 		String[] colNames_stat = {"", "Status"};
-		Object[][] rowData = {{true, "ALL"}};
+		Object[][] rowData = {{new Boolean(true), "ALL"}};
 		stm_display_stat = new SelectionTableModel(colNames_stat, rowData);
 		table_statuses = new JTable(stm_display_stat);
 		configureTableColumns(table_statuses);
@@ -140,7 +139,7 @@ public class GUI {
 
 	private void addTableProjects() {
 		String[] colNames_proj = {"", "Project"};
-		Object[][] rowData = {{true, "ALL"}};
+		Object[][] rowData = {{new Boolean(true), "ALL"}};
 		stm_display_proj = new SelectionTableModel(colNames_proj, rowData);
 		table_projects = new JTable(stm_display_proj);
 		configureTableColumns(table_projects);
@@ -149,7 +148,7 @@ public class GUI {
 
 	private void addTableCustomers() {
 		String[] colNames_comp = {"", "ID", "Company"};
-		Object[][] rowData = {{true, "ALL", ""}};
+		Object[][] rowData = {{new Boolean(true), "ALL", ""}};
 		stm_display_cust = new SelectionTableModel(colNames_comp, rowData);
 		table_customers = new JTable(stm_display_cust);
 		configureTableColumns(table_customers);
@@ -480,6 +479,7 @@ public class GUI {
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
 				table_selection.setValueAt(new Boolean(checked), x, 0);
+				System.out.println(table_selection.getModel().getValueAt(x, 0));
 			}
 		}
 	}
@@ -502,6 +502,7 @@ public class GUI {
 
 		// TODO: Mark disabled fields at startup
 		// TODO: Make disabled fields editable
+		// TODO: Select all stays checked when switching tabs
 	}
 
 	private void enableCustomerSelection() {
@@ -567,8 +568,6 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.white);
 	}
-
-
 
 	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(

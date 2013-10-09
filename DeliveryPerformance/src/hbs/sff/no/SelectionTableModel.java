@@ -6,13 +6,10 @@ public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private String columnNames[];
 	private Object rowData[][];
-	private int columnCount;
-	
 	
 	public SelectionTableModel(String[] columnNames, Object[][] rowData){
 		this.columnNames = columnNames;
 		this.rowData = rowData;	
-		this.columnCount = columnNames.length;
 	}
 		
 	public Object[][] getRowData() {
@@ -37,15 +34,11 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 	
 	public boolean isCellEditable(int row, int column) {
-		return (column != 1);
+		return (column == 0);
 	}
 
 	public int getColumnCount() {
-		return columnCount;
-	}
-	
-	public void setColumnCount(int adjustment){
-		columnCount += adjustment;
+		return columnNames.length;
 	}
 
 	public int getRowCount() {
@@ -56,7 +49,7 @@ public class SelectionTableModel extends AbstractTableModel {
 		return rowData[row][column];
 	}
 	
-	public void setValueAt(int row, int column, Object value) {
+	public void setValueAt( Object value, int row, int column) {
 		rowData[row][column] = value;
 	}
 }
