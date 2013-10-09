@@ -46,10 +46,12 @@ public class GUI {
 	private JTable table_projects;
 	private JScrollPane scrollPaneStatuses;
 	private JTable table_statuses;
-	private SelectionTableModel stm_cust;
-	private SelectionTableModel stm_proj;
-	private SelectionTableModel stm_stat;
-	private SelectionTableModel stm_select;
+	private SelectionTableModel stm_display_cust;
+	private SelectionTableModel stm_display_proj;
+	private SelectionTableModel stm_display_stat;
+	private SelectionTableModel stm_select_cust;
+	private SelectionTableModel stm_select_proj;
+	private SelectionTableModel stm_select_stat;
 	private JToolBar toolBar;
 	private JPanel panel;
 	private SpringLayout sl_panel;
@@ -115,56 +117,91 @@ public class GUI {
 		addScrollPaneOne(panel_2, sl_panel_2, lblSelected);		
 		addScrollPane(panel_1, sl_panel);		
 		addScrollPaneTwo(panel_2, sl_panel_2);		
-		addScrollPaneThree(panel_2, sl_panel_2);		
+		addScrollPaneThree(panel_2, sl_panel_2);	
+		createCustomerSelectionModel();
+		createProjectSelectionModel();
+		createStatusSelectionModel();
 		addTableStatuses();		
 		addTableCustomers();				
 		addTableSelection();		
 		addTableProjects();	
 		data = new Data();
 		data.LoadData();
-		
+
 		enableCustomerSelection();		
 	}
 
 	private void addTableStatuses() {
 		String[] colNames_stat = {"", "Status"};
-		Object[][] data = {{true, "ALL"}};
-		stm_stat = new SelectionTableModel(colNames_stat, data);
-		table_statuses = new JTable(stm_stat);
+		Object[][] rowData = {{true, "ALL"}};
+		stm_display_stat = new SelectionTableModel(colNames_stat, rowData);
+		table_statuses = new JTable(stm_display_stat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 	}	
 
 	private void addTableProjects() {
 		String[] colNames_proj = {"", "Project"};
-		Object[][] data = {{true, "ALL"}};
-		stm_proj = new SelectionTableModel(colNames_proj, data);
-		table_projects = new JTable(stm_proj);
+		Object[][] rowData = {{true, "ALL"}};
+		stm_display_proj = new SelectionTableModel(colNames_proj, rowData);
+		table_projects = new JTable(stm_display_proj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 	}
 
 	private void addTableCustomers() {
 		String[] colNames_comp = {"", "ID", "Company"};
-		Object[][] data = {{true, "ALL", ""}};
-		stm_cust = new SelectionTableModel(colNames_comp, data);
-		table_customers = new JTable(stm_cust);
+		Object[][] rowData = {{true, "ALL", ""}};
+		stm_display_cust = new SelectionTableModel(colNames_comp, rowData);
+		table_customers = new JTable(stm_display_cust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
 
-	private void addTableSelection() {
+	private void setCustomerSelectionModel(){		
+		table_selection.setModel(stm_select_cust);
+		TableColumn tc = configureTableColumns(table_selection);		
+		tc.setHeaderRenderer(header);
+	}
+
+	private void setProjectSelectionModel(){
+		table_selection.setModel(stm_select_proj);
+		TableColumn tc = configureTableColumns(table_selection);		
+		tc.setHeaderRenderer(header);
+	}
+
+	private void setStatusSelectionModel(){
+		table_selection.setModel(stm_select_stat);
+		TableColumn tc = configureTableColumns(table_selection);		
+		tc.setHeaderRenderer(header);
+	}
+
+	private void createCustomerSelectionModel() {
 		String[] colNames_sComp = {"", "ID", "Customers"};
-		Object[][] data = {};
-		stm_select = new SelectionTableModel(colNames_sComp, data);
-		table_selection = new JTable(stm_select);
+		Object[][] rowData = {};
+		stm_select_cust = new SelectionTableModel(colNames_sComp, rowData);
+	}
+
+	private void createProjectSelectionModel() {
+		String[] colNames_sComp = {"", "Project"};
+		Object[][] rowData = {};
+		stm_select_proj = new SelectionTableModel(colNames_sComp, rowData);
+	}
+
+	private void createStatusSelectionModel() {
+		String[] colNames_sComp = {"", "Status"};
+		Object[][] rowData = {};
+		stm_select_stat = new SelectionTableModel(colNames_sComp, rowData);
+		// TODO: All model creation in one function
+	}
+
+	private void addTableSelection() {
+		table_selection = new JTable(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
-		scrollPane.getViewport().setBackground(Color.white);
-
-		// TODO: Merge this with configureTableColumn
+		scrollPane.getViewport().setBackground(Color.white);		
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -467,19 +504,7 @@ public class GUI {
 		nameField.setVisible(true);
 		idField.setVisible(true);
 
-		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
-		cm.getColumn(1).setHeaderValue("ID");		
-		if(cm.getColumnCount() < 3){
-			TableColumn tc = new TableColumn();
-			tc.setHeaderValue("Customer");
-			cm.addColumn(tc);
-			stm_select.setColumnCount(1);
-		}
-
-		Object[][] rowData = new Object[data.getSize(Data.Type.CUSTOMER)][3];
-		data.putData(rowData, Data.Type.CUSTOMER);
-		stm_select.setRowData(rowData);
-		stm_select.fireTableDataChanged();
+		setCustomerSelectionModel();
 
 		enableCustomerSelection();
 		bCustomers.setSelected(true);
@@ -509,18 +534,7 @@ public class GUI {
 		nameField.setVisible(true);
 		idField.setVisible(false);
 
-		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
-		cm.getColumn(1).setHeaderValue("Projects");
-		if(cm.getColumnCount() > 2){
-			cm.removeColumn(cm.getColumn(2));
-			stm_select.setColumnCount(-1);
-		}
-		table_selection.getTableHeader().repaint();
-		
-		Object[][] rowData = new Object[data.getSize(Data.Type.PROJECT)][2];
-		data.putData(rowData, Data.Type.PROJECT);
-		stm_select.setRowData(rowData);
-		stm_select.fireTableDataChanged();
+		setProjectSelectionModel();
 
 		enableProjectSelection();
 		bCustomers.setSelected(false);
@@ -544,20 +558,8 @@ public class GUI {
 		nameField.setVisible(false);
 		idField.setVisible(false);
 
-		TableColumnModel cm = table_selection.getTableHeader().getColumnModel();
-		cm.getColumn(1).setHeaderValue("Statuses");
-		if(cm.getColumnCount() > 2){
-			cm.removeColumn(cm.getColumn(2));
-			stm_select.setColumnCount(-1);
-		}
-		table_selection.getTableHeader().repaint();
-		
-		Object[][] rowData = new Object[data.getSize(Data.Type.STATUS)][2];
-		data.putData(rowData, Data.Type.STATUS);
-		stm_select.setRowData(rowData);
-		
-		stm_select.fireTableDataChanged();
-				
+		setStatusSelectionModel();
+
 		enableStatusSelection();
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
@@ -589,6 +591,6 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
-	
+
 	// TODO: Try creating separate table models and headers
 }
