@@ -591,23 +591,30 @@ public class GUI {
 		return tc;
 	}
 
-	class ListSelectionListenerImpl implements ListSelectionListener {
+	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+			boolean isAdjusting = e.getValueIsAdjusting();
 			if(lsm.isSelectionEmpty()){
-			} else{
-				if((boolean) table_selection.getValueAt
-						(table_selection.getSelectedRow(), 0)){
-					table_selection.setValueAt(
-							new Boolean(false), table_selection.getSelectedRow(), 0);
+			}else{
+				if(isAdjusting){
+					System.out.println(table_selection.getSelectedRow());
+					if((boolean) table_selection.getValueAt
+							(table_selection.getSelectedRow(), 0)){
+						table_selection.setValueAt(
+								new Boolean(false), table_selection.getSelectedRow(), 0);
+					}
+					else{
+						table_selection.setValueAt(
+								new Boolean(true), table_selection.getSelectedRow(), 0);
+					}
 				}
-				else{
-					table_selection.setValueAt(
-							new Boolean(true), table_selection.getSelectedRow(), 0);
-				}
+				else{					
+				}								
 			}
 		}
 	}
+	// TODO: click selects twice, release also selects
 }
 
 
