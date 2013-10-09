@@ -9,15 +9,10 @@ public class Main {
 				try {
 					GUI window = new GUI();					
 					window.getFrame().setVisible(true);
-					initialize();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
-	}
-	
-	private static void initialize(){
-		
 	}
 }

@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -22,6 +23,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableColumn;
 
 public class GUI {
@@ -157,6 +160,8 @@ public class GUI {
 
 	private void addTableSelection() {
 		table_selection = new JTable(stm_select_cust);
+		table_selection.getSelectionModel().
+		addListSelectionListener(new ListSelectionListenerImpl());		
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
@@ -190,6 +195,7 @@ public class GUI {
 		stm_select_proj = new SelectionTableModel(colNames_sProj, rowData);
 		String[] colNames_sStat = {"", "Status"};
 		stm_select_stat = new SelectionTableModel(colNames_sStat, rowData);
+
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -572,7 +578,7 @@ public class GUI {
 
 	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(
-				ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
+				ListSelectionModel.SINGLE_SELECTION);
 		// TODO: set row sorter after searches 
 		// watch out for interaction with select all
 		// table.setAutoCreateRowSorter(true);
@@ -584,4 +590,24 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
+
+	class ListSelectionListenerImpl implements ListSelectionListener {
+		public void valueChanged(ListSelectionEvent e) {
+			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+			if(lsm.isSelectionEmpty()){
+			} else{
+				if((boolean) table_selection.getValueAt
+						(table_selection.getSelectedRow(), 0)){
+					table_selection.setValueAt(
+							new Boolean(false), table_selection.getSelectedRow(), 0);
+				}
+				else{
+					table_selection.setValueAt(
+							new Boolean(true), table_selection.getSelectedRow(), 0);
+				}
+			}
+		}
+	}
 }
+
+
