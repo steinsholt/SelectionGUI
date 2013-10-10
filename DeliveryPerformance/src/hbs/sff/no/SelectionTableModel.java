@@ -51,5 +51,6 @@ public class SelectionTableModel extends AbstractTableModel {
 	
 	public void setValueAt( Object value, int row, int column) {
 		rowData[row][column] = value;
+		fireTableCellUpdated(row, column);
 	}
 }

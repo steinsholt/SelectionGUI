@@ -7,7 +7,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.util.Arrays;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -63,6 +62,12 @@ public class GUI {
 	private JLabel lblSelection;
 	private CheckBoxHeader header;
 	private Data data;
+	private String status;
+	private String all;
+	private String empty;
+	private String customer;
+	private String project;
+	private String id;
 
 	public JFrame getFrame() {
 		return frame;
@@ -80,6 +85,13 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
+		
+		status = "Status";
+		all = "ALL";
+		empty = "";
+		customer = "Customer";
+		project = "Project";
+		id = "ID";
 
 		SpringLayout springLayout = createFrame();
 
@@ -132,8 +144,8 @@ public class GUI {
 	}
 
 	private void addTableStatuses() {
-		String[] colNames_stat = {"", "Status"};
-		Object[][] rowData = {{new Boolean(true), "ALL"}};
+		String[] colNames_stat = {empty, status};
+		Object[][] rowData = {{new Boolean(true), all}};
 		stm_display_stat = new SelectionTableModel(colNames_stat, rowData);
 		table_statuses = new JTable(stm_display_stat);
 		configureTableColumns(table_statuses);
@@ -141,8 +153,8 @@ public class GUI {
 	}	
 
 	private void addTableProjects() {
-		String[] colNames_proj = {"", "Project"};
-		Object[][] rowData = {{new Boolean(true), "ALL"}};
+		String[] colNames_proj = {empty, project};
+		Object[][] rowData = {{new Boolean(true), all}};
 		stm_display_proj = new SelectionTableModel(colNames_proj, rowData);
 		table_projects = new JTable(stm_display_proj);
 		configureTableColumns(table_projects);
@@ -150,8 +162,8 @@ public class GUI {
 	}
 
 	private void addTableCustomers() {
-		String[] colNames_comp = {"", "ID", "Company"};
-		Object[][] rowData = {{new Boolean(true), "ALL", ""}};
+		String[] colNames_comp = {empty, id, customer};
+		Object[][] rowData = {{new Boolean(true), all, empty}};
 		stm_display_cust = new SelectionTableModel(colNames_comp, rowData);
 		table_customers = new JTable(stm_display_cust);
 		configureTableColumns(table_customers);
@@ -161,7 +173,7 @@ public class GUI {
 	private void addTableSelection() {
 		table_selection = new JTable(stm_select_cust);
 		table_selection.getSelectionModel().
-		addListSelectionListener(new ListSelectionListenerImpl());		
+		addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
@@ -169,7 +181,7 @@ public class GUI {
 		scrollPane.getViewport().setBackground(Color.white);		
 	}
 
-	private void setCustomerSelectionModel(){		
+	private void setCustomerSelectionModel(){
 		table_selection.setModel(stm_select_cust);
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
@@ -188,14 +200,13 @@ public class GUI {
 	}
 
 	private void createSelectionModels(){
-		String[] colNames_sComp = {"", "ID", "Customers"};
+		String[] colNames_sComp = {empty, id, customer};
 		Object[][] rowData = {};
 		stm_select_cust = new SelectionTableModel(colNames_sComp, rowData);
-		String[] colNames_sProj = {"", "Project"};
+		String[] colNames_sProj = {empty, project};
 		stm_select_proj = new SelectionTableModel(colNames_sProj, rowData);
-		String[] colNames_sStat = {"", "Status"};
+		String[] colNames_sStat = {empty, status};
 		stm_select_stat = new SelectionTableModel(colNames_sStat, rowData);
-
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -478,19 +489,6 @@ public class GUI {
 		return springLayout;
 	}
 
-	class MyItemListener implements ItemListener{
-		public void itemStateChanged(ItemEvent e){
-			Object source = e.getSource();
-			if(source instanceof AbstractButton == false) return;
-			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
-			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
-				table_selection.setValueAt(new Boolean(checked), x, 0);
-			}
-			((SelectionTableModel) table_selection.getModel()).
-			fireTableDataChanged();
-		}
-	}
-
 	private void customerSelection(){
 		lblSelection.setText("Select Customers");
 		lblName.setVisible(true);
@@ -591,30 +589,49 @@ public class GUI {
 		return tc;
 	}
 
+	class MyItemListener implements ItemListener{
+		public void itemStateChanged(ItemEvent e){
+			Object source = e.getSource();
+			if(source instanceof AbstractButton == false) return;
+			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
+			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
+				table_selection.setValueAt(new Boolean(checked), x, 0);
+			}
+		}
+	}
+
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
-			if(lsm.isSelectionEmpty()){
-			}else{
-				if(isAdjusting){
-					System.out.println(table_selection.getSelectedRow());
-					if((boolean) table_selection.getValueAt
-							(table_selection.getSelectedRow(), 0)){
-						table_selection.setValueAt(
-								new Boolean(false), table_selection.getSelectedRow(), 0);
-					}
-					else{
-						table_selection.setValueAt(
-								new Boolean(true), table_selection.getSelectedRow(), 0);
-					}
+			if(!lsm.isSelectionEmpty() && isAdjusting){
+				setCheckboxSelection();
+				setItemSelection();				
+			}
+		}
+		private void setItemSelection() {
+			if(table_selection.getColumnName(1) == status){
+				if((boolean) table_selection.getValueAt
+						(table_selection.getSelectedRow(), 0)){
+					
 				}
-				else{					
-				}								
+			}
+			else if(table_selection.getColumnName(1) == project){
+				
+			}
+			else{
+				
+			}
+		}
+		private void setCheckboxSelection() {
+			if((boolean) table_selection.getValueAt
+					(table_selection.getSelectedRow(), 0)){
+				table_selection.setValueAt(new Boolean(false), 
+						table_selection.getSelectedRow(), 0);
+			}
+			else{table_selection.setValueAt(new Boolean(true), 
+					table_selection.getSelectedRow(), 0);
 			}
 		}
 	}
-	// TODO: click selects twice, release also selects
 }
-
-

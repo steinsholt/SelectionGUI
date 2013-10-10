@@ -16,6 +16,7 @@ public class Data {
 		statusData = new HashMap<Integer, String>();
 		projectData = new HashMap<Integer, String>();
 		customerData = new HashMap<Integer, String>();
+		
 	}
 
 	public void LoadData(){
