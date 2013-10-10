@@ -559,8 +559,13 @@ public class GUI {
 
 		setStatusSelectionModel();
 		
-		// TODO: Add row data
-
+		// TODO: Move to smart place
+		if(stm_select_stat.getRowCount() == 0){
+			for(Object[] item : data.getStatusData()){
+				stm_select_stat.addRow(Arrays.asList(item));
+			}
+		}
+		
 		enableStatusSelection();
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);

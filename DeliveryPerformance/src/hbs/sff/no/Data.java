@@ -1,25 +1,25 @@
 package hbs.sff.no;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 public class Data {
-	private HashMap<Integer, String> statusData;
+	private List<Object[]> statusData;
 	private HashMap<Integer, String> customerData;
-	private HashMap<Integer, String> projectData;
+	private List<String> projectData;
 
 	public enum Type{
 		STATUS, CUSTOMER, PROJECT
 	}
 
 	public Data(){
-		statusData = new HashMap<Integer, String>();
-		projectData = new HashMap<Integer, String>();
+		statusData = new ArrayList<Object[]>();
+		projectData = new ArrayList<String>();
 		customerData = new HashMap<Integer, String>();
-
 	}
 	
-	public HashMap<Integer, String> getStatusData() {
+	public List<Object[]> getStatusData() {
 		return statusData;
 	}
 
@@ -27,14 +27,15 @@ public class Data {
 		return customerData;
 	}
 
-	public HashMap<Integer, String> getProjectData() {
+	public List<String> getProjectData() {
 		return projectData;
 	}
 
 	public void LoadData(){
-		for(int i = 0; i < 10; i++)statusData.put(i, "Status");
-		for(int i = 0; i < 10; i++)projectData.put(i, "Project");
-		for(int i = 0; i < 10; i++)customerData.put(i, "Customer");
-		// TODO: Selects the data from the database and adds to the HashMap
+		for(int i = 0; i < 10; i++){
+			Object[] item = {false, "Random name"};
+			statusData.add(item);
+		}
+		// TODO: Selects the data from the database and add to the List
 	}
 }
