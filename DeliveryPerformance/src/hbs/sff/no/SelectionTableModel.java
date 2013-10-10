@@ -15,8 +15,10 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 	
 	public void addRow(List rowData){
-		data.add(rowData);
-		fireTableRowsInserted(data.size() - 1, data.size() - 1);
+		if(!data.contains(rowData)){
+			data.add(rowData);
+			fireTableRowsInserted(data.size() - 1, data.size() - 1);
+		}		
 	}
 	
 	public List<List> getRowData() {

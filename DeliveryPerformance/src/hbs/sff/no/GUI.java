@@ -617,11 +617,12 @@ public class GUI {
 			}
 		}
 		private void setItemSelection() {
-			// TODO: Obvious issue
+			// TODO: Real messy
 			if(table_selection.getColumnName(1) == "Status"){
 				if((boolean) table_selection.getValueAt
 						(table_selection.getSelectedRow(), 0)){
-					
+					stm_display_stat.addRow(Arrays.asList(true,table_selection.
+							getValueAt(table_selection.getSelectedRow(), 1)));
 				}
 			}
 			else if(table_selection.getColumnName(1) == "Project"){

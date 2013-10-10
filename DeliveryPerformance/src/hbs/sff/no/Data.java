@@ -33,7 +33,7 @@ public class Data {
 
 	public void LoadData(){
 		for(int i = 0; i < 10; i++){
-			Object[] item = {false, "Random name"};
+			Object[] item = {false, i};
 			statusData.add(item);
 		}
 		// TODO: Selects the data from the database and add to the List
