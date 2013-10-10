@@ -7,6 +7,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -62,12 +65,9 @@ public class GUI {
 	private JLabel lblSelection;
 	private CheckBoxHeader header;
 	private Data data;
-	private String status;
-	private String all;
-	private String empty;
-	private String customer;
-	private String project;
-	private String id;
+	List<String> colNames_sComp;
+	List<String> colNames_sProj;
+	List<String> colNames_sStat;
 
 	public JFrame getFrame() {
 		return frame;
@@ -86,12 +86,7 @@ public class GUI {
 			e.printStackTrace();
 		}
 		
-		status = "Status";
-		all = "ALL";
-		empty = "";
-		customer = "Customer";
-		project = "Project";
-		id = "ID";
+		addNames();
 
 		SpringLayout springLayout = createFrame();
 
@@ -143,31 +138,44 @@ public class GUI {
 		enableCustomerSelection();		
 	}
 
+	private void addNames() {
+		colNames_sComp = new ArrayList<String>();
+		colNames_sComp.add("");
+		colNames_sComp.add("ID");
+		colNames_sComp.add("Customer");
+		
+		colNames_sProj = new ArrayList<String>();
+		colNames_sProj.add("");
+		colNames_sProj.add("Project");
+		
+		colNames_sStat = new ArrayList<String>();
+		colNames_sStat.add("");
+		colNames_sStat.add("Status");
+	}
+
 	private void addTableStatuses() {
-		String[] colNames_stat = {empty, status};
-		Object[][] rowData = {{new Boolean(true), all}};
-		stm_display_stat = new SelectionTableModel(colNames_stat, rowData);
+		stm_display_stat = new SelectionTableModel(colNames_sStat);
+		stm_display_stat.addRow(Arrays.asList(true, "ALL"));
 		table_statuses = new JTable(stm_display_stat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 	}	
 
 	private void addTableProjects() {
-		String[] colNames_proj = {empty, project};
-		Object[][] rowData = {{new Boolean(true), all}};
-		stm_display_proj = new SelectionTableModel(colNames_proj, rowData);
+		stm_display_proj = new SelectionTableModel(colNames_sProj);
+		stm_display_proj.addRow(Arrays.asList(true, "ALL"));
 		table_projects = new JTable(stm_display_proj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 	}
 
 	private void addTableCustomers() {
-		String[] colNames_comp = {empty, id, customer};
-		Object[][] rowData = {{new Boolean(true), all, empty}};
-		stm_display_cust = new SelectionTableModel(colNames_comp, rowData);
+		stm_display_cust = new SelectionTableModel(colNames_sComp);
+		stm_display_cust.addRow(Arrays.asList(true, "ALL", "ALL"));
 		table_customers = new JTable(stm_display_cust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
+		
 	}
 
 	private void addTableSelection() {
@@ -200,13 +208,9 @@ public class GUI {
 	}
 
 	private void createSelectionModels(){
-		String[] colNames_sComp = {empty, id, customer};
-		Object[][] rowData = {};
-		stm_select_cust = new SelectionTableModel(colNames_sComp, rowData);
-		String[] colNames_sProj = {empty, project};
-		stm_select_proj = new SelectionTableModel(colNames_sProj, rowData);
-		String[] colNames_sStat = {empty, status};
-		stm_select_stat = new SelectionTableModel(colNames_sStat, rowData);
+		stm_select_cust = new SelectionTableModel(colNames_sComp);
+		stm_select_proj = new SelectionTableModel(colNames_sProj);
+		stm_select_stat = new SelectionTableModel(colNames_sStat);
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -554,10 +558,8 @@ public class GUI {
 		idField.setVisible(false);
 
 		setStatusSelectionModel();
-		Object[][] rowData = new Object[data.getSize(Data.Type.STATUS)][2];
-		data.putData(rowData, Data.Type.STATUS);
-		stm_select_stat.setRowData(rowData);
-		stm_select_stat.fireTableDataChanged();
+		
+		// TODO: Add row data
 
 		enableStatusSelection();
 		bCustomers.setSelected(false);
@@ -610,13 +612,14 @@ public class GUI {
 			}
 		}
 		private void setItemSelection() {
-			if(table_selection.getColumnName(1) == status){
+			// TODO: Obvious issue
+			if(table_selection.getColumnName(1) == "Status"){
 				if((boolean) table_selection.getValueAt
 						(table_selection.getSelectedRow(), 0)){
 					
 				}
 			}
-			else if(table_selection.getColumnName(1) == project){
+			else if(table_selection.getColumnName(1) == "Project"){
 				
 			}
 			else{

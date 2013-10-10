@@ -1,35 +1,41 @@
 package hbs.sff.no;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.table.AbstractTableModel;
 
 public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
-	private String columnNames[];
-	private Object rowData[][];
+	private List<String> columnNames = new ArrayList<String>();
+	private List<List> data = new ArrayList<List>();
 	
-	public SelectionTableModel(String[] columnNames, Object[][] rowData){
-		this.columnNames = columnNames;
-		this.rowData = rowData;	
+	public SelectionTableModel(List<String> columnNames){
+		this.columnNames = columnNames;;	
 	}
-		
-	public Object[][] getRowData() {
-		return rowData;
+	
+	public void addRow(List rowData){
+		data.add(rowData);
+		fireTableRowsInserted(data.size() - 1, data.size() - 1);
+	}
+	
+	public List<List> getRowData() {
+		return data;
 	}
 
-	public void setRowData(Object[][] rowData) {
-		this.rowData = rowData;
+	public void setRowData(List<List> data) {
+		this.data = data;
 	}
 
 	public String getColumnName(int column) {
-		return columnNames[column];
+		return columnNames.get(column);
 	}
 	
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public Class getColumnClass(int column) {
+	public Class<? extends Object> getColumnClass(int column) {
 		return (getValueAt(0, column).getClass());
 	}
 
-	public void setColumnNames(String[] columnNames) {
+	public void setColumnNames(List<String> columnNames) {
 		this.columnNames = columnNames;
 	}
 	
@@ -38,19 +44,18 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public int getColumnCount() {
-		return columnNames.length;
+		return columnNames.size();
 	}
 
 	public int getRowCount() {
-		return rowData.length;
+		return data.size();
 	}
 
 	public Object getValueAt(int row, int column) {
-		return rowData[row][column];
+		return data.get(row).get(column);
 	}
 	
-	public void setValueAt( Object value, int row, int column) {
-		rowData[row][column] = value;
-		fireTableCellUpdated(row, column);
+	public void setValueAt(Object value, int row, int column){
+		data.get(row).set(column, value);
 	}
 }
