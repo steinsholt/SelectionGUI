@@ -85,8 +85,8 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		
-		addNames();
+
+		addColumnNames();
 
 		SpringLayout springLayout = createFrame();
 
@@ -138,16 +138,16 @@ public class GUI {
 		enableCustomerSelection();		
 	}
 
-	private void addNames() {
+	private void addColumnNames() {
 		colNames_sComp = new ArrayList<String>();
 		colNames_sComp.add("");
 		colNames_sComp.add("ID");
 		colNames_sComp.add("Customer");
-		
+
 		colNames_sProj = new ArrayList<String>();
 		colNames_sProj.add("");
 		colNames_sProj.add("Project");
-		
+
 		colNames_sStat = new ArrayList<String>();
 		colNames_sStat.add("");
 		colNames_sStat.add("Status");
@@ -175,7 +175,6 @@ public class GUI {
 		table_customers = new JTable(stm_display_cust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
-		
 	}
 
 	private void addTableSelection() {
@@ -558,14 +557,14 @@ public class GUI {
 		idField.setVisible(false);
 
 		setStatusSelectionModel();
-		
+
 		// TODO: Move to smart place
 		if(stm_select_stat.getRowCount() == 0){
 			for(Object[] item : data.getStatusData()){
 				stm_select_stat.addRow(Arrays.asList(item));
 			}
 		}
-		
+
 		enableStatusSelection();
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
@@ -613,23 +612,27 @@ public class GUI {
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && isAdjusting){
 				setCheckboxSelection();
-				setItemSelection();				
+				setItemSelection();
 			}
 		}
 		private void setItemSelection() {
-			// TODO: Real messy
+			// TODO: Think about checking checkboxes and move accordingly, perhaps using a model listener
 			if(table_selection.getColumnName(1) == "Status"){
 				if((boolean) table_selection.getValueAt
 						(table_selection.getSelectedRow(), 0)){
 					stm_display_stat.addRow(Arrays.asList(true,table_selection.
 							getValueAt(table_selection.getSelectedRow(), 1)));
+				}else{
+					stm_display_stat.removeRow(stm_display_stat.getRowContaining
+							(Arrays.asList(true, table_selection.getValueAt
+									(table_selection.getSelectedRow(), 1))));
 				}
 			}
 			else if(table_selection.getColumnName(1) == "Project"){
-				
+
 			}
 			else{
-				
+
 			}
 		}
 		private void setCheckboxSelection() {
