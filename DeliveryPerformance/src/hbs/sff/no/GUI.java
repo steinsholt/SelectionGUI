@@ -27,6 +27,8 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 
 public class GUI {
@@ -68,6 +70,32 @@ public class GUI {
 	List<String> colNames_sComp;
 	List<String> colNames_sProj;
 	List<String> colNames_sStat;
+
+	public enum Active{
+		STATUS(false), CUSTOMER(false), PROJECT(false);
+		private boolean state;
+
+		private Active(boolean initialState){
+			this.state = initialState;
+		}
+		public static Active getActive(){
+			if(STATUS.getState()) return STATUS;
+			else if(CUSTOMER.getState()) return CUSTOMER;
+			else return PROJECT;
+		}
+		public void setState(boolean state){
+			this.state = state;
+		}
+		public boolean getState(){
+			return state;
+		}
+		public static void setActive(Active active) { 
+			STATUS.setState(false);
+			CUSTOMER.setState(false);
+			PROJECT.setState(false);
+			active.state = true;
+		}
+	}
 
 	public JFrame getFrame() {
 		return frame;
@@ -157,6 +185,8 @@ public class GUI {
 		stm_display_stat = new SelectionTableModel(colNames_sStat);
 		stm_display_stat.addRow(Arrays.asList(true, "ALL"));
 		table_statuses = new JTable(stm_display_stat);
+		table_statuses.getSelectionModel().
+		addListSelectionListener(new ListSelectionListenerImpl());
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 	}	
@@ -165,6 +195,8 @@ public class GUI {
 		stm_display_proj = new SelectionTableModel(colNames_sProj);
 		stm_display_proj.addRow(Arrays.asList(true, "ALL"));
 		table_projects = new JTable(stm_display_proj);
+		table_projects.getSelectionModel().
+		addListSelectionListener(new ListSelectionListenerImpl());
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 	}
@@ -173,6 +205,8 @@ public class GUI {
 		stm_display_cust = new SelectionTableModel(colNames_sComp);
 		stm_display_cust.addRow(Arrays.asList(true, "ALL", "ALL"));
 		table_customers = new JTable(stm_display_cust);
+		table_customers.getSelectionModel().
+		addListSelectionListener(new ListSelectionListenerImpl());
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
@@ -208,8 +242,11 @@ public class GUI {
 
 	private void createSelectionModels(){
 		stm_select_cust = new SelectionTableModel(colNames_sComp);
+		stm_select_cust.addTableModelListener(new TableModelListenerSelect());
 		stm_select_proj = new SelectionTableModel(colNames_sProj);
+		stm_select_proj.addTableModelListener(new TableModelListenerSelect());
 		stm_select_stat = new SelectionTableModel(colNames_sStat);
+		stm_select_stat.addTableModelListener(new TableModelListenerSelect());
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -520,7 +557,7 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.white);
-
+		Active.setActive(Active.CUSTOMER);
 		// TODO: Disable edit in other frames completely, not just visually
 	}
 
@@ -547,6 +584,7 @@ public class GUI {
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.white);
+		Active.setActive(Active.PROJECT);
 	}
 
 	private void statusSelection(){
@@ -578,6 +616,7 @@ public class GUI {
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.white);
+		Active.setActive(Active.STATUS);
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
@@ -608,41 +647,65 @@ public class GUI {
 
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {
+			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && isAdjusting){
-				setCheckboxSelection();
-				setItemSelection();
-			}
-		}
-		private void setItemSelection() {
-			// TODO: Think about checking checkboxes and move accordingly, perhaps using a model listener
-			if(table_selection.getColumnName(1) == "Status"){
-				if((boolean) table_selection.getValueAt
-						(table_selection.getSelectedRow(), 0)){
-					stm_display_stat.addRow(Arrays.asList(true,table_selection.
-							getValueAt(table_selection.getSelectedRow(), 1)));
-				}else{
-					stm_display_stat.removeRow(stm_display_stat.getRowContaining
-							(Arrays.asList(true, table_selection.getValueAt
-									(table_selection.getSelectedRow(), 1))));
+				if(e.getSource() == table_selection.getSelectionModel()){
+					checkCheckBoxes(table_selection);
+				}
+				else if(e.getSource() == table_customers.getSelectionModel()){
+					checkCheckBoxes(table_customers);
+				}
+				else if(e.getSource() == table_projects.getSelectionModel()){
+					checkCheckBoxes(table_projects);
+				}
+				else{
+					checkCheckBoxes(table_statuses);
 				}
 			}
-			else if(table_selection.getColumnName(1) == "Project"){
+		}
 
+		private void checkCheckBoxes(JTable table) {
+			if((boolean) table.getValueAt
+					(table.getSelectedRow(), 0)){
+				table.setValueAt(new Boolean(false), 
+						table.getSelectedRow(), 0);
 			}
-			else{
-
+			else{table.setValueAt(new Boolean(true), 
+					table.getSelectedRow(), 0);
 			}
 		}
-		private void setCheckboxSelection() {
-			if((boolean) table_selection.getValueAt
-					(table_selection.getSelectedRow(), 0)){
-				table_selection.setValueAt(new Boolean(false), 
-						table_selection.getSelectedRow(), 0);
+	}
+
+	class TableModelListenerDisplay implements TableModelListener{
+		public void tableChanged(TableModelEvent e) {
+			if(e.getType()==TableModelEvent.UPDATE){				
+				System.out.println(e.getFirstRow());
+				SelectionTableModel stm = (SelectionTableModel)e.getSource();
+				stm.removeRow(e.getFirstRow());
 			}
-			else{table_selection.setValueAt(new Boolean(true), 
-					table_selection.getSelectedRow(), 0);
+		}		
+	}
+
+	class TableModelListenerSelect implements TableModelListener{
+		public void tableChanged(TableModelEvent e) {
+			if(e.getType()==TableModelEvent.UPDATE){
+				if(Active.getActive()==Active.STATUS){
+					stm_display_stat.addRow(Arrays.asList(true,table_selection.
+							getValueAt(table_selection.getSelectedRow(), 1)));
+				}
+				else if(Active.getActive()==Active.PROJECT){
+					stm_display_proj.addRow(Arrays.asList(true,table_selection.
+							getValueAt(table_selection.getSelectedRow(), 1)));
+				}
+				else{
+					stm_display_cust.addRow(Arrays.asList(true,
+							table_selection.getValueAt
+							(table_selection.getSelectedRow(), 1),
+							table_selection.getValueAt
+							(table_selection.getSelectedRow(), 2)));
+				}
 			}
 		}
 	}

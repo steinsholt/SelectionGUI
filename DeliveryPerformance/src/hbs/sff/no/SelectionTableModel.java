@@ -12,7 +12,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	private List<List> data = new ArrayList<List>();
 
 	public SelectionTableModel(List<String> columnNames){
-		this.columnNames = columnNames;;	
+		this.columnNames = columnNames;
 	}
 
 	public void addRow(List rowData){
