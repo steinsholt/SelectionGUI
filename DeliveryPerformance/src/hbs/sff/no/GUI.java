@@ -624,7 +624,7 @@ public class GUI {
 
 	private TableColumn configureTableColumns(JTable table) {
 		table.setSelectionMode(
-				ListSelectionModel.SINGLE_SELECTION);
+				ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 		// TODO: set row sorter after searches 
 		// watch out for interaction with select all
 		// table.setAutoCreateRowSorter(true);
@@ -652,7 +652,7 @@ public class GUI {
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
-			if(!lsm.isSelectionEmpty() && isAdjusting){
+			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
 					checkCheckBoxes(table_selection);
 				}
@@ -669,13 +669,15 @@ public class GUI {
 		}
 
 		private void checkCheckBoxes(JTable table) {
-			if((boolean) table.getValueAt
-					(table.getSelectedRow(), 0)){
-				table.setValueAt(new Boolean(false), 
-						table.getSelectedRow(), 0);
-			}
-			else{table.setValueAt(new Boolean(true), 
-					table.getSelectedRow(), 0);
+			for(int i = 0; i < table.getSelectedRows().length; i++){
+				if((boolean) table.getValueAt
+						(i, 0)){
+					table.setValueAt(new Boolean(false), 
+							i, 0);
+				}
+				else{table.setValueAt(new Boolean(true), 
+						i, 0);
+				}
 			}
 		}
 	}
@@ -685,11 +687,10 @@ public class GUI {
 			if(e.getType()==TableModelEvent.UPDATE){				
 				SelectionTableModel stm = (SelectionTableModel)e.getSource();
 				stm.removeRow(e.getFirstRow());
-				// TODO: On release deletes item
 			}
 		}		
 	}
-	
+
 	class TableModelListenerSelect implements TableModelListener{
 		public void tableChanged(TableModelEvent e){
 			if(e.getType()==TableModelEvent.UPDATE){
