@@ -183,6 +183,7 @@ public class GUI {
 
 	private void addTableStatuses() {
 		stm_display_stat = new SelectionTableModel(colNames_sStat);
+		stm_display_stat.addTableModelListener(new TableModelListenerDisplay());
 		stm_display_stat.addRow(Arrays.asList(true, "ALL"));
 		table_statuses = new JTable(stm_display_stat);
 		table_statuses.getSelectionModel().
@@ -193,6 +194,7 @@ public class GUI {
 
 	private void addTableProjects() {
 		stm_display_proj = new SelectionTableModel(colNames_sProj);
+		stm_display_proj.addTableModelListener(new TableModelListenerDisplay());
 		stm_display_proj.addRow(Arrays.asList(true, "ALL"));
 		table_projects = new JTable(stm_display_proj);
 		table_projects.getSelectionModel().
@@ -203,6 +205,7 @@ public class GUI {
 
 	private void addTableCustomers() {
 		stm_display_cust = new SelectionTableModel(colNames_sComp);
+		stm_display_cust.addTableModelListener(new TableModelListenerDisplay());
 		stm_display_cust.addRow(Arrays.asList(true, "ALL", "ALL"));
 		table_customers = new JTable(stm_display_cust);
 		table_customers.getSelectionModel().
@@ -646,8 +649,7 @@ public class GUI {
 	}
 
 	class ListSelectionListenerImpl implements ListSelectionListener{
-		public void valueChanged(ListSelectionEvent e) {
-			
+		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && isAdjusting){
@@ -681,30 +683,30 @@ public class GUI {
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			if(e.getType()==TableModelEvent.UPDATE){				
-				System.out.println(e.getFirstRow());
 				SelectionTableModel stm = (SelectionTableModel)e.getSource();
 				stm.removeRow(e.getFirstRow());
+				// TODO: On release deletes item
 			}
 		}		
 	}
-
+	
 	class TableModelListenerSelect implements TableModelListener{
-		public void tableChanged(TableModelEvent e) {
+		public void tableChanged(TableModelEvent e){
 			if(e.getType()==TableModelEvent.UPDATE){
 				if(Active.getActive()==Active.STATUS){
 					stm_display_stat.addRow(Arrays.asList(true,table_selection.
-							getValueAt(table_selection.getSelectedRow(), 1)));
+							getValueAt(e.getFirstRow(), 1)));
 				}
 				else if(Active.getActive()==Active.PROJECT){
 					stm_display_proj.addRow(Arrays.asList(true,table_selection.
-							getValueAt(table_selection.getSelectedRow(), 1)));
+							getValueAt(e.getFirstRow(), 1)));
 				}
 				else{
 					stm_display_cust.addRow(Arrays.asList(true,
 							table_selection.getValueAt
-							(table_selection.getSelectedRow(), 1),
+							(e.getFirstRow(), 1),
 							table_selection.getValueAt
-							(table_selection.getSelectedRow(), 2)));
+							(e.getFirstRow(), 2)));
 				}
 			}
 		}
