@@ -22,6 +22,13 @@ public class SelectionTableModel extends AbstractTableModel {
 		}
 	}
 	
+	public void addRowAt(List rowData, int index){
+		if(!data.contains(rowData)){
+			data.add(index, rowData);
+			fireTableRowsInserted(data.size() - 1, data.size() - 1);
+		}
+	}
+	
 	public void removeRow(Object o){
 		data.remove(o);
 		fireTableDataChanged();
