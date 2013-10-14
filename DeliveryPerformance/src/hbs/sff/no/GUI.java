@@ -1,5 +1,7 @@
 package hbs.sff.no;
 
+import hbs.sff.no.Data.Type;
+
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.GridLayout;
@@ -646,7 +648,7 @@ public class GUI {
 				table_selection.setValueAt(new Boolean(checked), x, 0);	
 				((SelectionTableModel)table_selection.getModel()).
 				fireTableRowsUpdated(x, x);
-			}		
+			}			
 		}
 	}
 
@@ -674,13 +676,10 @@ public class GUI {
 			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
 					table.getSelectedRowCount()); i++){
 				if((boolean) table.getValueAt
-						(i, 0)){
-					table.setValueAt(new Boolean(false), 
-							i, 0);
+						(i, 0)){table.setValueAt(new Boolean(false), i, 0);
 				}
-				else{table.setValueAt(new Boolean(true), 
-						i, 0);
-				}
+				else{table.setValueAt(new Boolean(true), i, 0);}
+				System.out.println(table.getValueAt(i, 0));
 			}
 		}
 	}
@@ -713,7 +712,16 @@ public class GUI {
 							table_selection.getValueAt
 							(e.getFirstRow(), 2)));
 				}
-			}
+			}			
 		}
 	}
+	
+	// TODO: do not remove "ALL", set to false
+	
+	/*
+	 * if(stm_display_stat.getRowCount() == data.getSize(Type.STATUS)){
+				stm_display_stat.setAll(Arrays.asList(true, "ALL"));						
+			}
+	 */
+	
 }

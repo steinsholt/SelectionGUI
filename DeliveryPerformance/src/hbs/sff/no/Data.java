@@ -30,6 +30,12 @@ public class Data {
 	public List<String> getProjectData() {
 		return projectData;
 	}
+	
+	public int getSize(Type type){
+		if(type==Type.STATUS)return statusData.size();
+		else if(type==Type.CUSTOMER) return customerData.size();
+		else return projectData.size();
+	}
 
 	public void LoadData(){
 		for(int i = 0; i < 10; i++){

@@ -26,6 +26,12 @@ public class SelectionTableModel extends AbstractTableModel {
 		data.remove(o);
 		fireTableDataChanged();
 	}
+	
+	public void setAll(List rowData){
+		data.clear();
+		data.add(rowData);		
+		fireTableRowsInserted(data.size() - 1, data.size() - 1);
+	}
 
 	public void removeRow(int row){
 		data.remove(row);
@@ -57,7 +63,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public boolean isCellEditable(int row, int column) {
-		return (column == 0);
+		return (false);
 	}
 
 	public int getColumnCount() {
