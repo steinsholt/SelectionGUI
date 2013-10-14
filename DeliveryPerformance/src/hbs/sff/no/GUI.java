@@ -643,8 +643,10 @@ public class GUI {
 			if(source instanceof AbstractButton == false) return;
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
-				table_selection.setValueAt(new Boolean(checked), x, 0);
-			}
+				table_selection.setValueAt(new Boolean(checked), x, 0);	
+				((SelectionTableModel)table_selection.getModel()).
+				fireTableRowsUpdated(x, x);
+			}		
 		}
 	}
 
@@ -669,7 +671,8 @@ public class GUI {
 		}
 
 		private void checkCheckBoxes(JTable table) {
-			for(int i = 0; i < table.getSelectedRows().length; i++){
+			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
+					table.getSelectedRowCount()); i++){
 				if((boolean) table.getValueAt
 						(i, 0)){
 					table.setValueAt(new Boolean(false), 
@@ -682,6 +685,7 @@ public class GUI {
 		}
 	}
 
+	// TODO: Sync selection and display
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			if(e.getType()==TableModelEvent.UPDATE){				
