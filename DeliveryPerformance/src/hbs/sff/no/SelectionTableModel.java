@@ -32,6 +32,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	
 	public void clear(){
 		data.clear();
+		fireTableDataChanged();
 	}
 	
 	public void removeRow(Object o){
@@ -72,7 +73,6 @@ public class SelectionTableModel extends AbstractTableModel {
 		if(editable){return (row == 0 && column == 0);}
 		else return (false);
 	}
-	// TODO perhaps a set editable?
 
 	public int getColumnCount() {
 		return columnNames.size();

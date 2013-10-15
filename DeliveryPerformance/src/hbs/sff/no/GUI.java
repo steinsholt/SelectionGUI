@@ -69,9 +69,9 @@ public class GUI {
 	private JLabel lblSelection;
 	private CheckBoxHeader header;
 	private Data data;
-	List<String> colNames_sComp;
-	List<String> colNames_sProj;
-	List<String> colNames_sStat;
+	private List<String> colNames_sComp;
+	private List<String> colNames_sProj;
+	private List<String> colNames_sStat;
 
 	public enum Active{
 		STATUS(false), CUSTOMER(false), PROJECT(false);
@@ -119,7 +119,7 @@ public class GUI {
 		addColumnNames();
 
 		SpringLayout springLayout = createFrame();
-		
+
 		nullSelectionModel = new NullSelectionModel();
 		partialSelectionModel = new PartialSelectionModel();
 		partialSelectionModel.addListSelectionListener(new ListSelectionListenerImpl());
@@ -658,7 +658,7 @@ public class GUI {
 			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
 				table_selection.setValueAt(new Boolean(checked), x, 0);	
-				
+
 			}	
 			((SelectionTableModel)table_selection.getModel()).
 			fireTableRowsUpdated(0, table_selection.getRowCount());
@@ -698,21 +698,26 @@ public class GUI {
 	}
 
 	// TODO: Sync selection and display
-	// TODO: Deletion causes subsequent insertion and removeRow(1) is out of bounds
+	// Real messy
+	// "ALL" is not unclickable, it is simply deleted and reinserted!
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			SelectionTableModel stm = (SelectionTableModel)e.getSource();
-			if(e.getType()==TableModelEvent.UPDATE){
-				stm.removeRow(e.getFirstRow());				
+			if(e.getType()==TableModelEvent.UPDATE && !stm.getRowData().isEmpty()){
+				stm.removeRow(e.getFirstRow());
 			}
 			if(e.getType()==TableModelEvent.INSERT){
-				if(stm.getRowData().contains(Arrays.asList(true, "ALL"))) {
+				if(stm.getRowData().contains(Arrays.asList(true, "ALL")) && stm.getRowData().size()!=1) {
 					stm.addRowAt(Arrays.asList(false, "Remove all"), 0);
 					stm.removeRow(1);
 				}
 			}
 			if(e.getType()==TableModelEvent.DELETE){
 				if(stm.getRowData().isEmpty()){stm.addRow(Arrays.asList(true, "ALL"));}
+				if(!stm.getRowData().contains(Arrays.asList(true, "ALL")) && 
+						!stm.getRowData().contains(Arrays.asList(false, "Remove all"))){
+					stm.removeRow(e.getFirstRow());
+				}
 			}
 		}		
 	}

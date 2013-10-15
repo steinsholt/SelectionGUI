@@ -61,7 +61,6 @@ public class Data {
 		        	  String status = rs.getString("Status");
 		        	  Object[] dataRow = {false, status};
 		        	  statusData.add(dataRow);
-		        	  System.out.println(rs.getString("Status"));
 		          }		          
 		          st.close();
 		          rs.close();
@@ -70,6 +69,5 @@ public class Data {
 		       }
 
 	}
-	// TODO: Selects the data from the database and add to the List
 }
 
