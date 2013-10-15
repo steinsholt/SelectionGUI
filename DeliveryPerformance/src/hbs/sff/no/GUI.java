@@ -13,7 +13,6 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -60,7 +59,7 @@ public class GUI {
 	private SelectionTableModel stm_select_proj;
 	private SelectionTableModel stm_select_stat;
 	private NullSelectionModel nullSelectionModel;
-	private DefaultListSelectionModel defaultListSelectionModel;
+	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
 	private JPanel panel;
 	private SpringLayout sl_panel;
@@ -122,9 +121,8 @@ public class GUI {
 		SpringLayout springLayout = createFrame();
 		
 		nullSelectionModel = new NullSelectionModel();
-		defaultListSelectionModel = new DefaultListSelectionModel();
-		defaultListSelectionModel.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
-		defaultListSelectionModel.addListSelectionListener(new ListSelectionListenerImpl());
+		partialSelectionModel = new PartialSelectionModel();
+		partialSelectionModel.addListSelectionListener(new ListSelectionListenerImpl());
 
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
@@ -561,9 +559,12 @@ public class GUI {
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneCustomers.getViewport().setBackground(Color.white);
-		table_customers.setSelectionModel(defaultListSelectionModel);
+		table_customers.setSelectionModel(partialSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
+		stm_display_proj.setEditable(false);
+		stm_display_cust.setEditable(true);
+		stm_display_stat.setEditable(false);
 		Active.setActive(Active.CUSTOMER);
 	}
 
@@ -590,9 +591,12 @@ public class GUI {
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.white);
-		table_projects.setSelectionModel(defaultListSelectionModel);
+		table_projects.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
+		stm_display_proj.setEditable(true);
+		stm_display_cust.setEditable(false);
+		stm_display_stat.setEditable(false);
 		Active.setActive(Active.PROJECT);
 	}
 
@@ -625,9 +629,12 @@ public class GUI {
 		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
 		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
 		scrollPaneStatuses.getViewport().setBackground(Color.white);
-		table_statuses.setSelectionModel(defaultListSelectionModel);
+		table_statuses.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
+		stm_display_proj.setEditable(false);
+		stm_display_cust.setEditable(false);
+		stm_display_stat.setEditable(true);
 		Active.setActive(Active.STATUS);
 	}
 
@@ -658,6 +665,7 @@ public class GUI {
 		}
 	}
 
+	// TODO: Duplication of code
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
@@ -698,8 +706,9 @@ public class GUI {
 			}
 			if(e.getType()==TableModelEvent.INSERT){
 				if(stm.getRowData().contains(Arrays.asList(true, "ALL"))) {
-					stm.removeRow(0);
 					stm.addRowAt(Arrays.asList(false, "Remove all"), 0);
+					stm.removeRow(1);
+					
 				}
 			}
 		}		
@@ -726,13 +735,4 @@ public class GUI {
 			}			
 		}
 	}
-	
-	// TODO: do not allow "ALL" to be removed. set cell to uneditable
-	
-	/*
-	 * if(stm_display_stat.getRowCount() == data.getSize(Type.STATUS)){
-				stm_display_stat.setAll(Arrays.asList(true, "ALL"));						
-			}
-	 */
-	
 }
