@@ -698,18 +698,21 @@ public class GUI {
 	}
 
 	// TODO: Sync selection and display
+	// TODO: Deletion causes subsequent insertion and removeRow(1) is out of bounds
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			SelectionTableModel stm = (SelectionTableModel)e.getSource();
 			if(e.getType()==TableModelEvent.UPDATE){
-				stm.removeRow(e.getFirstRow());
+				stm.removeRow(e.getFirstRow());				
 			}
 			if(e.getType()==TableModelEvent.INSERT){
 				if(stm.getRowData().contains(Arrays.asList(true, "ALL"))) {
 					stm.addRowAt(Arrays.asList(false, "Remove all"), 0);
 					stm.removeRow(1);
-					
 				}
+			}
+			if(e.getType()==TableModelEvent.DELETE){
+				if(stm.getRowData().isEmpty()){stm.addRow(Arrays.asList(true, "ALL"));}
 			}
 		}		
 	}
