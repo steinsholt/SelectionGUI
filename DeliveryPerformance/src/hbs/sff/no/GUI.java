@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -74,28 +73,21 @@ public class GUI {
 	private List<String> colNames_sStat;
 
 	public enum Active{
-		STATUS(false), CUSTOMER(false), PROJECT(false);
-		private boolean state;
+		STATUS, CUSTOMER, PROJECT;
+		private static SelectionTableModel display;
+		private static SelectionTableModel select;
 
-		private Active(boolean initialState){
-			this.state = initialState;
+		public static SelectionTableModel getActiveDisplay(){
+			return display;
 		}
-		public static Active getActive(){
-			if(STATUS.getState()) return STATUS;
-			else if(CUSTOMER.getState()) return CUSTOMER;
-			else return PROJECT;
+
+		public static SelectionTableModel getActiveSelect(){
+			return select;
 		}
-		public void setState(boolean state){
-			this.state = state;
-		}
-		public boolean getState(){
-			return state;
-		}
-		public static void setActive(Active active) { 
-			STATUS.setState(false);
-			CUSTOMER.setState(false);
-			PROJECT.setState(false);
-			active.state = true;
+
+		public static void setActiveTables(SelectionTableModel dis, SelectionTableModel sel){
+			display = dis;
+			select = sel;
 		}
 	}
 
@@ -562,10 +554,7 @@ public class GUI {
 		table_customers.setSelectionModel(partialSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
-		stm_display_proj.setEditable(false);
-		stm_display_cust.setEditable(true);
-		stm_display_stat.setEditable(false);
-		Active.setActive(Active.CUSTOMER);
+		Active.setActiveTables(stm_display_cust, stm_select_cust);
 	}
 
 	private void projectSelection(){
@@ -594,10 +583,7 @@ public class GUI {
 		table_projects.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
-		stm_display_proj.setEditable(true);
-		stm_display_cust.setEditable(false);
-		stm_display_stat.setEditable(false);
-		Active.setActive(Active.PROJECT);
+		Active.setActiveTables(stm_display_proj, stm_select_proj);
 	}
 
 	private void statusSelection(){
@@ -632,10 +618,7 @@ public class GUI {
 		table_statuses.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
-		stm_display_proj.setEditable(false);
-		stm_display_cust.setEditable(false);
-		stm_display_stat.setEditable(true);
-		Active.setActive(Active.STATUS);
+		Active.setActiveTables(stm_display_stat, stm_select_stat);
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
@@ -653,59 +636,58 @@ public class GUI {
 
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
-			Object source = e.getSource();
-			if(source instanceof AbstractButton == false) return;
-			boolean checked =  e.getStateChange() == ItemEvent.SELECTED;
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
-				table_selection.setValueAt(new Boolean(checked), x, 0);	
-
+				if(!(boolean) table_selection.getValueAt(x, 0)){
+					table_selection.setValueAt(true, x, 0);
+					((SelectionTableModel)table_selection.getModel()).
+					fireTableRowsUpdated(x, x);
+				}
 			}	
-			((SelectionTableModel)table_selection.getModel()).
-			fireTableRowsUpdated(0, table_selection.getRowCount());
 		}
 	}
 
-	// TODO: Duplication of code. perhaps checkCheckBoxes on source?
+	// from 4 if|else => 2
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
-					checkCheckBoxes(table_selection);
+					setTrueCheckBoxes(table_selection);
 				}
 				else if(e.getSource() == table_customers.getSelectionModel()){
-					checkCheckBoxes(table_customers);
+					setFalseCheckBoxes(table_customers);
 				}
 				else if(e.getSource() == table_projects.getSelectionModel()){
-					checkCheckBoxes(table_projects);
+					setFalseCheckBoxes(table_projects);
 				}
 				else{
-					checkCheckBoxes(table_statuses);
+					setFalseCheckBoxes(table_statuses);
 				}
 			}
 		}
-
-		private void checkCheckBoxes(JTable table) {
+		private void setTrueCheckBoxes(JTable table) {
 			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
 					table.getSelectedRowCount()); i++){
-				if((boolean) table.getValueAt
-						(i, 0)){table.setValueAt(false, i, 0);
-				}
-				else{table.setValueAt(true, i, 0);}
+				if((boolean) table.getValueAt(i, 0)){}
+				else table.setValueAt(true, i, 0);
+			}
+		}
+		private void setFalseCheckBoxes(JTable table){
+			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
+					table.getSelectedRowCount()); i++){
+				table.setValueAt(false, i, 0);
 			}
 		}
 	}
 
 	// TODO: Sync selection and display
-	// Real messy
-	// "ALL" is not unclickable, it is simply deleted and reinserted!
-	
+
 	/*
 	 * Use column count to insert correct size rows
-	 * When there is a selection -> remove row
-	 * If there are no rows -> all selected
-	 * If there is one row -> all selected
+	 * When there is a selection -> removeRow()
+	 * If there are no rows -> allSelected(column count)
+	 * If there is one row -> allSelected(column count)
 	 * If there is one row -> set row one edit disabled
 	 * If there are more than one row -> remove statement "all selected" -> add statement "remove all"
 	 * If there are more than one row -> set row one edit enabled
@@ -713,48 +695,55 @@ public class GUI {
 	 * Only allow selection in selection table, only allow removal from display tables
 	 * If item is removed from display table, uncheck in selection table if still present there
 	 */
-	
+
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			SelectionTableModel stm = (SelectionTableModel)e.getSource();
-			if(e.getType()==TableModelEvent.UPDATE && !stm.getRowData().isEmpty()){
+			if(e.getType()==TableModelEvent.UPDATE){
 				stm.removeRow(e.getFirstRow());
 			}
-			if(e.getType()==TableModelEvent.INSERT){
-				if(stm.getRowData().contains(Arrays.asList(true, "ALL")) && stm.getRowData().size()!=1) {
-					stm.addRowAt(Arrays.asList(false, "Remove all"), 0);
-					stm.removeRow(1);
-				}
-			}
 			if(e.getType()==TableModelEvent.DELETE){
-				if(stm.getRowData().isEmpty()){stm.addRow(Arrays.asList(true, "ALL"));}
-				if(!stm.getRowData().contains(Arrays.asList(true, "ALL")) && 
-						!stm.getRowData().contains(Arrays.asList(false, "Remove all"))){
+				if(!stm.getRow(0).contains("ALL") && !stm.getRow(0).contains("Remove all") && stm.getRowCount() > 1){
 					stm.removeRow(e.getFirstRow());
 				}
 			}
+			if(stm.getRowCount() < 2) allSelected(stm);
+			else someSelected(stm);
+		}
+		private void someSelected(SelectionTableModel stm) {
+			Active.getActiveDisplay().setEditable(true);
+			stm.setRemoveAll();
+		}
+		private void allSelected(SelectionTableModel stm) {
+			Active.getActiveDisplay().setEditable(false);
+			stm.setTrueAll();
 		}		
 	}
 
+	// Could be done shorter 
 	class TableModelListenerSelect implements TableModelListener{
 		public void tableChanged(TableModelEvent e){
 			if(e.getType()==TableModelEvent.UPDATE){
-				if(Active.getActive()==Active.STATUS){
-					stm_display_stat.addRow(Arrays.asList(true,table_selection.
-							getValueAt(e.getFirstRow(), 1)));					
-				}
-				else if(Active.getActive()==Active.PROJECT){
-					stm_display_proj.addRow(Arrays.asList(true,table_selection.
-							getValueAt(e.getFirstRow(), 1)));
-				}
-				else{
-					stm_display_cust.addRow(Arrays.asList(true,
+				if(Active.getActiveDisplay().getColumnCount()==3){
+					Active.getActiveDisplay().addRow(Arrays.asList(true,
 							table_selection.getValueAt
 							(e.getFirstRow(), 1),
 							table_selection.getValueAt
 							(e.getFirstRow(), 2)));
 				}
-			}			
+				else Active.getActiveDisplay().addRow(Arrays.asList(true,table_selection.
+						getValueAt(e.getFirstRow(), 1)));												
+			}
+		}			
+	}
+
+	@SuppressWarnings("rawtypes")
+	public void syncModels() {
+		// All items present in selection model and not present in display model should be unchecked
+		List<List> deselect = new ArrayList<List>(Active.getActiveSelect().getRowData());
+		deselect.removeAll(Active.getActiveDisplay().getRowData());
+		for(List l : deselect){
+
 		}
 	}
 }

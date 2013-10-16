@@ -1,6 +1,7 @@
 package hbs.sff.no;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
@@ -22,33 +23,25 @@ public class SelectionTableModel extends AbstractTableModel {
 			fireTableRowsInserted(data.size() - 1, data.size() - 1);
 		}
 	}
-	
+
 	public void addRowAt(List rowData, int index){
 		if(!data.contains(rowData)){
 			data.add(index, rowData);
 			fireTableRowsInserted(data.size() - 1, data.size() - 1);
 		}
 	}
-	
-	public void clear(){
-		data.clear();
-		fireTableDataChanged();
-	}
-	
-	public void removeRow(Object o){
-		data.remove(o);
-		fireTableDataChanged();
-	}
-	
+
 	public void removeRow(int row){
-		data.remove(row);
-		fireTableRowsDeleted(row, row);
+		if(!data.isEmpty()){
+			data.remove(row);
+			fireTableRowsDeleted(row, row);
+		}
 	}
-	
+
 	public int getRowContaining(Object id){
 		return data.indexOf(id);		
 	}
-	
+
 	public List<List> getRowData() {
 		return data;
 	}
@@ -90,8 +83,34 @@ public class SelectionTableModel extends AbstractTableModel {
 		data.get(row).set(column, value);
 		fireTableCellUpdated(row, column);
 	}
-	
+
 	public void setEditable(Boolean editable) {
 		this.editable = editable;
+	}
+
+	public List getRow(int i) {
+		return data.get(i);
+	}
+
+	public void setRemoveAll(){
+		if(columnNames.size()==3) {
+			data.add(0, Arrays.asList(false, "Remove all", ""));
+			data.remove(1);
+		}
+		else {
+			data.add(0, Arrays.asList(false, "Remove all"));
+			data.remove(1);
+		}
+	}
+
+	public void setTrueAll(){
+		if(columnNames.size()==3) {
+			data.add(0, Arrays.asList(true, "ALL", ""));
+			data.remove(1);
+		}
+		else {
+			data.add(0, Arrays.asList(true, "ALL"));
+			data.remove(1);
+		}
 	}
 }
