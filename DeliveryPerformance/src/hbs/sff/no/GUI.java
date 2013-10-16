@@ -702,19 +702,18 @@ public class GUI {
 			if(e.getType()==TableModelEvent.UPDATE){
 				stm.removeRow(e.getFirstRow());
 			}
-			if(e.getType()==TableModelEvent.DELETE){
-				if(!stm.getRow(0).contains("ALL") && !stm.getRow(0).contains("Remove all") && stm.getRowCount() > 1){
-					stm.removeRow(e.getFirstRow());
-				}
+			if(e.getType()==TableModelEvent.DELETE && 
+					!stm.getRow(0).contains("Remove all")){
+				stm.removeRow(e.getFirstRow());
 			}
-			if(stm.getRowCount() < 2) allSelected(stm);
+			if(stm.getRowCount() < 2) setAllSelected(stm);
 			else someSelected(stm);
 		}
 		private void someSelected(SelectionTableModel stm) {
 			Active.getActiveDisplay().setEditable(true);
 			stm.setRemoveAll();
 		}
-		private void allSelected(SelectionTableModel stm) {
+		private void setAllSelected(SelectionTableModel stm) {
 			Active.getActiveDisplay().setEditable(false);
 			stm.setTrueAll();
 		}		
@@ -726,13 +725,11 @@ public class GUI {
 			if(e.getType()==TableModelEvent.UPDATE){
 				if(Active.getActiveDisplay().getColumnCount()==3){
 					Active.getActiveDisplay().addRow(Arrays.asList(true,
-							table_selection.getValueAt
-							(e.getFirstRow(), 1),
-							table_selection.getValueAt
-							(e.getFirstRow(), 2)));
+							table_selection.getValueAt(e.getFirstRow(), 1),
+							table_selection.getValueAt(e.getFirstRow(), 2)));
 				}
-				else Active.getActiveDisplay().addRow(Arrays.asList(true,table_selection.
-						getValueAt(e.getFirstRow(), 1)));												
+				else Active.getActiveDisplay().addRow(Arrays.asList
+						(true,table_selection.getValueAt(e.getFirstRow(), 1)));												
 			}
 		}			
 	}
