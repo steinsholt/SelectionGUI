@@ -665,7 +665,7 @@ public class GUI {
 		}
 	}
 
-	// TODO: Duplication of code
+	// TODO: Duplication of code. perhaps checkCheckBoxes on source?
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
@@ -700,6 +700,20 @@ public class GUI {
 	// TODO: Sync selection and display
 	// Real messy
 	// "ALL" is not unclickable, it is simply deleted and reinserted!
+	
+	/*
+	 * Use column count to insert correct size rows
+	 * When there is a selection -> remove row
+	 * If there are no rows -> all selected
+	 * If there is one row -> all selected
+	 * If there is one row -> set row one edit disabled
+	 * If there are more than one row -> remove statement "all selected" -> add statement "remove all"
+	 * If there are more than one row -> set row one edit enabled
+	 * 
+	 * Only allow selection in selection table, only allow removal from display tables
+	 * If item is removed from display table, uncheck in selection table if still present there
+	 */
+	
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
 			SelectionTableModel stm = (SelectionTableModel)e.getSource();
