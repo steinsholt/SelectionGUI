@@ -10,6 +10,8 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -389,6 +391,7 @@ public class GUI {
 				SpringLayout.EAST, panel_1);
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				executeSearch();
 			}
 		});
 		panel_1.add(btnSearch);
@@ -532,7 +535,8 @@ public class GUI {
 		lblID.setText("Customer ID");
 		nameField.setVisible(true);
 		idField.setVisible(true);
-
+		btnSearch.setVisible(true);
+		
 		setCustomerSelectionModel();
 
 		enableCustomerSelection();
@@ -564,6 +568,7 @@ public class GUI {
 		lblID.setVisible(false);
 		nameField.setVisible(true);
 		idField.setVisible(false);
+		btnSearch.setVisible(true);
 
 		setProjectSelectionModel();
 
@@ -592,6 +597,7 @@ public class GUI {
 		lblID.setVisible(false);
 		nameField.setVisible(false);
 		idField.setVisible(false);
+		btnSearch.setVisible(false);
 
 		setStatusSelectionModel();
 
@@ -633,7 +639,18 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
-
+	// TODO: Items are not properly synched
+	private void executeSearch() {
+		if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
+		String input = nameField.getText().toLowerCase();
+		for(Object[] item : data.getProjectData()){
+			String project = (String) item[1];
+			Pattern p = Pattern.compile(project.toLowerCase());
+			Matcher m = p.matcher(input);
+			if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
+		}
+	}
+	
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
@@ -646,35 +663,33 @@ public class GUI {
 		}
 	}
 
-	// from 4 if|else => 2
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
-					setCheckBoxes(table_selection, true);
+					setCheckBoxes(table_selection, true, lsm);
 				}
 				else if(e.getSource() == table_customers.getSelectionModel()){
-					setCheckBoxes(table_customers, false);
-					syncCheckBoxes();
+					setCheckBoxes(table_customers, false, lsm);
 				}
 				else if(e.getSource() == table_projects.getSelectionModel()){
-					setCheckBoxes(table_projects, false);
-					syncCheckBoxes();
+					setCheckBoxes(table_projects, false, lsm);
 				}
 				else{
-					setCheckBoxes(table_statuses, false);
-					syncCheckBoxes();
+					setCheckBoxes(table_statuses, false, lsm);
 				}
+				syncCheckBoxes();
 			}
 		}
 
-		private void setCheckBoxes(JTable table, Boolean checked) {
+		private void setCheckBoxes(JTable table, Boolean checked, ListSelectionModel lsm) {
 			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
 					table.getSelectedRowCount()); i++){
 				table.setValueAt(checked, i, 0);
 			}
+			lsm.clearSelection();
 		}
 	}
 
@@ -712,7 +727,6 @@ public class GUI {
 		}		
 	}
 
-	// Could be done shorter and more understandable
 	class TableModelListenerSelect implements TableModelListener{
 		public void tableChanged(TableModelEvent e){
 			if(e.getType()==TableModelEvent.UPDATE && 

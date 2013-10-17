@@ -80,7 +80,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void setValueAt(Object value, int row, int column){
-		if(data.size() >= row){
+		if(data.size() > row){
 			data.get(row).set(column, value);
 			fireTableCellUpdated(row, column);
 		}

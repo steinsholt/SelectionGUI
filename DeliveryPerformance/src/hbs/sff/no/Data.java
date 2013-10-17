@@ -10,8 +10,8 @@ import com.borland.dx.sql.dataset.Database;
 
 public class Data {
 	private List<Object[]> statusData;
-	private HashMap<Integer, String> customerData;
-	private List<String> projectData;
+	private List<Object[]> customerData;
+	private List<Object[]> projectData;
 
 	public enum Type{
 		STATUS, CUSTOMER, PROJECT
@@ -19,19 +19,19 @@ public class Data {
 
 	public Data(){
 		statusData = new ArrayList<Object[]>();
-		projectData = new ArrayList<String>();
-		customerData = new HashMap<Integer, String>();
+		projectData = new ArrayList<Object[]>();
+		customerData = new ArrayList<Object[]>();
 	}
 
 	public List<Object[]> getStatusData() {
 		return statusData;
 	}
 
-	public HashMap<Integer, String> getCustomerData() {
+	public List<Object[]> getCustomerData() {
 		return customerData;
 	}
 
-	public List<String> getProjectData() {
+	public List<Object[]> getProjectData() {
 		return projectData;
 	}
 
@@ -58,10 +58,23 @@ public class Data {
 		          Statement st = db.getJdbcConnection().createStatement();
 		          ResultSet rs = st.executeQuery("select top 1000 * from Status");		      
 		          while(rs.next()){
-		        	  String status = rs.getString("Status");
+		        	  String status = rs.getString("Status").trim();
 		        	  Object[] dataRow = {false, status};
 		        	  statusData.add(dataRow);
-		          }		          
+		          }	
+		          rs = st.executeQuery("select top 1000 * from Customer");
+		          while(rs.next()){
+		        	  String name = rs.getString("Customer name").trim();
+		        	  int ID = rs.getInt("Customer ID");
+		        	  Object[] dataRow = {false, ID, name};
+		        	  customerData.add(dataRow);
+		          }
+		          rs = st.executeQuery("select top 1000 * from Project");
+		          while(rs.next()){
+		        	  String name = rs.getString("Project").trim();
+		        	  Object[] dataRow = {false, name};
+		        	  projectData.add(dataRow);
+		          }
 		          st.close();
 		          rs.close();
 		       }catch(Exception ex){
