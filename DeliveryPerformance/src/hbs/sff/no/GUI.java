@@ -53,12 +53,12 @@ public class GUI {
 	private JTable table_projects;
 	private JScrollPane scrollPaneStatuses;
 	private JTable table_statuses;
-	private SelectionTableModel stm_display_cust;
-	private SelectionTableModel stm_display_proj;
-	private SelectionTableModel stm_display_stat;
-	private SelectionTableModel stm_select_cust;
-	private SelectionTableModel stm_select_proj;
-	private SelectionTableModel stm_select_stat;
+	private SelectionTableModel stmDisplayCust;
+	private SelectionTableModel stmDisplayProj;
+	private SelectionTableModel stmDisplayStat;
+	private SelectionTableModel stmSelectCust;
+	private SelectionTableModel stmSelectProj;
+	private SelectionTableModel stmSelectStat;
 	private NullSelectionModel nullSelectionModel;
 	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
@@ -182,34 +182,34 @@ public class GUI {
 	}
 
 	private void addTableStatuses() {
-		stm_display_stat = new SelectionTableModel(colNames_sStat);
-		stm_display_stat.addRow(Arrays.asList(true, "ALL"));
-		stm_display_stat.addTableModelListener(new TableModelListenerDisplay());
-		table_statuses = new JTable(stm_display_stat);
+		stmDisplayStat = new SelectionTableModel(colNames_sStat);
+		stmDisplayStat.addRow(Arrays.asList(true, "ALL"));
+		stmDisplayStat.addTableModelListener(new TableModelListenerDisplay());
+		table_statuses = new JTable(stmDisplayStat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 	}	
 
 	private void addTableProjects() {
-		stm_display_proj = new SelectionTableModel(colNames_sProj);
-		stm_display_proj.addRow(Arrays.asList(true, "ALL"));
-		stm_display_proj.addTableModelListener(new TableModelListenerDisplay());
-		table_projects = new JTable(stm_display_proj);
+		stmDisplayProj = new SelectionTableModel(colNames_sProj);
+		stmDisplayProj.addRow(Arrays.asList(true, "ALL"));
+		stmDisplayProj.addTableModelListener(new TableModelListenerDisplay());
+		table_projects = new JTable(stmDisplayProj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 	}
 
 	private void addTableCustomers() {
-		stm_display_cust = new SelectionTableModel(colNames_sComp);
-		stm_display_cust.addRow(Arrays.asList(true, "ALL", "ALL"));
-		stm_display_cust.addTableModelListener(new TableModelListenerDisplay());
-		table_customers = new JTable(stm_display_cust);
+		stmDisplayCust = new SelectionTableModel(colNames_sComp);
+		stmDisplayCust.addRow(Arrays.asList(true, "ALL", "ALL"));
+		stmDisplayCust.addTableModelListener(new TableModelListenerDisplay());
+		table_customers = new JTable(stmDisplayCust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
 	}
 
 	private void addTableSelection() {
-		table_selection = new JTable(stm_select_cust);
+		table_selection = new JTable(stmSelectCust);
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
@@ -220,30 +220,30 @@ public class GUI {
 	}
 
 	private void setCustomerSelectionModel(){
-		table_selection.setModel(stm_select_cust);
+		table_selection.setModel(stmSelectCust);
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 	}
 
 	private void setProjectSelectionModel(){
-		table_selection.setModel(stm_select_proj);
+		table_selection.setModel(stmSelectProj);
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 	}
 
 	private void setStatusSelectionModel(){
-		table_selection.setModel(stm_select_stat);
+		table_selection.setModel(stmSelectStat);
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 	}
 
 	private void createSelectionModels(){
-		stm_select_cust = new SelectionTableModel(colNames_sComp);
-		stm_select_cust.addTableModelListener(new TableModelListenerSelect());
-		stm_select_proj = new SelectionTableModel(colNames_sProj);
-		stm_select_proj.addTableModelListener(new TableModelListenerSelect());
-		stm_select_stat = new SelectionTableModel(colNames_sStat);
-		stm_select_stat.addTableModelListener(new TableModelListenerSelect());
+		stmSelectCust = new SelectionTableModel(colNames_sComp);
+		stmSelectCust.addTableModelListener(new TableModelListenerSelect());
+		stmSelectProj = new SelectionTableModel(colNames_sProj);
+		stmSelectProj.addTableModelListener(new TableModelListenerSelect());
+		stmSelectStat = new SelectionTableModel(colNames_sStat);
+		stmSelectStat.addTableModelListener(new TableModelListenerSelect());
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -358,20 +358,22 @@ public class GUI {
 	private void createErrorLabelTwo(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput_1 = new JLabel("Invalid input");
-		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 340, SpringLayout.WEST, panel);
 		sl_panel.putConstraint(SpringLayout.EAST, nameField, -6, SpringLayout.WEST, lblInvalidInput_1);
 		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 22, SpringLayout.SOUTH, lblInvalidInput);
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 340, SpringLayout.WEST, panel);
+		sl_panel.putConstraint(SpringLayout.EAST, lblInvalidInput_1, 0, SpringLayout.EAST, btnSearch);
 		lblInvalidInput_1.setForeground(Color.red);
 		lblInvalidInput_1.setFont(errorMessage);
 		lblInvalidInput_1.setVisible(false);
-		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
-				SpringLayout.EAST, lblInvalidInput_1);
 		panel_1.add(lblInvalidInput_1);
 	}
 
 	private void createErrorLabelOne(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput = new JLabel("Invalid input");
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput, 6, SpringLayout.EAST, idField);
+		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
+				SpringLayout.EAST, btnSearch);
 		lblInvalidInput.setForeground(Color.red);
 		lblInvalidInput.setFont(errorMessage);
 		lblInvalidInput.setVisible(false);
@@ -400,6 +402,7 @@ public class GUI {
 	private void createNameLabel(Font subheadline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblName = new JLabel("Customer Name");
+		sl_panel.putConstraint(SpringLayout.WEST, nameField, 38, SpringLayout.EAST, lblName);
 		sl_panel.putConstraint(SpringLayout.NORTH, lblName, 4, SpringLayout.NORTH, nameField);
 		sl_panel.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, toolBar);
 		lblName.setFont(subheadline);
@@ -422,7 +425,6 @@ public class GUI {
 	private void createNameField(JPanel panel_1, SpringLayout sl_panel_1) {
 		nameField = new JTextField();
 		sl_panel.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
-		sl_panel.putConstraint(SpringLayout.WEST, nameField, 148, SpringLayout.WEST, panel);
 		sl_panel.putConstraint(SpringLayout.SOUTH, nameField, -19, SpringLayout.NORTH, toolBar);
 		panel_1.add(nameField);
 		nameField.setColumns(10);
@@ -536,7 +538,7 @@ public class GUI {
 		nameField.setVisible(true);
 		idField.setVisible(true);
 		btnSearch.setVisible(true);
-		
+
 		setCustomerSelectionModel();
 
 		enableCustomerSelection();
@@ -558,7 +560,8 @@ public class GUI {
 		table_customers.setSelectionModel(partialSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
-		Active.setActiveTables(stm_display_cust, stm_select_cust);
+		nameField.setText("");
+		Active.setActiveTables(stmDisplayCust, stmSelectCust);
 	}
 
 	private void projectSelection(){
@@ -588,7 +591,8 @@ public class GUI {
 		table_projects.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
-		Active.setActiveTables(stm_display_proj, stm_select_proj);
+		nameField.setText("");
+		Active.setActiveTables(stmDisplayProj, stmSelectProj);
 	}
 
 	private void statusSelection(){
@@ -602,9 +606,9 @@ public class GUI {
 		setStatusSelectionModel();
 
 		// TODO: Move to smart place
-		if(stm_select_stat.getRowCount() == 0){
+		if(stmSelectStat.getRowCount() == 0){
 			for(Object[] item : data.getStatusData()){
-				stm_select_stat.addRow(Arrays.asList(item));
+				stmSelectStat.addRow(Arrays.asList(item));
 			}
 		}
 
@@ -624,7 +628,7 @@ public class GUI {
 		table_statuses.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
-		Active.setActiveTables(stm_display_stat, stm_select_stat);
+		Active.setActiveTables(stmDisplayStat, stmSelectStat);
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
@@ -639,18 +643,40 @@ public class GUI {
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
 	}
-	// TODO: Items are not properly synched
+
+	// TODO: Items are not properly synched. search for ID or name. 
 	private void executeSearch() {
 		if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
-		String input = nameField.getText().toLowerCase();
-		for(Object[] item : data.getProjectData()){
-			String project = (String) item[1];
-			Pattern p = Pattern.compile(project.toLowerCase());
-			Matcher m = p.matcher(input);
-			if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
+		String name = nameField.getText().toLowerCase();
+		String ID = idField.getText();
+		if(Active.getActiveDisplay()==stmDisplayProj){
+			for(Object[] item : data.getProjectData()){
+				String project = (String) item[1];
+				Pattern p = Pattern.compile(project.toLowerCase());
+				Matcher m = p.matcher(name);
+				if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
+			}
+		}
+		else{
+			for(Object[] item : data.getCustomerData()){
+				String customerName = (String) item[2];
+				String customerID = Integer.toString((int) item[1]);
+				Pattern p;
+				Matcher m;
+				if(ID.isEmpty()){
+					p = Pattern.compile(customerName.toLowerCase());
+					m = p.matcher(name);
+				}
+				else{
+					p = Pattern.compile(customerID);
+					m = p.matcher(ID);
+				}
+				 
+				if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+			}
 		}
 	}
-	
+
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
 			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
@@ -742,3 +768,5 @@ public class GUI {
 		}			
 	}
 }
+
+// TODO: Bug, can press remove all in deselected display window. Set disabled stm editable to false
