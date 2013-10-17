@@ -653,48 +653,40 @@ public class GUI {
 			boolean isAdjusting = e.getValueIsAdjusting();
 			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
-					setTrueCheckBoxes(table_selection);
+					setCheckBoxes(table_selection, true);
 				}
 				else if(e.getSource() == table_customers.getSelectionModel()){
-					setFalseCheckBoxes(table_customers);
+					setCheckBoxes(table_customers, false);
+					syncCheckBoxes();
 				}
 				else if(e.getSource() == table_projects.getSelectionModel()){
-					setFalseCheckBoxes(table_projects);
+					setCheckBoxes(table_projects, false);
+					syncCheckBoxes();
 				}
 				else{
-					setFalseCheckBoxes(table_statuses);
+					setCheckBoxes(table_statuses, false);
+					syncCheckBoxes();
 				}
 			}
 		}
-		private void setTrueCheckBoxes(JTable table) {
+
+		private void setCheckBoxes(JTable table, Boolean checked) {
 			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
 					table.getSelectedRowCount()); i++){
-				if((boolean) table.getValueAt(i, 0)){}
-				else table.setValueAt(true, i, 0);
-			}
-		}
-		private void setFalseCheckBoxes(JTable table){
-			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
-					table.getSelectedRowCount()); i++){
-				table.setValueAt(false, i, 0);
+				table.setValueAt(checked, i, 0);
 			}
 		}
 	}
 
-	// TODO: Sync selection and display
-
-	/*
-	 * Use column count to insert correct size rows
-	 * When there is a selection -> removeRow()
-	 * If there are no rows -> allSelected(column count)
-	 * If there is one row -> allSelected(column count)
-	 * If there is one row -> set row one edit disabled
-	 * If there are more than one row -> remove statement "all selected" -> add statement "remove all"
-	 * If there are more than one row -> set row one edit enabled
-	 * 
-	 * Only allow selection in selection table, only allow removal from display tables
-	 * If item is removed from display table, uncheck in selection table if still present there
-	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void syncCheckBoxes() {
+		List<List> complement = new ArrayList(Active.getActiveSelect().getRowData());
+		complement.removeAll(Active.getActiveDisplay().getRowData());
+		for(List l : complement){
+			int row = Active.getActiveSelect().getRowData().indexOf(l);
+			Active.getActiveSelect().setValueAt(false, row, 0);
+		}
+	}
 
 	class TableModelListenerDisplay implements TableModelListener{
 		public void tableChanged(TableModelEvent e) {
@@ -704,7 +696,8 @@ public class GUI {
 			}
 			if(e.getType()==TableModelEvent.DELETE && 
 					!stm.getRow(0).contains("Remove all")){
-				stm.removeRow(e.getFirstRow());
+				stm.setValueAt(false, e.getFirstRow(), 0);
+				syncCheckBoxes();
 			}
 			if(stm.getRowCount() < 2) setAllSelected(stm);
 			else someSelected(stm);
@@ -719,10 +712,11 @@ public class GUI {
 		}		
 	}
 
-	// Could be done shorter 
+	// Could be done shorter and more understandable
 	class TableModelListenerSelect implements TableModelListener{
 		public void tableChanged(TableModelEvent e){
-			if(e.getType()==TableModelEvent.UPDATE){
+			if(e.getType()==TableModelEvent.UPDATE && 
+					(Boolean)table_selection.getValueAt(e.getFirstRow(), 0)){
 				if(Active.getActiveDisplay().getColumnCount()==3){
 					Active.getActiveDisplay().addRow(Arrays.asList(true,
 							table_selection.getValueAt(e.getFirstRow(), 1),
@@ -732,15 +726,5 @@ public class GUI {
 						(true,table_selection.getValueAt(e.getFirstRow(), 1)));												
 			}
 		}			
-	}
-
-	@SuppressWarnings("rawtypes")
-	public void syncModels() {
-		// All items present in selection model and not present in display model should be unchecked
-		List<List> deselect = new ArrayList<List>(Active.getActiveSelect().getRowData());
-		deselect.removeAll(Active.getActiveDisplay().getRowData());
-		for(List l : deselect){
-
-		}
 	}
 }
