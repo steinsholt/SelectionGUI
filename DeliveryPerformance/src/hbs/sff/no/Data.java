@@ -3,7 +3,6 @@ package hbs.sff.no;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import com.borland.dx.sql.dataset.Database;
@@ -56,22 +55,22 @@ public class Data {
 
 		try{
 		          Statement st = db.getJdbcConnection().createStatement();
-		          ResultSet rs = st.executeQuery("select top 1000 * from Status");		      
+		          ResultSet rs = st.executeQuery("select status from Status");		      
 		          while(rs.next()){
-		        	  String status = rs.getString("Status").trim();
+		        	  String status = rs.getString("status").trim();
 		        	  Object[] dataRow = {false, status};
 		        	  statusData.add(dataRow);
 		          }	
-		          rs = st.executeQuery("select top 1000 * from Customer");
+		          rs = st.executeQuery("select customer_name, customer_id from Customer");
 		          while(rs.next()){
-		        	  String name = rs.getString("Customer name").trim();
-		        	  int ID = rs.getInt("Customer ID");
+		        	  String name = rs.getString("customer_name").trim();
+		        	  int ID = rs.getInt("customer_id");
 		        	  Object[] dataRow = {false, ID, name};
 		        	  customerData.add(dataRow);
 		          }
-		          rs = st.executeQuery("select top 1000 * from Project");
+		          rs = st.executeQuery("select project from Project");
 		          while(rs.next()){
-		        	  String name = rs.getString("Project").trim();
+		        	  String name = rs.getString("project").trim();
 		        	  Object[] dataRow = {false, name};
 		        	  projectData.add(dataRow);
 		          }

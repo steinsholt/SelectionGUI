@@ -310,6 +310,8 @@ public class GUI {
 		btnGenerateReport.setForeground(Color.blue);
 		btnGenerateReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				ExcelDocumentCreator creator = new ExcelDocumentCreator();
+				creator.createReport(stmDisplayCust.getRowData(), stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
 			}
 		});
 		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,
@@ -644,7 +646,8 @@ public class GUI {
 		return tc;
 	}
 
-	// TODO: Items are not properly synched. search for ID or name. 
+	// TODO: Items are not properly synched. 
+	// search for ID or name. 
 	private void executeSearch() {
 		if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
 		String name = nameField.getText().toLowerCase();
@@ -770,3 +773,4 @@ public class GUI {
 }
 
 // TODO: Bug, can press remove all in deselected display window. Set disabled stm editable to false
+// TODO: any changes to any table should be followed by a sync
