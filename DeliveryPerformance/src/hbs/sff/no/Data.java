@@ -11,6 +11,7 @@ public class Data {
 	private List<Object[]> statusData;
 	private List<Object[]> customerData;
 	private List<Object[]> projectData;
+	private static Database db;
 
 	public enum Type{
 		STATUS, CUSTOMER, PROJECT
@@ -20,6 +21,16 @@ public class Data {
 		statusData = new ArrayList<Object[]>();
 		projectData = new ArrayList<Object[]>();
 		customerData = new ArrayList<Object[]>();
+		
+		db = new Database();
+		db.setConnection(new com.borland.dx.sql.dataset.ConnectionDescriptor(
+				"jdbc:sqlserver://" + "quillback" + ":1433;" +   // server name
+						"DATABASENAME="     + "vendor",               // database name
+						"hbs",               // login
+						"hbs_sql",               // password
+						false, "com.microsoft.sqlserver.jdbc.SQLServerDriver"));
+
+		db.setUseTransactions(false);
 	}
 
 	public List<Object[]> getStatusData() {
@@ -39,47 +50,42 @@ public class Data {
 		else if(type==Type.CUSTOMER) return customerData.size();
 		else return projectData.size();
 	}
+	
+	public static Database getConnection(){
+		
+		db.openConnection();
+		return db;
+	}
 
-	public void LoadData(){
-		Database db = new Database();
-
-		db.setConnection(new com.borland.dx.sql.dataset.ConnectionDescriptor(
-		                               "jdbc:sqlserver://" + "quillback" + ":1433;" +   // server name
-		                               "DATABASENAME="     + "HBS",               // database name
-		                                                     "hbs",               // login
-		                                                     "hbs_sql",               // password
-		                               false, "com.microsoft.sqlserver.jdbc.SQLServerDriver"));
-
-		      db.setUseTransactions(false);
-		      db.openConnection();
+	public void loadData(){
+		getConnection();
 
 		try{
-		          Statement st = db.getJdbcConnection().createStatement();
-		          ResultSet rs = st.executeQuery("select status from Status");		      
-		          while(rs.next()){
-		        	  String status = rs.getString("status").trim();
-		        	  Object[] dataRow = {false, status};
-		        	  statusData.add(dataRow);
-		          }	
-		          rs = st.executeQuery("select customer_name, customer_id from Customer");
-		          while(rs.next()){
-		        	  String name = rs.getString("customer_name").trim();
-		        	  int ID = rs.getInt("customer_id");
-		        	  Object[] dataRow = {false, ID, name};
-		        	  customerData.add(dataRow);
-		          }
-		          rs = st.executeQuery("select project from Project");
-		          while(rs.next()){
-		        	  String name = rs.getString("project").trim();
-		        	  Object[] dataRow = {false, name};
-		        	  projectData.add(dataRow);
-		          }
-		          st.close();
-		          rs.close();
-		       }catch(Exception ex){
-		          ex.printStackTrace();
-		       }
-
+			Statement st = db.getJdbcConnection().createStatement();
+			ResultSet rs = st.executeQuery("select top 1000 tr_dtl_stname from Tr_dtl_status");		      
+			while(rs.next()){
+				String status = rs.getString("tr_dtl_stname").trim();
+				Object[] dataRow = {false, status};
+				statusData.add(dataRow);
+			}	
+			rs = st.executeQuery("select top 1000 assoc_id, assoc_name from Assoc");
+			while(rs.next()){
+				String name = rs.getString("assoc_name").trim();
+				int ID = rs.getInt("assoc_id");
+				Object[] dataRow = {false, ID, name};
+				customerData.add(dataRow);
+			}
+			rs = st.executeQuery("select top 1000 pr_name from Project");
+			while(rs.next()){
+				String name = rs.getString("pr_name").trim();
+				Object[] dataRow = {false, name};
+				projectData.add(dataRow);
+			}
+			st.close();
+			rs.close();
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		db.closeConnection();
 	}
 }
-

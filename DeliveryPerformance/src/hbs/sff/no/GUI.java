@@ -7,6 +7,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -161,7 +162,7 @@ public class GUI {
 		addTableSelection();		
 		addTableProjects();	
 		data = new Data();
-		data.LoadData();
+		data.loadData();
 
 		enableCustomerSelection();		
 	}
