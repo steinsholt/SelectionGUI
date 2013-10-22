@@ -1,14 +1,20 @@
 package hbs.sff.no;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -16,18 +22,24 @@ import com.borland.dx.sql.dataset.Database;
 
 public class ExcelDocumentCreator {
 	private XSSFWorkbook workbook;
-	private String file;
+	private String output;
+	private InputStream template;
 	private XSSFSheet sheetTable;
 	private XSSFSheet sheetProject;
 
 	public ExcelDocumentCreator(){
-		createWorkbook();
-		file = "C:/Users/hbs/Excel documents/test.xlsx";
+		try {
+			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
+			createWorkbook();
+			output = "C:/Users/hbs/Excel documents/test.xlsx";
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private void saveWorkbook() {
 		try {
-			FileOutputStream out = new FileOutputStream(new File(file));
+			FileOutputStream out = new FileOutputStream(new File(output));
 			workbook.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -36,9 +48,14 @@ public class ExcelDocumentCreator {
 	}
 
 	private void createWorkbook() {
-		workbook = new XSSFWorkbook();
-		sheetTable = workbook.createSheet("Table");
-		sheetProject = workbook.createSheet("Project");
+		try {
+			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
+			sheetTable = workbook.getSheet("Table");
+			sheetTable.setZoom(75);
+			sheetProject = workbook.getSheet("Project");
+		} catch (InvalidFormatException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -55,7 +72,7 @@ public class ExcelDocumentCreator {
 					+ " \"Client\" = customerList.assoc_name,"
 					+ " \"Client Ref.\" = Tr_hdr.assoc_ref,"
 					+ " \"Order Nr.\" = Tr_hdr.tr_no, "
-					+ " \"Order Registration Date\" = convert(varchar(20), Tr_hdr.reg_date, 113),"		   
+					+ " \"Order Registration Date\" = convert(varchar(20), Tr_hdr.reg_date, 103),"		   
 					+ " \"Item nr.\" = clientItemList.item_no,"
 					+ " \"Client Art. code\" = clientItemList.local_id,"
 					+ " \"Vendor nr.\" = clientItemList.vnd_no, "
@@ -65,11 +82,11 @@ public class ExcelDocumentCreator {
 					+ " \"Unit Price\" = clientItemList.price,"
 					+ " \"Total Price\" = clientItemList.qnt*clientItemList.price,"
 					+ " \"currency\" = Exchange.curr_name,"
-					+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 113),"
-					+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 113),"
-					+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 113)," 
-					+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 113),"
-					+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 113),"
+					+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 103),"
+					+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 103),"
+					+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 103)," 
+					+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 103),"
+					+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 103),"
 					+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname"
 					+ " from vendor.dbo.Tr_hdr," 
 					+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
@@ -115,8 +132,9 @@ public class ExcelDocumentCreator {
 			st.setQueryTimeout(15);
 			ResultSet rs = st.executeQuery(query.toString());
 			
+			
 			populateSheetTable(rs);
-			formatSheetColumns();
+			populateSheetProject();
 			
 			rs.close();
 			st.close();
@@ -127,7 +145,10 @@ public class ExcelDocumentCreator {
 		saveWorkbook();
 	}
 
-	private void formatSheetColumns() {
+	private void populateSheetProject() {
+		// TODO: Does not account for the currency exchange rates
+		int last = sheetTable.getLastRowNum() + 1;
+		sheetProject.getRow(5).getCell(1).setCellFormula("SUM(Table!$M$2:$M$" + last + ")");
 		
 	}
 
@@ -159,13 +180,21 @@ public class ExcelDocumentCreator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		// The auto size sets the width too wide
+//		for(int i = 0; i < 20; i++){
+//			sheetTable.autoSizeColumn(i);
+//		}
 	}
 
 	private void setStringValues(String value, Row row, int column) {
+		Cell cell = row.createCell(column);
 		if(value == null){
-			row.createCell(column).setCellValue("null");
+			cell.setCellValue("null");
 		}
-		else row.createCell(column).setCellValue(value);
+		else {
+			cell.setCellValue(value);
+		}
 	}
 	// TODO: Test if a null value of it or double causes trouble
+	// Item nr. is sometimes a string
 }
