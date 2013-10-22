@@ -41,6 +41,7 @@ public class ExcelDocumentCreator {
 		sheetProject = workbook.createSheet("Project");
 	}
 
+	@SuppressWarnings("rawtypes")
 	public void createReport(List<List> customerData, 
 			List<List> projectData, List<List> statusData){
 		
@@ -54,7 +55,7 @@ public class ExcelDocumentCreator {
 					+ " \"Client\" = customerList.assoc_name,"
 					+ " \"Client Ref.\" = Tr_hdr.assoc_ref,"
 					+ " \"Order Nr.\" = Tr_hdr.tr_no, "
-					+ " \"Order Registration Date\" = Tr_hdr.reg_date,"		   
+					+ " \"Order Registration Date\" = convert(varchar(20), Tr_hdr.reg_date, 113),"		   
 					+ " \"Item nr.\" = clientItemList.item_no,"
 					+ " \"Client Art. code\" = clientItemList.local_id,"
 					+ " \"Vendor nr.\" = clientItemList.vnd_no, "
@@ -64,11 +65,11 @@ public class ExcelDocumentCreator {
 					+ " \"Unit Price\" = clientItemList.price,"
 					+ " \"Total Price\" = clientItemList.qnt*clientItemList.price,"
 					+ " \"currency\" = Exchange.curr_name,"
-					+ " \"CDD\" = clientItemList.contract_date,"
-					+ " \"EDD\" = clientItemList.estimate_date,"
-					+ " \"RFI\" = clientItemList.rfi_date," 
-					+ " \"CCD\" = supplierItemList.contract_date,"
-					+ " \"ECD\" = supplierItemList.estimate_date,"
+					+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 113),"
+					+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 113),"
+					+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 113)," 
+					+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 113),"
+					+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 113),"
 					+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname"
 					+ " from vendor.dbo.Tr_hdr," 
 					+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
@@ -115,6 +116,7 @@ public class ExcelDocumentCreator {
 			ResultSet rs = st.executeQuery(query.toString());
 			
 			populateSheetTable(rs);
+			formatSheetColumns();
 			
 			rs.close();
 			st.close();
@@ -125,18 +127,21 @@ public class ExcelDocumentCreator {
 		saveWorkbook();
 	}
 
+	private void formatSheetColumns() {
+		
+	}
+
 	private void populateSheetTable(ResultSet rs) {
 		try {
 			while(rs.next()){
-				//TODO: fix date/time
 				Row row = sheetTable.createRow(rs.getRow());
 				row.createCell(0).setCellValue(rs.getString("Project"));
 				row.createCell(1).setCellValue(rs.getString("Client"));
 				row.createCell(2).setCellValue(rs.getString("Client Ref."));
 				row.createCell(3).setCellValue(rs.getInt("Order Nr."));
-//				row.createCell(4).setCellValue(rs.getDate("Order Registration Date"));
+				setStringValues(rs.getString("Order Registration Date"), row, 4);
 				row.createCell(5).setCellValue(rs.getString("Item nr."));
-//				row.createCell(6).setCellValue(rs.getString("Client Art. code"));
+				row.createCell(6).setCellValue(rs.getString("Client Art. code"));
 				row.createCell(7).setCellValue(rs.getInt("Vendor nr."));
 				row.createCell(8).setCellValue(rs.getString("Description"));
 				row.createCell(9).setCellValue(rs.getString("Supplier"));
@@ -144,15 +149,23 @@ public class ExcelDocumentCreator {
 				row.createCell(11).setCellValue(rs.getDouble("Unit Price"));
 				row.createCell(12).setCellValue(rs.getDouble("Total Price"));
 				row.createCell(13).setCellValue(rs.getString("currency"));
-//				row.createCell(14).setCellValue(rs.getDate("CDD"));
-//				row.createCell(15).setCellValue(rs.getDate("EDD"));
-//				row.createCell(16).setCellValue(rs.getDate("RFI"));
-//				row.createCell(17).setCellValue(rs.getDate("CCD"));
-//				row.createCell(18).setCellValue(rs.getDate("ECD"));
+				setStringValues(rs.getString("CDD"), row, 14);
+				setStringValues(rs.getString("EDD"), row, 15);
+				setStringValues(rs.getString("RFI"), row, 16);
+				setStringValues(rs.getString("CCD"), row, 17);
+				setStringValues(rs.getString("ECD"), row, 18);
 				row.createCell(19).setCellValue(rs.getString("Item Status"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}
+
+	private void setStringValues(String value, Row row, int column) {
+		if(value == null){
+			row.createCell(column).setCellValue("null");
+		}
+		else row.createCell(column).setCellValue(value);
+	}
+	// TODO: Test if a null value of it or double causes trouble
 }
