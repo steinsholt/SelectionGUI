@@ -97,12 +97,12 @@ public class SelectionTableModel extends AbstractTableModel {
 	public void setRemoveAll(){
 		if(columnNames.size()==3)data.add(0,Arrays.asList(false,"Remove all",""));
 		else data.add(0,Arrays.asList(false,"Remove all"));
-		data.remove(1);
+		if(data.size()>1)data.remove(1);
 	}
 
 	public void setTrueAll(){
 		if(columnNames.size()==3)data.add(0,Arrays.asList(true,"ALL",""));
 		else data.add(0,Arrays.asList(true,"ALL"));
-		data.remove(1);
+		if(data.size()>1)data.remove(1);
 	}
 }

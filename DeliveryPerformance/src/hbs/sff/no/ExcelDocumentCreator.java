@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
@@ -62,9 +63,12 @@ public class ExcelDocumentCreator {
 	public void createReport(List<List> customerData, 
 			List<List> projectData, List<List> statusData){
 		
-		customerData.remove(0);
-		projectData.remove(0);
-		statusData.remove(0);
+		List<List> temp_cust = new ArrayList<List>(customerData);
+		temp_cust.remove(0);
+		List<List> temp_proj = new ArrayList<List>(projectData);
+		temp_proj.remove(0);
+		List<List> temp_stat = new ArrayList<List>(statusData);
+		temp_stat.remove(0);
 		try {
 			Database db = Data.getConnection();
 			StringBuilder query = new StringBuilder(5000);
@@ -110,19 +114,19 @@ public class ExcelDocumentCreator {
 					+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status"
 					+ " and customerList.assoc_id in (";
 			query.append(basicStatement);
-			for(List l : customerData){
+			for(List l : temp_cust){
 				int id = Integer.parseInt((String) l.get(1));
 				query.append(id + ", ");
 			}
 			query.delete(query.length()-2, query.length());
 			query.append(") and Project.pr_name in (");
-			for(List l : projectData){
+			for(List l : temp_proj){
 				String name = (String) l.get(1);
 				query.append("'" + name + "', ");
 			}
 			query.delete(query.length()-2, query.length());
 			query.append(") and Tr_dtl_status.tr_dtl_stname in (");
-			for(List l : statusData){
+			for(List l : temp_stat){
 				String status = (String) l.get(1);
 				query.append("'" + status + "', ");
 			}
