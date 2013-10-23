@@ -116,14 +116,14 @@ public class GUI {
 		partialSelectionModel = new PartialSelectionModel();
 		partialSelectionModel.addListSelectionListener(new 
 				ListSelectionListenerImpl());
-		
+
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 		Font errorMessage = new Font("Serif", Font.PLAIN, 14);
 		JPanel panel_1 = createPanelOne(springLayout);
 		JPanel panel_2 = createPanelTwo(springLayout, panel_1);
 		sl_panel = new SpringLayout();
-		
+
 		sl_panel.putConstraint(SpringLayout.WEST, toolBar, 10, 
 				SpringLayout.WEST, panel);
 		sl_panel.putConstraint(SpringLayout.EAST, toolBar, 334, 
@@ -131,7 +131,7 @@ public class GUI {
 		panel_1.setLayout(sl_panel);
 		JLabel lblSelectCustomers = createSelectionLabel(headline, 
 				panel_1, sl_panel);
-		
+
 		createIdField(panel_1, sl_panel, lblSelectCustomers);
 		createNameField(panel_1, sl_panel);
 		createIdLabel(subheadline, panel_1, sl_panel);
@@ -144,7 +144,7 @@ public class GUI {
 		panel_2.setLayout(sl_panel_2);
 		JLabel lblSelected = createSelectedHeadline(headline, panel_2,
 				sl_panel_2);
-		
+
 		createExitButton(panel_2);
 		createHelpButton(panel_2, sl_panel_2, lblSelected);
 		createReportButton(panel_2, sl_panel_2);				
@@ -152,7 +152,7 @@ public class GUI {
 		addScrollPane(panel_1, sl_panel);		
 		addScrollPaneTwo(panel_2, sl_panel_2);		
 		addScrollPaneThree(panel_2, sl_panel_2);	
-		
+
 		createSelectionModels();
 		addTables();
 		data = new Data();
@@ -178,25 +178,25 @@ public class GUI {
 	private void addTables(){
 		stmDisplayStat = new SelectionTableModel(colNames_sStat);
 		stmDisplayStat.setTrueAll();
-		stmDisplayStat.addTableModelListener(new TableModelListenerDisplay());
+		//		stmDisplayStat.addTableModelListener(new TableModelListenerDisplay());
 		table_statuses = new JTable(stmDisplayStat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
-		
+
 		stmDisplayProj = new SelectionTableModel(colNames_sProj);
 		stmDisplayProj.setTrueAll();
-		stmDisplayProj.addTableModelListener(new TableModelListenerDisplay());
+		//		stmDisplayProj.addTableModelListener(new TableModelListenerDisplay());
 		table_projects = new JTable(stmDisplayProj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
-		
+
 		stmDisplayCust = new SelectionTableModel(colNames_sComp);
 		stmDisplayCust.setTrueAll();
-		stmDisplayCust.addTableModelListener(new TableModelListenerDisplay());
+		//		stmDisplayCust.addTableModelListener(new TableModelListenerDisplay());
 		table_customers = new JTable(stmDisplayCust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
-		
+
 		table_selection = new JTable(stmSelectCust);
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
@@ -206,7 +206,7 @@ public class GUI {
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);	
 	}
-	
+
 	private void createSelectionModels(){
 		stmSelectCust = new SelectionTableModel(colNames_sComp);
 		stmSelectCust.addTableModelListener(new TableModelListenerSelect());
@@ -526,7 +526,7 @@ public class GUI {
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
 		Active.setActiveTables(stmDisplayCust, stmSelectCust);
-		
+
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
@@ -559,7 +559,7 @@ public class GUI {
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
 		Active.setActiveTables(stmDisplayProj, stmSelectProj);
-		
+
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
 		bStatuses.setSelected(false);	
@@ -594,7 +594,7 @@ public class GUI {
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
 		Active.setActiveTables(stmDisplayStat, stmSelectStat);
-		
+
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(true);	
@@ -613,8 +613,7 @@ public class GUI {
 		return tc;
 	}
 
-	// TODO: Items are not properly synched. 
-	// search for ID or name. 
+	// TODO: search for ID or name. 
 	private void executeSearch() {
 		if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
 		String name = nameField.getText().toLowerCase();
@@ -641,7 +640,6 @@ public class GUI {
 					p = Pattern.compile(customerID);
 					m = p.matcher(ID);
 				}
-				 
 				if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
 			}
 		}
@@ -649,13 +647,13 @@ public class GUI {
 
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
-			for(int x = 0, y = table_selection.getRowCount(); x < y; x++){
+			for(int x = 0; x < table_selection.getRowCount(); x++){
 				if(!(boolean) table_selection.getValueAt(x, 0)){
 					table_selection.setValueAt(true, x, 0);
 					((SelectionTableModel)table_selection.getModel()).
 					fireTableRowsUpdated(x, x);
 				}
-			}	
+			}
 		}
 	}
 
@@ -668,13 +666,16 @@ public class GUI {
 					setCheckBoxes(table_selection, true, lsm);
 				}
 				else if(e.getSource() == table_customers.getSelectionModel()){
-					setCheckBoxes(table_customers, false, lsm);
+					((SelectionTableModel)table_customers.getModel()).
+					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
 				}
 				else if(e.getSource() == table_projects.getSelectionModel()){
-					setCheckBoxes(table_projects, false, lsm);
+					((SelectionTableModel)table_projects.getModel()).
+					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
 				}
 				else{
-					setCheckBoxes(table_statuses, false, lsm);
+					((SelectionTableModel)table_statuses.getModel()).
+					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
 				}
 				syncCheckBoxes();
 			}
@@ -688,6 +689,7 @@ public class GUI {
 			lsm.clearSelection();
 		}
 	}
+	
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void syncCheckBoxes() {
@@ -697,30 +699,14 @@ public class GUI {
 			int row = Active.getActiveSelect().getRowData().indexOf(l);
 			Active.getActiveSelect().setValueAt(false, row, 0);
 		}
-	}
-
-	class TableModelListenerDisplay implements TableModelListener{
-		public void tableChanged(TableModelEvent e) {
-			SelectionTableModel stm = (SelectionTableModel)e.getSource();
-			if(e.getType()==TableModelEvent.UPDATE){
-				stm.removeRow(e.getFirstRow());
-			}
-			if(e.getType()==TableModelEvent.DELETE && 
-					!stm.getRow(0).contains("Remove all")){
-				stm.setValueAt(false, e.getFirstRow(), 0);
-				syncCheckBoxes();
-			}
-			if(stm.getRowCount() < 2) setAllSelected(stm);
-			else someSelected(stm);
-		}
-		private void someSelected(SelectionTableModel stm) {
-			Active.getActiveDisplay().setEditable(true);
-			stm.setRemoveAll();
-		}
-		private void setAllSelected(SelectionTableModel stm) {
+		if(Active.getActiveDisplay().getRowCount() < 2){
+			Active.getActiveDisplay().setTrueAll();
 			Active.getActiveDisplay().setEditable(false);
-			stm.setTrueAll();
-		}		
+		}
+		else{
+			Active.getActiveDisplay().setRemoveAll();
+			Active.getActiveDisplay().setEditable(true);
+		}
 	}
 
 	class TableModelListenerSelect implements TableModelListener{
@@ -733,7 +719,9 @@ public class GUI {
 							table_selection.getValueAt(e.getFirstRow(), 2)));
 				}
 				else Active.getActiveDisplay().addRow(Arrays.asList
-						(true,table_selection.getValueAt(e.getFirstRow(), 1)));												
+						(true,table_selection.getValueAt(e.getFirstRow(), 1)));	
+				Active.getActiveDisplay().setRemoveAll();
+				Active.getActiveDisplay().setEditable(true);
 			}
 		}			
 	}
@@ -741,3 +729,4 @@ public class GUI {
 
 // TODO: Bug, can press remove all in deselected display window. Set disabled stm editable to false
 // TODO: any changes to any table should be followed by a sync
+// TODO: deselect "select all" header when entire list is not selected

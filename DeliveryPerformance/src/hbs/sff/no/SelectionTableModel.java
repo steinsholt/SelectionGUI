@@ -32,9 +32,18 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void removeRow(int row){
-		if(data.size()>1){
+		if(data.size()>0){
 			data.remove(row);
 			fireTableRowsDeleted(row, row);
+		}
+	}
+	
+	public void removeRowInterval(int start, int end){
+		if(data.get(start).contains("Remove all")){
+			end = data.size();
+		}
+		for(int i = start; i <= end; i++){
+			removeRow(start);
 		}
 	}
 
