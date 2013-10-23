@@ -130,8 +130,7 @@ public class GUI {
 		sl_panel.putConstraint(SpringLayout.EAST, toolBar, 334, SpringLayout.WEST, panel);
 		panel_1.setLayout(sl_panel);
 
-		JLabel lblSelectCustomers = createSelectionLabel(headline, panel_1,
-				sl_panel);
+		JLabel lblSelectCustomers = createSelectionLabel(headline, panel_1, sl_panel);
 		createIdField(panel_1, sl_panel, lblSelectCustomers);
 		createNameField(panel_1, sl_panel);
 		createIdLabel(subheadline, panel_1, sl_panel);
@@ -156,10 +155,8 @@ public class GUI {
 		addScrollPaneTwo(panel_2, sl_panel_2);		
 		addScrollPaneThree(panel_2, sl_panel_2);	
 		createSelectionModels();
-		addTableStatuses();		
-		addTableCustomers();				
-		addTableSelection();		
-		addTableProjects();	
+		
+		addTables();
 		data = new Data();
 		data.loadData();
 
@@ -181,34 +178,28 @@ public class GUI {
 		colNames_sStat.add("Status");
 	}
 
-	private void addTableStatuses() {
+	private void addTables(){
 		stmDisplayStat = new SelectionTableModel(colNames_sStat);
 		stmDisplayStat.addRow(Arrays.asList(true, "ALL"));
 		stmDisplayStat.addTableModelListener(new TableModelListenerDisplay());
 		table_statuses = new JTable(stmDisplayStat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
-	}	
-
-	private void addTableProjects() {
+		
 		stmDisplayProj = new SelectionTableModel(colNames_sProj);
 		stmDisplayProj.addRow(Arrays.asList(true, "ALL"));
 		stmDisplayProj.addTableModelListener(new TableModelListenerDisplay());
 		table_projects = new JTable(stmDisplayProj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
-	}
-
-	private void addTableCustomers() {
+		
 		stmDisplayCust = new SelectionTableModel(colNames_sComp);
 		stmDisplayCust.addRow(Arrays.asList(true, "ALL", "ALL"));
 		stmDisplayCust.addTableModelListener(new TableModelListenerDisplay());
 		table_customers = new JTable(stmDisplayCust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
-	}
-
-	private void addTableSelection() {
+		
 		table_selection = new JTable(stmSelectCust);
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
@@ -216,9 +207,9 @@ public class GUI {
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
-		scrollPane.getViewport().setBackground(Color.white);		
+		scrollPane.getViewport().setBackground(Color.white);	
 	}
-
+	
 	private void setCustomerSelectionModel(){
 		table_selection.setModel(stmSelectCust);
 		TableColumn tc = configureTableColumns(table_selection);		
