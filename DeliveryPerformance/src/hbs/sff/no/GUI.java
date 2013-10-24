@@ -202,7 +202,6 @@ public class GUI {
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
-		// TODO: Add action listener to the header?
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
@@ -535,10 +534,7 @@ public class GUI {
 		stmDisplayProj.setEditable(false);
 		stmDisplayStat.setEditable(false);
 		synchronizeHeader();
-
-		// TODO: Select all stays checked when switching tabs
 	}
-
 
 	private void projectSelection(){
 		lblSelection.setText("Select Projects");

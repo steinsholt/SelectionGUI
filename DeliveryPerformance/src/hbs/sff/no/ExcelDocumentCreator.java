@@ -40,6 +40,7 @@ public class ExcelDocumentCreator {
 
 	private void saveWorkbook() {
 		try {
+			workbook.setActiveSheet(0);
 			FileOutputStream out = new FileOutputStream(new File(output));
 			workbook.write(out);
 			out.close();
@@ -52,7 +53,7 @@ public class ExcelDocumentCreator {
 		try {
 			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
 			sheetTable = workbook.getSheet("Table");
-			sheetTable.setZoom(75);
+			sheetTable.setZoom(70);
 			sheetProject = workbook.getSheet("Project");
 		} catch (InvalidFormatException | IOException e) {
 			e.printStackTrace();
@@ -62,13 +63,21 @@ public class ExcelDocumentCreator {
 	@SuppressWarnings("rawtypes")
 	public void createReport(List<List> customerData, 
 			List<List> projectData, List<List> statusData){
-		
+
+		boolean allCust = false;
+		boolean allProj = false;
+		boolean allStat = false;
+
+		if(customerData.get(0).contains("ALL")) allCust = true;
+		if(projectData.get(0).contains("ALL")) allProj = true;
+		if(statusData.get(0).contains("ALL")) allStat = true;
+
 		List<List> temp_cust = new ArrayList<List>(customerData);
-		temp_cust.remove(0);
+		if(!allCust)temp_cust.remove(0);
 		List<List> temp_proj = new ArrayList<List>(projectData);
-		temp_proj.remove(0);
+		if(!allProj)temp_proj.remove(0);
 		List<List> temp_stat = new ArrayList<List>(statusData);
-		temp_stat.remove(0);
+		if(!allStat)temp_stat.remove(0);
 		try {
 			Database db = Data.getConnection();
 			StringBuilder query = new StringBuilder(5000);
@@ -111,35 +120,43 @@ public class ExcelDocumentCreator {
 					+ " and Tr_hdr.active_id = Project.project_id"
 					+ " and clientItemList.suppl_id      = supplierList.assoc_id" 
 					+ " and clientItemList.currency_id   = Exchange.currency_id"
-					+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status"
-					+ " and customerList.assoc_id in (";
+					+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status";
 			query.append(basicStatement);
-			for(List l : temp_cust){
-				int id = Integer.parseInt((String) l.get(1));
-				query.append(id + ", ");
+			if(!allCust){
+				query.append(" and customerList.assoc_id in (");
+				for(List l : temp_cust){
+					int id = Integer.parseInt((String) l.get(1));
+					query.append(id + ", ");
+				}
+				query.delete(query.length()-2, query.length());
+				query.append(")");
 			}
-			query.delete(query.length()-2, query.length());
-			query.append(") and Project.pr_name in (");
-			for(List l : temp_proj){
-				String name = (String) l.get(1);
-				query.append("'" + name + "', ");
+			if(!allProj){
+				query.append(" and Project.pr_name in (");
+				for(List l : temp_proj){
+					String name = (String) l.get(1);
+					query.append("'" + name + "', ");
+				}
+				query.delete(query.length()-2, query.length());
+				query.append(")");
 			}
-			query.delete(query.length()-2, query.length());
-			query.append(") and Tr_dtl_status.tr_dtl_stname in (");
-			for(List l : temp_stat){
-				String status = (String) l.get(1);
-				query.append("'" + status + "', ");
+			if(!allStat){
+				query.append(" and Tr_dtl_status.tr_dtl_stname in (");
+				for(List l : temp_stat){
+					String status = (String) l.get(1);
+					query.append("'" + status + "', ");
+				}
+				query.delete(query.length()-2, query.length());
+				query.append(")");
 			}
-			query.delete(query.length()-2, query.length());
-			query.append(")");
 			Statement st = db.getJdbcConnection().createStatement();
 			st.setQueryTimeout(15);
 			ResultSet rs = st.executeQuery(query.toString());
-			
-			
+
+
 			populateSheetTable(rs);
 			populateSheetProject();
-			
+
 			rs.close();
 			st.close();
 			db.closeConnection();
@@ -153,7 +170,7 @@ public class ExcelDocumentCreator {
 		// TODO: Does not account for the currency exchange rates
 		int last = sheetTable.getLastRowNum() + 1;
 		sheetProject.getRow(5).getCell(1).setCellFormula("SUM(Table!$M$2:$M$" + last + ")");
-		
+
 	}
 
 	private void populateSheetTable(ResultSet rs) {
@@ -164,7 +181,7 @@ public class ExcelDocumentCreator {
 				row.createCell(1).setCellValue(rs.getString("Client"));
 				row.createCell(2).setCellValue(rs.getString("Client Ref."));
 				row.createCell(3).setCellValue(rs.getInt("Order Nr."));
-				setStringValues(rs.getString("Order Registration Date"), row, 4);
+				setDateValues(rs.getString("Order Registration Date"), row, 4);
 				row.createCell(5).setCellValue(rs.getString("Item nr."));
 				row.createCell(6).setCellValue(rs.getString("Client Art. code"));
 				row.createCell(7).setCellValue(rs.getInt("Vendor nr."));
@@ -174,23 +191,22 @@ public class ExcelDocumentCreator {
 				row.createCell(11).setCellValue(rs.getDouble("Unit Price"));
 				row.createCell(12).setCellValue(rs.getDouble("Total Price"));
 				row.createCell(13).setCellValue(rs.getString("currency"));
-				setStringValues(rs.getString("CDD"), row, 14);
-				setStringValues(rs.getString("EDD"), row, 15);
-				setStringValues(rs.getString("RFI"), row, 16);
-				setStringValues(rs.getString("CCD"), row, 17);
-				setStringValues(rs.getString("ECD"), row, 18);
+				setDateValues(rs.getString("CDD"), row, 14);
+				setDateValues(rs.getString("EDD"), row, 15);
+				setDateValues(rs.getString("RFI"), row, 16);
+				setDateValues(rs.getString("CCD"), row, 17);
+				setDateValues(rs.getString("ECD"), row, 18);
 				row.createCell(19).setCellValue(rs.getString("Item Status"));
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		// The auto size sets the width too wide
 //		for(int i = 0; i < 20; i++){
 //			sheetTable.autoSizeColumn(i);
 //		}
 	}
 
-	private void setStringValues(String value, Row row, int column) {
+	private void setDateValues(String value, Row row, int column) {
 		Cell cell = row.createCell(column);
 		if(value == null){
 			cell.setCellValue("null");
@@ -199,6 +215,7 @@ public class ExcelDocumentCreator {
 			cell.setCellValue(value);
 		}
 	}
-	// TODO: Test if a null value of it or double causes trouble
+	// TODO: Test if a null value int or double causes trouble
 	// Item nr. is sometimes a string
+	// implement "ALL" as select *
 }
