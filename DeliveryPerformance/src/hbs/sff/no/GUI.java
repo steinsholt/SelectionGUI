@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -178,21 +179,18 @@ public class GUI {
 	private void addTables(){
 		stmDisplayStat = new SelectionTableModel(colNames_sStat);
 		stmDisplayStat.setTrueAll();
-		//		stmDisplayStat.addTableModelListener(new TableModelListenerDisplay());
 		table_statuses = new JTable(stmDisplayStat);
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 
 		stmDisplayProj = new SelectionTableModel(colNames_sProj);
 		stmDisplayProj.setTrueAll();
-		//		stmDisplayProj.addTableModelListener(new TableModelListenerDisplay());
 		table_projects = new JTable(stmDisplayProj);
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 
 		stmDisplayCust = new SelectionTableModel(colNames_sComp);
 		stmDisplayCust.setTrueAll();
-		//		stmDisplayCust.addTableModelListener(new TableModelListenerDisplay());
 		table_customers = new JTable(stmDisplayCust);
 		configureTableColumns(table_customers);
 		scrollPaneCustomers.setViewportView(table_customers);
@@ -201,6 +199,7 @@ public class GUI {
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
+		// TODO: Add action listener to the header?
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(table_selection);
@@ -530,6 +529,8 @@ public class GUI {
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
+		stmDisplayProj.setEditable(false);
+		stmDisplayStat.setEditable(false);
 
 		// TODO: Select all stays checked when switching tabs
 	}
@@ -563,6 +564,8 @@ public class GUI {
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
 		bStatuses.setSelected(false);	
+		stmDisplayCust.setEditable(false);
+		stmDisplayStat.setEditable(false);
 	}
 
 	private void statusSelection(){
@@ -597,7 +600,9 @@ public class GUI {
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
-		bStatuses.setSelected(true);	
+		bStatuses.setSelected(true);
+		stmDisplayCust.setEditable(false);
+		stmDisplayProj.setEditable(false);
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
@@ -647,16 +652,20 @@ public class GUI {
 
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
-			for(int x = 0; x < table_selection.getRowCount(); x++){
-				if(!(boolean) table_selection.getValueAt(x, 0)){
-					table_selection.setValueAt(true, x, 0);
-					((SelectionTableModel)table_selection.getModel()).
-					fireTableRowsUpdated(x, x);
+			if(e.getStateChange() == ItemEvent.SELECTED
+					&& (e.getSource() instanceof AbstractButton)){
+				for(int x = 0; x < table_selection.getRowCount(); x++){
+					if(!(boolean) table_selection.getValueAt(x, 0)){
+						table_selection.setValueAt(true, x, 0);
+						((SelectionTableModel)table_selection.getModel()).
+						fireTableRowsUpdated(x, x);
+					}
 				}
 			}
 		}
 	}
 
+	// TODO: header selection is set to false but header is not repainted
 	class ListSelectionListenerImpl implements ListSelectionListener{
 		public void valueChanged(ListSelectionEvent e) {			
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
@@ -668,14 +677,22 @@ public class GUI {
 				else if(e.getSource() == table_customers.getSelectionModel()){
 					((SelectionTableModel)table_customers.getModel()).
 					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
+					System.out.println(header.isSelected());
+					header.setSelected(false);
+					System.out.println(header.isSelected());
+					header.repaint();
 				}
 				else if(e.getSource() == table_projects.getSelectionModel()){
 					((SelectionTableModel)table_projects.getModel()).
 					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
+					header.setSelected(false);
+					header.repaint();
 				}
 				else{
 					((SelectionTableModel)table_statuses.getModel()).
 					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
+					header.setSelected(false);
+					header.repaint();
 				}
 				syncCheckBoxes();
 			}
@@ -689,7 +706,7 @@ public class GUI {
 			lsm.clearSelection();
 		}
 	}
-	
+
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void syncCheckBoxes() {
@@ -728,5 +745,3 @@ public class GUI {
 }
 
 // TODO: Bug, can press remove all in deselected display window. Set disabled stm editable to false
-// TODO: any changes to any table should be followed by a sync
-// TODO: deselect "select all" header when entire list is not selected
