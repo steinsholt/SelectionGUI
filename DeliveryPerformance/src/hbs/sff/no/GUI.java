@@ -33,7 +33,6 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableRowSorter;
 
 public class GUI {
 
@@ -549,8 +548,6 @@ public class GUI {
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(false);
-		stmDisplayProj.setEditable(false);
-		stmDisplayStat.setEditable(false);
 		synchronizeHeader();
 	}
 
@@ -582,8 +579,6 @@ public class GUI {
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
 		bStatuses.setSelected(false);	
-		stmDisplayCust.setEditable(false);
-		stmDisplayStat.setEditable(false);
 		synchronizeHeader();
 	}
 
@@ -613,8 +608,6 @@ public class GUI {
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
 		bStatuses.setSelected(true);
-		stmDisplayCust.setEditable(false);
-		stmDisplayProj.setEditable(false);
 		synchronizeHeader();
 	}
 
@@ -727,11 +720,9 @@ public class GUI {
 		}
 		if(Active.getActiveDisplay().getRowCount() < 2){
 			Active.getActiveDisplay().setTrueAll();
-			Active.getActiveDisplay().setEditable(false);
 		}
 		else{
 			Active.getActiveDisplay().setRemoveAll();
-			Active.getActiveDisplay().setEditable(true);
 		}
 		synchronizeHeader();
 	}
@@ -763,7 +754,6 @@ public class GUI {
 				else Active.getActiveDisplay().addRow(Arrays.asList
 						(true,table_selection.getValueAt(e.getFirstRow(), 1)));	
 				Active.getActiveDisplay().setRemoveAll();
-				Active.getActiveDisplay().setEditable(true);
 			}
 		}			
 	}

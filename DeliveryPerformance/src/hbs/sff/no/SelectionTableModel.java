@@ -11,7 +11,6 @@ public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private List<String> columnNames = new ArrayList<String>();
 	private List<List> data = new ArrayList<List>();
-	private Boolean editable = false;
 
 	public SelectionTableModel(List<String> columnNames){
 		this.columnNames = columnNames;
@@ -71,11 +70,6 @@ public class SelectionTableModel extends AbstractTableModel {
 		this.columnNames = columnNames;
 	}
 
-	public boolean isCellEditable(int row, int column) {
-		if(editable){return (row == 0 && column == 0);}
-		else return (false);
-	}
-
 	public int getColumnCount() {
 		return columnNames.size();
 	}
@@ -93,10 +87,6 @@ public class SelectionTableModel extends AbstractTableModel {
 			data.get(row).set(column, value);
 			fireTableCellUpdated(row, column);
 		}
-	}
-
-	public void setEditable(Boolean editable) {
-		this.editable = editable;
 	}
 
 	public List getRow(int i) {
