@@ -78,6 +78,7 @@ public class ExcelDocumentCreator {
 		if(!allProj)temp_proj.remove(0);
 		List<List> temp_stat = new ArrayList<List>(statusData);
 		if(!allStat)temp_stat.remove(0);
+		
 		try {
 			Database db = Data.getConnection();
 			StringBuilder query = new StringBuilder(5000);
@@ -177,27 +178,9 @@ public class ExcelDocumentCreator {
 		try {
 			while(rs.next()){
 				Row row = sheetTable.createRow(rs.getRow());
-				row.createCell(0).setCellValue(rs.getString("Project"));
-				row.createCell(1).setCellValue(rs.getString("Client"));
-				setIntValues(rs.getString("Client Ref."), row, 2);
-//			    isObject(rs.getObject("Client ref."), row, 2);
-				row.createCell(3).setCellValue(rs.getInt("Order Nr."));
-				setDateValues(rs.getString("Order Registration Date"), row, 4);
-				setIntValues(rs.getString("Item nr."), row, 5);
-				row.createCell(6).setCellValue(rs.getString("Client Art. code"));
-				row.createCell(7).setCellValue(rs.getInt("Vendor nr."));
-				row.createCell(8).setCellValue(rs.getString("Description"));
-				row.createCell(9).setCellValue(rs.getString("Supplier"));
-				row.createCell(10).setCellValue(rs.getDouble("QTY"));
-				row.createCell(11).setCellValue(rs.getDouble("Unit Price"));
-				row.createCell(12).setCellValue(rs.getDouble("Total Price"));
-				row.createCell(13).setCellValue(rs.getString("currency"));
-				setDateValues(rs.getString("CDD"), row, 14);
-				setDateValues(rs.getString("EDD"), row, 15);
-				setDateValues(rs.getString("RFI"), row, 16);
-				setDateValues(rs.getString("CCD"), row, 17);
-				setDateValues(rs.getString("ECD"), row, 18);
-				row.createCell(19).setCellValue(rs.getString("Item Status"));
+				for(int column = 0; column < rs.getMetaData().getColumnCount(); column++){
+					insertValue(rs, row, column);					
+				}
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -206,30 +189,18 @@ public class ExcelDocumentCreator {
 		//			sheetTable.autoSizeColumn(i);
 		//		}
 	}
-	
-//	private void isObject(Object value, Row row, int column){
-//		boolean instance = value instanceof String;
-//		System.out.println(instance);
-//	}
-	
-	// TODO: Somehow never able to parse integers
-	private void setIntValues(String value, Row row, int column){
+
+	private void insertValue(ResultSet rs, Row row, int column){
 		Cell cell = row.createCell(column);
 		try{
-			cell.setCellValue(Integer.parseInt(value));
-
-		}catch(NumberFormatException e){
-			cell.setCellValue(value);
-		}
-	}
-
-	private void setDateValues(String value, Row row, int column){
-		Cell cell = row.createCell(column);
-		if(value == null){
-			cell.setCellValue("null");
-		}
-		else {
-			cell.setCellValue(value);
+			cell.setCellValue(rs.getInt(column + 1));
+		}catch(NumberFormatException | SQLException e){
+			try {
+				String s = rs.getString(column + 1) == null ? "null" : rs.getString(column + 1);
+				cell.setCellValue(s);
+			} catch (SQLException ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 }
