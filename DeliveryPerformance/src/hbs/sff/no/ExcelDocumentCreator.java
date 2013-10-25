@@ -150,7 +150,7 @@ public class ExcelDocumentCreator {
 				query.append(")");
 			}
 			Statement st = db.getJdbcConnection().createStatement();
-			st.setQueryTimeout(15);
+			st.setQueryTimeout(60);
 			ResultSet rs = st.executeQuery(query.toString());
 
 
@@ -179,10 +179,11 @@ public class ExcelDocumentCreator {
 				Row row = sheetTable.createRow(rs.getRow());
 				row.createCell(0).setCellValue(rs.getString("Project"));
 				row.createCell(1).setCellValue(rs.getString("Client"));
-				row.createCell(2).setCellValue(rs.getString("Client Ref."));
+				setIntValues(rs.getString("Client Ref."), row, 2);
+//			    isObject(rs.getObject("Client ref."), row, 2);
 				row.createCell(3).setCellValue(rs.getInt("Order Nr."));
 				setDateValues(rs.getString("Order Registration Date"), row, 4);
-				row.createCell(5).setCellValue(rs.getString("Item nr."));
+				setIntValues(rs.getString("Item nr."), row, 5);
 				row.createCell(6).setCellValue(rs.getString("Client Art. code"));
 				row.createCell(7).setCellValue(rs.getInt("Vendor nr."));
 				row.createCell(8).setCellValue(rs.getString("Description"));
@@ -201,12 +202,28 @@ public class ExcelDocumentCreator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-//		for(int i = 0; i < 20; i++){
-//			sheetTable.autoSizeColumn(i);
-//		}
+		//		for(int i = 0; i < 20; i++){
+		//			sheetTable.autoSizeColumn(i);
+		//		}
+	}
+	
+//	private void isObject(Object value, Row row, int column){
+//		boolean instance = value instanceof String;
+//		System.out.println(instance);
+//	}
+	
+	// TODO: Somehow never able to parse integers
+	private void setIntValues(String value, Row row, int column){
+		Cell cell = row.createCell(column);
+		try{
+			cell.setCellValue(Integer.parseInt(value));
+
+		}catch(NumberFormatException e){
+			cell.setCellValue(value);
+		}
 	}
 
-	private void setDateValues(String value, Row row, int column) {
+	private void setDateValues(String value, Row row, int column){
 		Cell cell = row.createCell(column);
 		if(value == null){
 			cell.setCellValue("null");
@@ -215,7 +232,4 @@ public class ExcelDocumentCreator {
 			cell.setCellValue(value);
 		}
 	}
-	// TODO: Test if a null value int or double causes trouble
-	// Item nr. is sometimes a string
-	// implement "ALL" as select *
 }

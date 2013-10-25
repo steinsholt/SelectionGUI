@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -88,7 +89,7 @@ public class GUI {
 			return select;
 		}
 
-		public static void setActiveTables(SelectionTableModel dis, SelectionTableModel sel){
+		public static void setActiveTableModels(SelectionTableModel dis, SelectionTableModel sel){
 			display = dis;
 			select = sel;
 		}
@@ -161,7 +162,7 @@ public class GUI {
 		for(Object[] item : data.getStatusData()){
 			stmSelectStat.addRow(Arrays.asList(item));
 		}
-		customerSelection();		
+		enableCustomerSelection();		
 	}
 
 	private void addColumnNames() {
@@ -180,6 +181,15 @@ public class GUI {
 	}
 
 	private void addTables(){
+		table_selection = new JTable(stmSelectCust);
+		table_selection.getSelectionModel().
+		addListSelectionListener(new ListSelectionListenerImpl());
+		TableColumn tc = configureTableColumns(table_selection);
+		header = new CheckBoxHeader(new MyItemListener());
+		tc.setHeaderRenderer(header);
+		scrollPane.setViewportView(table_selection);
+		scrollPane.getViewport().setBackground(Color.white);
+
 		stmDisplayStat = new SelectionTableModel(colNames_sStat);
 		stmDisplayStat.setTrueAll();
 		table_statuses = new JTable(stmDisplayStat);
@@ -196,16 +206,8 @@ public class GUI {
 		stmDisplayCust.setTrueAll();
 		table_customers = new JTable(stmDisplayCust);
 		configureTableColumns(table_customers);
+		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
 		scrollPaneCustomers.setViewportView(table_customers);
-
-		table_selection = new JTable(stmSelectCust);
-		table_selection.getSelectionModel().
-		addListSelectionListener(new ListSelectionListenerImpl());
-		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new MyItemListener());
-		tc.setHeaderRenderer(header);
-		scrollPane.setViewportView(table_selection);
-		scrollPane.getViewport().setBackground(Color.white);	
 	}
 
 	private void createSelectionModels(){
@@ -282,7 +284,8 @@ public class GUI {
 		btnGenerateReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				ExcelDocumentCreator creator = new ExcelDocumentCreator();
-				creator.createReport(stmDisplayCust.getRowData(), stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
+				creator.createReport(stmDisplayCust.getRowData(), 
+						stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
 			}
 		});
 		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,
@@ -331,10 +334,14 @@ public class GUI {
 	private void createErrorLabelTwo(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput_1 = new JLabel("Invalid input");
-		sl_panel.putConstraint(SpringLayout.EAST, nameField, -6, SpringLayout.WEST, lblInvalidInput_1);
-		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 22, SpringLayout.SOUTH, lblInvalidInput);
-		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 340, SpringLayout.WEST, panel);
-		sl_panel.putConstraint(SpringLayout.EAST, lblInvalidInput_1, 0, SpringLayout.EAST, btnSearch);
+		sl_panel.putConstraint(SpringLayout.EAST, nameField, -6, 
+				SpringLayout.WEST, lblInvalidInput_1);
+		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 22, 
+				SpringLayout.SOUTH, lblInvalidInput);
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 340, 
+				SpringLayout.WEST, panel);
+		sl_panel.putConstraint(SpringLayout.EAST, lblInvalidInput_1, 0, 
+				SpringLayout.EAST, btnSearch);
 		lblInvalidInput_1.setForeground(Color.red);
 		lblInvalidInput_1.setFont(errorMessage);
 		lblInvalidInput_1.setVisible(false);
@@ -344,7 +351,8 @@ public class GUI {
 	private void createErrorLabelOne(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput = new JLabel("Invalid input");
-		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput, 6, SpringLayout.EAST, idField);
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput, 6, 
+				SpringLayout.EAST, idField);
 		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
 				SpringLayout.EAST, btnSearch);
 		lblInvalidInput.setForeground(Color.red);
@@ -357,7 +365,8 @@ public class GUI {
 
 	private void createSearchButton(JPanel panel_1, SpringLayout sl_panel_1) {
 		btnSearch = new JButton("Search");
-		sl_panel.putConstraint(SpringLayout.NORTH, toolBar, 0, SpringLayout.NORTH, btnSearch);
+		sl_panel.putConstraint(SpringLayout.NORTH, toolBar, 0, 
+				SpringLayout.NORTH, btnSearch);
 		sl_panel_1.putConstraint(SpringLayout.WEST, btnSearch, 364,
 				SpringLayout.WEST, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnSearch, -664, 
@@ -375,9 +384,12 @@ public class GUI {
 	private void createNameLabel(Font subheadline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblName = new JLabel("Customer Name");
-		sl_panel.putConstraint(SpringLayout.WEST, nameField, 38, SpringLayout.EAST, lblName);
-		sl_panel.putConstraint(SpringLayout.NORTH, lblName, 4, SpringLayout.NORTH, nameField);
-		sl_panel.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, toolBar);
+		sl_panel.putConstraint(SpringLayout.WEST, nameField, 38, 
+				SpringLayout.EAST, lblName);
+		sl_panel.putConstraint(SpringLayout.NORTH, lblName, 4, 
+				SpringLayout.NORTH, nameField);
+		sl_panel.putConstraint(SpringLayout.WEST, lblName, 0,
+				SpringLayout.WEST, toolBar);
 		lblName.setFont(subheadline);
 		panel_1.add(lblName);
 	}
@@ -397,8 +409,10 @@ public class GUI {
 
 	private void createNameField(JPanel panel_1, SpringLayout sl_panel_1) {
 		nameField = new JTextField();
-		sl_panel.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
-		sl_panel.putConstraint(SpringLayout.SOUTH, nameField, -19, SpringLayout.NORTH, toolBar);
+		sl_panel.putConstraint(SpringLayout.NORTH, nameField, 6, 
+				SpringLayout.SOUTH, idField);
+		sl_panel.putConstraint(SpringLayout.SOUTH, nameField, -19, 
+				SpringLayout.NORTH, toolBar);
 		panel_1.add(nameField);
 		nameField.setColumns(10);
 	}
@@ -406,8 +420,10 @@ public class GUI {
 	private void createIdField(JPanel panel_1, SpringLayout sl_panel_1,
 			JLabel lblSelectCustomers) {
 		idField = new JTextField();
-		sl_panel.putConstraint(SpringLayout.NORTH, idField, 16, SpringLayout.SOUTH, lblSelection);
-		sl_panel.putConstraint(SpringLayout.SOUTH, idField, -747, SpringLayout.SOUTH, panel);
+		sl_panel.putConstraint(SpringLayout.NORTH, idField, 16, 
+				SpringLayout.SOUTH, lblSelection);
+		sl_panel.putConstraint(SpringLayout.SOUTH, idField, -747, 
+				SpringLayout.SOUTH, panel);
 		sl_panel_1.putConstraint(SpringLayout.EAST, idField, -130, 
 				SpringLayout.EAST, panel_1);
 		panel_1.add(idField);
@@ -468,7 +484,7 @@ public class GUI {
 		bCustomers = new JButton("Customers");
 		bCustomers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				customerSelection();
+				enableCustomerSelection();
 			}
 		});
 		bCustomers.setSelected(true);
@@ -478,7 +494,7 @@ public class GUI {
 		bProjects.setBorder(BorderFactory.createSoftBevelBorder(0));
 		bProjects.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				projectSelection();
+				enableProjectSelection();
 			}
 		});
 		toolBar.add(bProjects);
@@ -486,7 +502,7 @@ public class GUI {
 		bStatuses.setBorder(BorderFactory.createSoftBevelBorder(0));
 		bStatuses.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				statusSelection();
+				enableStatusSelection();
 			}
 		});
 		toolBar.add(bStatuses);
@@ -502,7 +518,8 @@ public class GUI {
 		return springLayout;
 	}
 
-	private void customerSelection(){
+	private void enableCustomerSelection(){
+		Active.setActiveTableModels(stmDisplayCust, stmSelectCust);
 		lblSelection.setText("Select Customers");
 		lblName.setVisible(true);
 		lblName.setText("Customer Name");
@@ -526,7 +543,6 @@ public class GUI {
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
-		Active.setActiveTables(stmDisplayCust, stmSelectCust);
 
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
@@ -536,7 +552,8 @@ public class GUI {
 		synchronizeHeader();
 	}
 
-	private void projectSelection(){
+	private void enableProjectSelection(){
+		Active.setActiveTableModels(stmDisplayProj, stmSelectProj);
 		lblSelection.setText("Select Projects");
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
@@ -559,7 +576,6 @@ public class GUI {
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
-		Active.setActiveTables(stmDisplayProj, stmSelectProj);
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
@@ -569,7 +585,8 @@ public class GUI {
 		synchronizeHeader();
 	}
 
-	private void statusSelection(){
+	private void enableStatusSelection(){
+		Active.setActiveTableModels(stmDisplayStat, stmSelectStat);
 		lblSelection.setText("Select Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
@@ -590,7 +607,6 @@ public class GUI {
 		table_statuses.setSelectionModel(partialSelectionModel);
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_projects.setSelectionModel(nullSelectionModel);
-		Active.setActiveTables(stmDisplayStat, stmSelectStat);
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
@@ -604,6 +620,7 @@ public class GUI {
 		// TODO: set row sorter after searches 
 		// watch out for interaction with select all
 		// table.setAutoCreateRowSorter(true);
+		if(Active.getActiveDisplay()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(100);
 		table.getColumnModel().getColumn(0).setMaxWidth(80);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
@@ -615,33 +632,37 @@ public class GUI {
 
 	// TODO: search for ID or name. 
 	private void executeSearch() {
-		if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
-		String name = nameField.getText().toLowerCase();
-		String ID = idField.getText();
-		if(Active.getActiveDisplay()==stmDisplayProj){
-			for(Object[] item : data.getProjectData()){
-				String project = (String) item[1];
-				Pattern p = Pattern.compile(project.toLowerCase());
-				Matcher m = p.matcher(name);
-				if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
-			}
-		}
-		else{
-			for(Object[] item : data.getCustomerData()){
-				String customerName = (String) item[2];
-				String customerID = Integer.toString((int) item[1]);
-				Pattern p;
-				Matcher m;
-				if(ID.isEmpty()){
-					p = Pattern.compile(customerName.toLowerCase());
-					m = p.matcher(name);
+		try{
+			if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
+			String name = nameField.getText().toLowerCase();
+			String ID = idField.getText();
+			if(Active.getActiveDisplay()==stmDisplayProj){
+				for(Object[] item : data.getProjectData()){
+					String project = ((String) item[1]).toLowerCase();
+					Pattern p = Pattern.compile(Pattern.quote(project));
+					Matcher m = p.matcher(name);
+					if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
 				}
-				else{
-					p = Pattern.compile(customerID);
-					m = p.matcher(ID);
-				}
-				if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
 			}
+			else{
+				for(Object[] item : data.getCustomerData()){
+					String customerName = ((String) item[2]).toLowerCase();
+					String customerID = Integer.toString((int) item[1]);
+					Pattern p;
+					Matcher m;
+					if(ID.isEmpty()){
+						p = Pattern.compile(Pattern.quote(customerName));
+						m = p.matcher(name);
+					}
+					else{
+						p = Pattern.compile(Pattern.quote(customerID));
+						m = p.matcher(ID);
+					}
+					if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+				}
+			}
+		}catch(PatternSyntaxException e){
+			e.printStackTrace();
 		}
 	}
 
