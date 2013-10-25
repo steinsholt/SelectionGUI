@@ -64,20 +64,17 @@ public class ExcelDocumentCreator {
 	public void createReport(List<List> customerData, 
 			List<List> projectData, List<List> statusData){
 
-		boolean allCust = false;
-		boolean allProj = false;
-		boolean allStat = false;
-
-		if(customerData.get(0).contains("ALL")) allCust = true;
-		if(projectData.get(0).contains("ALL")) allProj = true;
-		if(statusData.get(0).contains("ALL")) allStat = true;
+		boolean allCustSelected = customerData.get(0).contains("ALL") ? true : false;
+		boolean allProjSelected = projectData.get(0).contains("ALL") ? true : false;
+		boolean allStatSelected = statusData.get(0).contains("ALL") ? true : false;
 
 		List<List> temp_cust = new ArrayList<List>(customerData);
-		if(!allCust)temp_cust.remove(0);
 		List<List> temp_proj = new ArrayList<List>(projectData);
-		if(!allProj)temp_proj.remove(0);
 		List<List> temp_stat = new ArrayList<List>(statusData);
-		if(!allStat)temp_stat.remove(0);
+		
+		if(!allCustSelected)temp_cust.remove(0);
+		if(!allProjSelected)temp_proj.remove(0);
+		if(!allStatSelected)temp_stat.remove(0);
 		
 		try {
 			Database db = Data.getConnection();
@@ -123,7 +120,7 @@ public class ExcelDocumentCreator {
 					+ " and clientItemList.currency_id   = Exchange.currency_id"
 					+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status";
 			query.append(basicStatement);
-			if(!allCust){
+			if(!allCustSelected){
 				query.append(" and customerList.assoc_id in (");
 				for(List l : temp_cust){
 					int id = Integer.parseInt((String) l.get(1));
@@ -132,7 +129,7 @@ public class ExcelDocumentCreator {
 				query.delete(query.length()-2, query.length());
 				query.append(")");
 			}
-			if(!allProj){
+			if(!allProjSelected){
 				query.append(" and Project.pr_name in (");
 				for(List l : temp_proj){
 					String name = (String) l.get(1);
@@ -141,7 +138,7 @@ public class ExcelDocumentCreator {
 				query.delete(query.length()-2, query.length());
 				query.append(")");
 			}
-			if(!allStat){
+			if(!allStatSelected){
 				query.append(" and Tr_dtl_status.tr_dtl_stname in (");
 				for(List l : temp_stat){
 					String status = (String) l.get(1);
@@ -153,7 +150,6 @@ public class ExcelDocumentCreator {
 			Statement st = db.getJdbcConnection().createStatement();
 			st.setQueryTimeout(60);
 			ResultSet rs = st.executeQuery(query.toString());
-
 
 			populateSheetTable(rs);
 			populateSheetProject();
