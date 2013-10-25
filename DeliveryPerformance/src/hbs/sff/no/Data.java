@@ -69,7 +69,7 @@ public class Data {
 				Object[] dataRow = {false, status};
 				statusData.add(dataRow);
 			}	
-			rs = st.executeQuery("select top 10000 assoc_id, assoc_name from Assoc customerList");
+			rs = st.executeQuery("select assoc_id, assoc_name from Assoc customerList");
  			while(rs.next()){
 				String name = rs.getString("assoc_name").trim();
 				int ID = rs.getInt("assoc_id");

@@ -247,7 +247,8 @@ public class GUI {
 
 	private void addScrollPane(JPanel panel_1, SpringLayout sl_panel_1) {
 		scrollPane = new JScrollPane();
-		sl_panel.putConstraint(SpringLayout.SOUTH, toolBar, -13, SpringLayout.NORTH, scrollPane);
+		sl_panel.putConstraint(SpringLayout.SOUTH, toolBar, -13, 
+				SpringLayout.NORTH, scrollPane);
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		sl_panel_1.putConstraint(SpringLayout.NORTH, scrollPane, 13, 
 				SpringLayout.SOUTH, btnSearch);
@@ -630,7 +631,6 @@ public class GUI {
 		return tc;
 	}
 
-	// TODO: search for ID or name. 
 	private void executeSearch() {
 		try{
 			if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
@@ -639,26 +639,28 @@ public class GUI {
 			if(Active.getActiveDisplay()==stmDisplayProj){
 				for(Object[] item : data.getProjectData()){
 					String project = ((String) item[1]).toLowerCase();
-					Pattern p = Pattern.compile(Pattern.quote(project));
-					Matcher m = p.matcher(name);
-					if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
+					Pattern p = Pattern.compile(".*" + name + ".*");
+					Matcher m = p.matcher(project);
+					if(m.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
 				}
 			}
 			else{
 				for(Object[] item : data.getCustomerData()){
 					String customerName = ((String) item[2]).toLowerCase();
 					String customerID = Integer.toString((int) item[1]);
-					Pattern p;
-					Matcher m;
+					Pattern pName = Pattern.compile(".*" + name + ".*");
+					Pattern pId = Pattern.compile(".*" + ID + ".*");
+					Matcher mName = pName.matcher(customerName);
+					Matcher mId = pId.matcher(customerID);
 					if(ID.isEmpty()){
-						p = Pattern.compile(Pattern.quote(customerName));
-						m = p.matcher(name);
+						if(mName.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+					}
+					else if(!ID.isEmpty() && !name.isEmpty()){
+						if(mName.matches() && mId.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
 					}
 					else{
-						p = Pattern.compile(Pattern.quote(customerID));
-						m = p.matcher(ID);
+						if(mId.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
 					}
-					if(m.matches() || m.hitEnd()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
 				}
 			}
 		}catch(PatternSyntaxException e){
@@ -713,7 +715,6 @@ public class GUI {
 			lsm.clearSelection();
 		}
 	}
-
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void synchronizeCheckBoxes() {
