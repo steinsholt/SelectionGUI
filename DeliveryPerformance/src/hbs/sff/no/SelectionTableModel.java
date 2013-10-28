@@ -11,7 +11,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private List<String> columnNames = new ArrayList<String>();
 	private List<List> data = new ArrayList<List>();
-
+	
 	public SelectionTableModel(List<String> columnNames){
 		this.columnNames = columnNames;
 	}
@@ -79,7 +79,8 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public Object getValueAt(int row, int column) {
-		return data.get(row).get(column);
+		if(data.isEmpty())return false;
+		else return data.get(row).get(column);
 	}
 
 	public void setValueAt(Object value, int row, int column){

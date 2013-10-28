@@ -1,5 +1,6 @@
 package hbs.sff.no;
 
+import java.awt.Desktop;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,7 +24,7 @@ import com.borland.dx.sql.dataset.Database;
 
 public class ExcelDocumentCreator {
 	private XSSFWorkbook workbook;
-	private String output;
+	private File output;
 	private InputStream template;
 	private XSSFSheet sheetTable;
 	private XSSFSheet sheetProject;
@@ -32,7 +33,7 @@ public class ExcelDocumentCreator {
 		try {
 			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
 			createWorkbook();
-			output = "C:/Users/hbs/Excel documents/test.xlsx";
+			output = new File("C:/Users/hbs/Excel documents/test.xlsx");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
@@ -41,9 +42,10 @@ public class ExcelDocumentCreator {
 	private void saveWorkbook() {
 		try {
 			workbook.setActiveSheet(0);
-			FileOutputStream out = new FileOutputStream(new File(output));
+			FileOutputStream out = new FileOutputStream(output, false);
 			workbook.write(out);
 			out.close();
+			Desktop.getDesktop().open(output);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -112,7 +114,7 @@ public class ExcelDocumentCreator {
 					+ " vendor.dbo.Project," 
 					+ " vendor.dbo.Exchange," 
 					+ " vendor.dbo.Tr_dtl_status"
-					+ " where Tr_hdr.active_id = 87"
+					+ " where Tr_hdr.tr_status = 2"
 					+ " and Tr_hdr.tr_no = clientItemList.tr_no" 
 					+ " and Tr_hdr.assoc_id = customerList.assoc_id"
 					+ " and Tr_hdr.active_id = Project.project_id"
@@ -181,18 +183,15 @@ public class ExcelDocumentCreator {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		//		for(int i = 0; i < 20; i++){
-		//			sheetTable.autoSizeColumn(i);
-		//		}
 	}
 
 	private void insertValue(ResultSet rs, Row row, int column){
 		Cell cell = row.createCell(column);
 		try{
-			cell.setCellValue(rs.getInt(column + 1));
+			cell.setCellValue(rs.getDouble(column + 1));
 		}catch(NumberFormatException | SQLException e){
 			try {
-				String s = rs.getString(column + 1) == null ? "null" : rs.getString(column + 1);
+				String s = rs.getString(column + 1) == null ? "" : rs.getString(column + 1);
 				cell.setCellValue(s);
 			} catch (SQLException ex) {
 				ex.printStackTrace();

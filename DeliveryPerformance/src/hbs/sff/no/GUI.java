@@ -1,6 +1,7 @@
 package hbs.sff.no;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -32,6 +33,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class GUI {
@@ -162,6 +164,7 @@ public class GUI {
 		for(Object[] item : data.getStatusData()){
 			stmSelectStat.addRow(Arrays.asList(item));
 		}
+		frame.setResizable(false);
 		enableCustomerSelection();		
 	}
 
@@ -181,12 +184,25 @@ public class GUI {
 	}
 
 	private void addTables(){
-		table_selection = new JTable(stmSelectCust);
+		table_selection = new JTable(stmSelectCust){
+			private static final long serialVersionUID = 1L;
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+				Component c = super.prepareRenderer(renderer, row, column);
+				if(!isRowSelected(row)){
+					Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
+					// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
+					c.setForeground(color);
+				}
+				return c;
+			}
+		};
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
+		//		table_selection.getTableHeader().setBackground(bg);   //TODO: This sets the header color
+
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
 
@@ -335,12 +351,8 @@ public class GUI {
 	private void createErrorLabelTwo(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput_1 = new JLabel("Invalid input");
-		sl_panel.putConstraint(SpringLayout.EAST, nameField, -6, 
-				SpringLayout.WEST, lblInvalidInput_1);
-		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 22, 
-				SpringLayout.SOUTH, lblInvalidInput);
-		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 340, 
-				SpringLayout.WEST, panel);
+		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput_1, 6, SpringLayout.NORTH, nameField);
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput_1, 6, SpringLayout.EAST, nameField);
 		sl_panel.putConstraint(SpringLayout.EAST, lblInvalidInput_1, 0, 
 				SpringLayout.EAST, btnSearch);
 		lblInvalidInput_1.setForeground(Color.red);
@@ -352,15 +364,13 @@ public class GUI {
 	private void createErrorLabelOne(Font errorMessage, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblInvalidInput = new JLabel("Invalid input");
-		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput, 6, 
-				SpringLayout.EAST, idField);
-		sl_panel_1.putConstraint(SpringLayout.EAST, lblInvalidInput, 0,
-				SpringLayout.EAST, btnSearch);
+		sl_panel.putConstraint(SpringLayout.WEST, lblInvalidInput, 340, SpringLayout.WEST, panel);
+		sl_panel.putConstraint(SpringLayout.EAST, idField, -6, SpringLayout.WEST, lblInvalidInput);
+		sl_panel.putConstraint(SpringLayout.NORTH, lblInvalidInput, 6, SpringLayout.NORTH, idField);
+		sl_panel.putConstraint(SpringLayout.EAST, lblInvalidInput, -36, SpringLayout.EAST, panel);
 		lblInvalidInput.setForeground(Color.red);
 		lblInvalidInput.setFont(errorMessage);
 		lblInvalidInput.setVisible(false);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblInvalidInput, 10, 
-				SpringLayout.NORTH, idField);
 		panel_1.add(lblInvalidInput);
 	}
 
@@ -385,8 +395,7 @@ public class GUI {
 	private void createNameLabel(Font subheadline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblName = new JLabel("Customer Name");
-		sl_panel.putConstraint(SpringLayout.WEST, nameField, 38, 
-				SpringLayout.EAST, lblName);
+		sl_panel.putConstraint(SpringLayout.WEST, nameField, 38, SpringLayout.EAST, lblName);
 		sl_panel.putConstraint(SpringLayout.NORTH, lblName, 4, 
 				SpringLayout.NORTH, nameField);
 		sl_panel.putConstraint(SpringLayout.WEST, lblName, 0,
@@ -398,22 +407,18 @@ public class GUI {
 	private void createIdLabel(Font subheadline, JPanel panel_1,
 			SpringLayout sl_panel_1) {
 		lblID = new JLabel("Customer ID");
-		sl_panel_1.putConstraint(SpringLayout.WEST, idField, 59, 
-				SpringLayout.EAST, lblID);
-		sl_panel_1.putConstraint(SpringLayout.NORTH, lblID, 4, 
-				SpringLayout.NORTH, idField);
-		sl_panel_1.putConstraint(SpringLayout.WEST, lblID, 10, 
-				SpringLayout.WEST, panel_1);
+		sl_panel.putConstraint(SpringLayout.WEST, idField, 59, SpringLayout.EAST, lblID);
+		sl_panel.putConstraint(SpringLayout.NORTH, lblID, 4, SpringLayout.NORTH, idField);
+		sl_panel.putConstraint(SpringLayout.WEST, lblID, 0, SpringLayout.WEST, toolBar);
 		lblID.setFont(subheadline);
 		panel_1.add(lblID);
 	}
 
 	private void createNameField(JPanel panel_1, SpringLayout sl_panel_1) {
 		nameField = new JTextField();
-		sl_panel.putConstraint(SpringLayout.NORTH, nameField, 6, 
-				SpringLayout.SOUTH, idField);
-		sl_panel.putConstraint(SpringLayout.SOUTH, nameField, -19, 
-				SpringLayout.NORTH, toolBar);
+		sl_panel.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
+		sl_panel.putConstraint(SpringLayout.SOUTH, nameField, -19, SpringLayout.NORTH, toolBar);
+		sl_panel.putConstraint(SpringLayout.EAST, nameField, -140, SpringLayout.EAST, panel);
 		panel_1.add(nameField);
 		nameField.setColumns(10);
 	}
@@ -421,12 +426,10 @@ public class GUI {
 	private void createIdField(JPanel panel_1, SpringLayout sl_panel_1,
 			JLabel lblSelectCustomers) {
 		idField = new JTextField();
-		sl_panel.putConstraint(SpringLayout.NORTH, idField, 16, 
+		sl_panel.putConstraint(SpringLayout.NORTH, idField, 26, 
 				SpringLayout.SOUTH, lblSelection);
 		sl_panel.putConstraint(SpringLayout.SOUTH, idField, -747, 
 				SpringLayout.SOUTH, panel);
-		sl_panel_1.putConstraint(SpringLayout.EAST, idField, -130, 
-				SpringLayout.EAST, panel_1);
 		panel_1.add(idField);
 		idField.setColumns(10);
 	}
@@ -627,7 +630,10 @@ public class GUI {
 
 	private void executeSearch() {
 		try{
-			if(!Active.getActiveSelect().getRowData().isEmpty()){Active.getActiveSelect().getRowData().clear();}
+			if(!Active.getActiveSelect().getRowData().isEmpty()){
+				Active.getActiveSelect().getRowData().clear();
+				Active.getActiveSelect().fireTableDataChanged();
+				}
 			String name = nameField.getText().toLowerCase();
 			String ID = idField.getText();
 			if(Active.getActiveDisplay()==stmDisplayProj){
@@ -727,7 +733,6 @@ public class GUI {
 		synchronizeHeader();
 	}
 
-	// TODO: header selection is set to false but header is not repainted
 	private void synchronizeHeader() {
 		boolean checked = true;
 		if(table_selection.getRowCount() == 0) header.setSelected(false);
@@ -738,7 +743,7 @@ public class GUI {
 				}
 			}
 			header.setSelected(checked);
-			header.repaint();
+			frame.getContentPane().repaint();
 		}
 	}
 
