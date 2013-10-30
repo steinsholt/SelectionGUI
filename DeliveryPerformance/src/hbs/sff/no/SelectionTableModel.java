@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
@@ -11,7 +12,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private List<String> columnNames = new ArrayList<String>();
 	private List<List> data = new ArrayList<List>();
-	
+
 	public SelectionTableModel(List<String> columnNames){
 		this.columnNames = columnNames;
 	}
@@ -23,11 +24,12 @@ public class SelectionTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void addRowAt(List rowData, int index){
-		if(!data.contains(rowData)){
-			data.add(index, rowData);
-			fireTableRowsInserted(data.size() - 1, data.size() - 1);
+	public void addRowInterval(int min, int max, JTable table){
+		for(int i = min; i <= max; i++){
+			addRow(((SelectionTableModel) table.getModel()).getRow(i));
+			table.setValueAt(true, i, 0);
 		}
+		if(!data.get(0).contains("Remove all"))setRemoveAll();
 	}
 
 	public void removeRow(int row){
@@ -36,14 +38,33 @@ public class SelectionTableModel extends AbstractTableModel {
 			fireTableRowsDeleted(row, row);
 		}
 	}
-	
-	public void removeRowInterval(int start, int end){
-		if(data.get(start).contains("Remove all")){
-			end = data.size();
+
+	public void partialRemoval(int min, int max, JTable table){
+		for(int i = min; i <= max; i++){
+			List row = ((SelectionTableModel) table.getModel()).getRow(i);
+			if(data.contains(row)){
+				removeRow(data.indexOf(row));
+				table.setValueAt(false, i, 0);
+			}
 		}
-		for(int i = start; i <= end; i++){
-			removeRow(start);
+		if(data.size() < 2) setTrueAll();
+	}
+
+	public void removeRowInterval(int min, int max, JTable table){
+		SelectionTableModel model = (SelectionTableModel) table.getModel();
+		if(data.get(min).contains("Remove all")){
+			max = data.size() - 1;
 		}
+		for(int i = min; i <= max; i++){
+			List row = this.getRow(min);
+			if(model.getRowData().contains(row)){
+				int index = model.getRowContaining(row);
+				model.setValueAt(false, index, 0);
+			}
+			if(data.size()>0) data.remove(min);
+		}
+		fireTableRowsDeleted(min, max);
+		if(data.size() < 2) setTrueAll();
 	}
 
 	public int getRowContaining(Object id){
@@ -52,10 +73,6 @@ public class SelectionTableModel extends AbstractTableModel {
 
 	public List<List> getRowData() {
 		return data;
-	}
-
-	public void setRowData(List<List> data) {
-		this.data = data;
 	}
 
 	public String getColumnName(int column) {

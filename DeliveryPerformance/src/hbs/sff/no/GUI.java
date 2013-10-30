@@ -1,7 +1,6 @@
 package hbs.sff.no;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -31,9 +30,6 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class GUI {
@@ -82,18 +78,24 @@ public class GUI {
 		STATUS, CUSTOMER, PROJECT;
 		private static SelectionTableModel display;
 		private static SelectionTableModel select;
+		private static JTable table;
 
-		public static SelectionTableModel getActiveDisplay(){
+		public static SelectionTableModel getActiveDisplayModel(){
 			return display;
 		}
 
-		public static SelectionTableModel getActiveSelect(){
+		public static SelectionTableModel getActiveSelectModel(){
 			return select;
 		}
 
-		public static void setActiveTableModels(SelectionTableModel dis, SelectionTableModel sel){
+		public static JTable getActiveDisplayTable(){
+			return table;
+		}
+
+		public static void setActiveTableModels(SelectionTableModel dis, SelectionTableModel sel, JTable t){
 			display = dis;
 			select = sel;
+			table = t;
 		}
 	}
 
@@ -186,15 +188,13 @@ public class GUI {
 	private void addTables(){
 		table_selection = new JTable(stmSelectCust){
 			private static final long serialVersionUID = 1L;
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
-				Component c = super.prepareRenderer(renderer, row, column);
-				if(!isRowSelected(row)){
-					Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
-					// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
-					c.setForeground(color);
-				}
-				return c;
-			}
+//			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+//				Component c = super.prepareRenderer(renderer, row, column);
+//				Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
+//				// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
+//				c.setForeground(color);
+//				return c;
+//			}
 		};
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
@@ -228,11 +228,8 @@ public class GUI {
 
 	private void createSelectionModels(){
 		stmSelectCust = new SelectionTableModel(colNames_sComp);
-		stmSelectCust.addTableModelListener(new TableModelListenerSelect());
 		stmSelectProj = new SelectionTableModel(colNames_sProj);
-		stmSelectProj.addTableModelListener(new TableModelListenerSelect());
 		stmSelectStat = new SelectionTableModel(colNames_sStat);
-		stmSelectStat.addTableModelListener(new TableModelListenerSelect());
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -523,7 +520,7 @@ public class GUI {
 	}
 
 	private void enableCustomerSelection(){
-		Active.setActiveTableModels(stmDisplayCust, stmSelectCust);
+		Active.setActiveTableModels(stmDisplayCust, stmSelectCust, table_customers);
 		lblSelection.setText("Select Customers");
 		lblName.setVisible(true);
 		lblName.setText("Customer Name");
@@ -555,7 +552,7 @@ public class GUI {
 	}
 
 	private void enableProjectSelection(){
-		Active.setActiveTableModels(stmDisplayProj, stmSelectProj);
+		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, table_projects);
 		lblSelection.setText("Select Projects");
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
@@ -586,7 +583,7 @@ public class GUI {
 	}
 
 	private void enableStatusSelection(){
-		Active.setActiveTableModels(stmDisplayStat, stmSelectStat);
+		Active.setActiveTableModels(stmDisplayStat, stmSelectStat, table_statuses);
 		lblSelection.setText("Select Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
@@ -618,7 +615,7 @@ public class GUI {
 		// TODO: set row sorter after searches 
 		// watch out for interaction with select all
 		// table.setAutoCreateRowSorter(true);
-		if(Active.getActiveDisplay()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(100);
+		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(100);
 		table.getColumnModel().getColumn(0).setMaxWidth(80);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
@@ -628,20 +625,21 @@ public class GUI {
 		return tc;
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void executeSearch() {
 		try{
-			if(!Active.getActiveSelect().getRowData().isEmpty()){
-				Active.getActiveSelect().getRowData().clear();
-				Active.getActiveSelect().fireTableDataChanged();
-				}
+			if(!Active.getActiveSelectModel().getRowData().isEmpty()){
+				Active.getActiveSelectModel().getRowData().clear();
+				Active.getActiveSelectModel().fireTableDataChanged();
+			}
 			String name = nameField.getText().toLowerCase();
 			String ID = idField.getText();
-			if(Active.getActiveDisplay()==stmDisplayProj){
+			if(Active.getActiveDisplayModel()==stmDisplayProj){
 				for(Object[] item : data.getProjectData()){
 					String project = ((String) item[1]).toLowerCase();
 					Pattern p = Pattern.compile(".*" + name + ".*");
 					Matcher m = p.matcher(project);
-					if(m.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, project));
+					if(m.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, project));
 				}
 			}
 			else{
@@ -653,13 +651,22 @@ public class GUI {
 					Matcher mName = pName.matcher(customerName);
 					Matcher mId = pId.matcher(customerID);
 					if(ID.isEmpty()){
-						if(mName.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+						if(mName.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
 					}
 					else if(!ID.isEmpty() && !name.isEmpty()){
-						if(mName.matches() && mId.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+						if(mName.matches() && mId.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
 					}
 					else{
-						if(mId.matches()) Active.getActiveSelect().addRow(Arrays.asList(false, customerID, customerName));
+						if(mId.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
+					}
+				}
+			}
+			for(List rowDisplay : Active.getActiveDisplayModel().getRowData()){
+				SelectionTableModel model = Active.getActiveSelectModel();
+				for(List rowSelect : model.getRowData()){
+					if(rowDisplay.get(1).equals(rowSelect.get(1))){
+						int index = model.getRowData().indexOf(rowSelect);
+						model.setValueAt(true, index, 0);
 					}
 				}
 			}
@@ -670,67 +677,42 @@ public class GUI {
 
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
+			int min = 0;
+			int max = table_selection.getRowCount() - 1;
+			
 			if(e.getStateChange() == ItemEvent.SELECTED
 					&& (e.getSource() instanceof AbstractButton)){
-				for(int x = 0; x < table_selection.getRowCount(); x++){
-					if(!(boolean) table_selection.getValueAt(x, 0)){
-						table_selection.setValueAt(true, x, 0);
-						((SelectionTableModel)table_selection.getModel()).
-						fireTableRowsUpdated(x, x);
-					}
-				}
+				Active.getActiveDisplayModel().addRowInterval(min, max, table_selection);
+			}
+			else if(e.getStateChange() == ItemEvent.DESELECTED
+					&& (e.getSource() instanceof AbstractButton)){
+//				Active.getActiveDisplayModel().removeRowInterval(min, max, table_selection);
+//				function in SelectionTableModel: removeRows(List<List> rowData)
+//				if model contain row, remove it
+//				TODO: remove the items currently in the selection list from the display list
 			}
 		}
 	}
 
 	class ListSelectionListenerImpl implements ListSelectionListener{
-		public void valueChanged(ListSelectionEvent e) {			
+		public void valueChanged(ListSelectionEvent e) {
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+			int min = lsm.getMinSelectionIndex();
+			int max = lsm.getMaxSelectionIndex();
 			boolean isAdjusting = e.getValueIsAdjusting();
+			SelectionTableModel model = Active.getActiveDisplayModel();
+			
 			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
-					setCheckBoxes(table_selection, true, lsm);
+					if((boolean) table_selection.getValueAt(min, 0)) model.partialRemoval(min, max, table_selection);
+					else model.addRowInterval(min, max, table_selection);
 				}
-				else if(e.getSource() == table_customers.getSelectionModel()){
-					((SelectionTableModel)table_customers.getModel()).
-					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
+				else if(e.getSource() == Active.getActiveDisplayTable().getSelectionModel()){
+					 model.removeRowInterval(min, max, table_selection);
 				}
-				else if(e.getSource() == table_projects.getSelectionModel()){
-					((SelectionTableModel)table_projects.getModel()).
-					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
-				}
-				else{
-					((SelectionTableModel)table_statuses.getModel()).
-					removeRowInterval(lsm.getMinSelectionIndex(), lsm.getMinSelectionIndex());
-				}
-				synchronizeCheckBoxes();
+				lsm.clearSelection();
 			}
 		}
-
-		private void setCheckBoxes(JTable table, Boolean checked, ListSelectionModel lsm) {
-			for(int i = table.getSelectedRow(); i < (table.getSelectedRow() + 
-					table.getSelectedRowCount()); i++){
-				table.setValueAt(checked, i, 0);
-			}
-			lsm.clearSelection();
-		}
-	}
-
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void synchronizeCheckBoxes() {
-		List<List> complement = new ArrayList(Active.getActiveSelect().getRowData());
-		complement.removeAll(Active.getActiveDisplay().getRowData());
-		for(List l : complement){
-			int row = Active.getActiveSelect().getRowData().indexOf(l);
-			Active.getActiveSelect().setValueAt(false, row, 0);
-		}
-		if(Active.getActiveDisplay().getRowCount() < 2){
-			Active.getActiveDisplay().setTrueAll();
-		}
-		else{
-			Active.getActiveDisplay().setRemoveAll();
-		}
-		synchronizeHeader();
 	}
 
 	private void synchronizeHeader() {
@@ -745,22 +727,6 @@ public class GUI {
 			header.setSelected(checked);
 			frame.getContentPane().repaint();
 		}
-	}
-
-	class TableModelListenerSelect implements TableModelListener{
-		public void tableChanged(TableModelEvent e){
-			if(e.getType()==TableModelEvent.UPDATE && 
-					(Boolean)table_selection.getValueAt(e.getFirstRow(), 0)){
-				if(Active.getActiveDisplay().getColumnCount()==3){
-					Active.getActiveDisplay().addRow(Arrays.asList(true,
-							table_selection.getValueAt(e.getFirstRow(), 1),
-							table_selection.getValueAt(e.getFirstRow(), 2)));
-				}
-				else Active.getActiveDisplay().addRow(Arrays.asList
-						(true,table_selection.getValueAt(e.getFirstRow(), 1)));	
-				Active.getActiveDisplay().setRemoveAll();
-			}
-		}			
 	}
 }
 
