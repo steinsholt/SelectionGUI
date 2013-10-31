@@ -90,44 +90,4 @@ public class Data {
 		}
 		db.closeConnection();
 	}
-	
-	public void unusedSearch(){
-//		ResultSet rs = st.executeQuery("select \"Project\" = Project.pr_name,"
-		//					+ " \"Customer\" = customerList.assoc_name,"
-		//					+ " \"Customer ID\" = customerList.assoc_id,"
-		//					+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname"
-		//					+ " from vendor.dbo.Tr_hdr,"
-		//					+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
-		//					+ " on (clientItemList.vnd_no = supplierItemList.vnd_no"           
-		//					+ " and clientItemList.item_no = supplierItemList.item_no"           
-		//					+ " and clientItemList.suppl_tr_id = supplierItemList.tr_no" 
-		//					+ " and supplierItemList.tr_dtl_status>0" 
-		//					+ " and supplierItemList.vnd_no > 1"
-		//					+ " ),"
-		//					+ " vendor.dbo.Assoc customerList," 
-		//					+ " vendor.dbo.Assoc supplierList," 
-		//					+ " vendor.dbo.Project," 
-		//					+ " vendor.dbo.Tr_dtl_status"
-		//					+ " where Tr_hdr.tr_no = clientItemList.tr_no" 
-		//					+ " and Tr_hdr.assoc_id = customerList.assoc_id"
-		//					+ " and Tr_hdr.active_id = Project.project_id"
-		//					+ " and clientItemList.suppl_id = supplierList.assoc_id"
-		//					+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status"
-		//					+ " order by Tr_hdr.active_id,"
-		//					+ " Tr_hdr.assoc_id,"
-		//					+ " Tr_hdr.tr_no"
-		//					);
-		//			while(rs.next()){
-		//				String status = rs.getString("Item Status").trim();
-		//				String customer = rs.getString("Customer").trim();
-		//				int ID = rs.getInt("Customer ID");
-		//				String project = rs.getString("Project").trim();
-		//				Object[] statusRow = {false, status};
-		//				Object[] customerRow = {false, ID, customer};
-		//				Object[] projectRow = {false, project};
-		//				statusData.add(statusRow);
-		//				customerData.add(customerRow);
-		//				projectData.add(projectRow);
-		//			}
-	}
 }

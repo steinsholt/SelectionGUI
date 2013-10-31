@@ -53,7 +53,7 @@ implements TableCellRenderer, MouseListener  {
 	}
 	
 	protected void handleClickEvent(MouseEvent e){
-		if(mousePressed && mouseEntered){
+		if(mousePressed){
 			mousePressed = false;
 			JTableHeader header = (JTableHeader)(e.getSource());
 			JTable tableView = header.getTable();
@@ -78,7 +78,6 @@ implements TableCellRenderer, MouseListener  {
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
-		mouseEntered = true;
 	}
 	public void mouseExited(MouseEvent arg0) {		
 	}	

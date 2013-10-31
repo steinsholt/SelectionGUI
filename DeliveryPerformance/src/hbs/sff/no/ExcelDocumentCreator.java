@@ -39,7 +39,7 @@ public class ExcelDocumentCreator {
 		}
 	}
 
-	private void saveWorkbook() {
+	private void openWorkbook() {
 		try {
 			workbook.setActiveSheet(0);
 			FileOutputStream out = new FileOutputStream(output, false);
@@ -162,7 +162,7 @@ public class ExcelDocumentCreator {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		saveWorkbook();
+		openWorkbook();
 	}
 
 	private void populateSheetProject() {
