@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -419,6 +421,13 @@ public class GUI {
 		sl_panel.putConstraint(SpringLayout.EAST, nameField, -140, SpringLayout.EAST, panel);
 		panel_1.add(nameField);
 		nameField.setColumns(10);
+		nameField.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					executeSearch();
+				}
+			}
+		});
 	}
 
 	private void createIdField(JPanel panel_1, SpringLayout sl_panel_1,
@@ -430,6 +439,13 @@ public class GUI {
 				SpringLayout.SOUTH, panel);
 		panel_1.add(idField);
 		idField.setColumns(10);
+		idField.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					executeSearch();
+				}
+			}
+		});
 	}
 
 	private JLabel createSelectionLabel(Font headline, JPanel panel_1,
@@ -545,6 +561,7 @@ public class GUI {
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
+		nameField.grabFocus();
 
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
@@ -576,6 +593,7 @@ public class GUI {
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
+		nameField.grabFocus();
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
