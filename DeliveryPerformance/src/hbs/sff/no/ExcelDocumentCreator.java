@@ -33,8 +33,8 @@ public class ExcelDocumentCreator {
 		try {
 			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
 			createWorkbook();
-			output = new File("C:/Users/hbs/Excel documents/test.xlsx");
-		} catch (FileNotFoundException e) {
+			output = File.createTempFile("temp", ".xlsx");
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
