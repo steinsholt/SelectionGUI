@@ -75,6 +75,7 @@ public class GUI {
 	private List<String> colNames_sComp;
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
+	private boolean headerClick;
 
 	public enum Active{
 		STATUS, CUSTOMER, PROJECT;
@@ -118,6 +119,7 @@ public class GUI {
 			e.printStackTrace();
 		}
 
+		headerClick = true;
 		addColumnNames();
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
@@ -161,7 +163,10 @@ public class GUI {
 		addScrollPaneTwo(panel_2, sl_panel_2);		
 		addScrollPaneThree(panel_2, sl_panel_2);	
 
-		createSelectionModels();
+		stmSelectCust = new SelectionTableModel(colNames_sComp);
+		stmSelectProj = new SelectionTableModel(colNames_sProj);
+		stmSelectStat = new SelectionTableModel(colNames_sStat);
+
 		addTables();
 		data = new Data();
 		data.loadData();
@@ -226,12 +231,6 @@ public class GUI {
 		configureTableColumns(table_customers);
 		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
 		scrollPaneCustomers.setViewportView(table_customers);
-	}
-
-	private void createSelectionModels(){
-		stmSelectCust = new SelectionTableModel(colNames_sComp);
-		stmSelectProj = new SelectionTableModel(colNames_sProj);
-		stmSelectStat = new SelectionTableModel(colNames_sStat);
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -672,6 +671,7 @@ public class GUI {
 					}
 				}
 			}
+			synchronizeHeader();
 		}catch(PatternSyntaxException e){
 			e.printStackTrace();
 		}
@@ -679,16 +679,18 @@ public class GUI {
 
 	class MyItemListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
-			int min = 0;
-			int max = table_selection.getRowCount() - 1;
-			
-			if(e.getStateChange() == ItemEvent.SELECTED
-					&& (e.getSource() instanceof AbstractButton)){
-				Active.getActiveDisplayModel().addRowInterval(min, max, table_selection);
-			}
-			else if(e.getStateChange() == ItemEvent.DESELECTED
-					&& (e.getSource() instanceof AbstractButton)){
-				Active.getActiveDisplayModel().partialRemoval(min, max, table_selection);
+			if(headerClick){
+				int min = 0;
+				int max = table_selection.getRowCount() - 1;
+
+				if(e.getStateChange() == ItemEvent.SELECTED
+						&& (e.getSource() instanceof AbstractButton)){
+					Active.getActiveDisplayModel().addRowInterval(min, max, table_selection);
+				}
+				else if(e.getStateChange() == ItemEvent.DESELECTED
+						&& (e.getSource() instanceof AbstractButton)){
+					Active.getActiveDisplayModel().partialRemoval(min, max, table_selection);
+				}
 			}
 		}
 	}
@@ -700,21 +702,22 @@ public class GUI {
 			int max = lsm.getMaxSelectionIndex();
 			boolean isAdjusting = e.getValueIsAdjusting();
 			SelectionTableModel model = Active.getActiveDisplayModel();
-			
+
 			if(!lsm.isSelectionEmpty() && !isAdjusting){
 				if(e.getSource() == table_selection.getSelectionModel()){
 					if((boolean) table_selection.getValueAt(min, 0)) model.partialRemoval(min, max, table_selection);
 					else model.addRowInterval(min, max, table_selection);
 				}
 				else if(e.getSource() == Active.getActiveDisplayTable().getSelectionModel()){
-					 model.removeRowInterval(min, max, table_selection);
+					model.removeRowInterval(min, max, table_selection);
 				}
 				lsm.clearSelection();
+				synchronizeHeader();
 			}
 		}
 	}
 
-	private void synchronizeHeader() {
+	private void synchronizeHeader(){
 		boolean checked = true;
 		if(table_selection.getRowCount() == 0) header.setSelected(false);
 		else{ 
@@ -723,9 +726,13 @@ public class GUI {
 					checked = false;
 				}
 			}
+			headerClick = false;
 			header.setSelected(checked);
 			frame.getContentPane().repaint();
+			headerClick = true;
 		}
 	}
 }
+
+// TODO: Look into separating creating buttons and actions. Single Responsibility Principle
 

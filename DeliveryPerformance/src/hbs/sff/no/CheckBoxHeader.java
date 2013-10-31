@@ -18,6 +18,7 @@ implements TableCellRenderer, MouseListener  {
 	protected CheckBoxHeader rendererComponent;
 	protected int column;
 	protected boolean mousePressed = false;
+	protected boolean mouseEntered = false;
 
 	public CheckBoxHeader(ItemListener itemListener){
 		rendererComponent = this;
@@ -52,7 +53,7 @@ implements TableCellRenderer, MouseListener  {
 	}
 	
 	protected void handleClickEvent(MouseEvent e){
-		if(mousePressed){
+		if(mousePressed && mouseEntered){
 			mousePressed = false;
 			JTableHeader header = (JTableHeader)(e.getSource());
 			JTable tableView = header.getTable();
@@ -77,6 +78,7 @@ implements TableCellRenderer, MouseListener  {
 	}
 
 	public void mouseEntered(MouseEvent arg0) {
+		mouseEntered = true;
 	}
 	public void mouseExited(MouseEvent arg0) {		
 	}	
