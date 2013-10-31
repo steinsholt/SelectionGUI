@@ -25,11 +25,13 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void addRowInterval(int min, int max, JTable table){
+		SelectionTableModel model = (SelectionTableModel) table.getModel();
 		for(int i = min; i <= max; i++){
-			addRow(((SelectionTableModel) table.getModel()).getRow(i));
+			addRow(model.getRow(i));
 			table.setValueAt(true, i, 0);
 		}
 		if(!data.get(0).contains("Remove all"))setRemoveAll();
+		model.fireTableDataChanged();
 	}
 
 	public void removeRow(int row){
@@ -40,14 +42,16 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void partialRemoval(int min, int max, JTable table){
+		SelectionTableModel model = (SelectionTableModel) table.getModel();
 		for(int i = min; i <= max; i++){
-			List row = ((SelectionTableModel) table.getModel()).getRow(i);
+			List row = model.getRow(i);
 			if(data.contains(row)){
 				removeRow(data.indexOf(row));
 				table.setValueAt(false, i, 0);
 			}
 		}
 		if(data.size() < 2) setTrueAll();
+		model.fireTableDataChanged();
 	}
 
 	public void removeRowInterval(int min, int max, JTable table){
@@ -64,6 +68,7 @@ public class SelectionTableModel extends AbstractTableModel {
 			if(data.size()>0) data.remove(min);
 		}
 		fireTableRowsDeleted(min, max);
+		model.fireTableDataChanged();
 		if(data.size() < 2) setTrueAll();
 	}
 

@@ -1,6 +1,7 @@
 package hbs.sff.no;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -30,6 +31,7 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 public class GUI {
@@ -188,13 +190,13 @@ public class GUI {
 	private void addTables(){
 		table_selection = new JTable(stmSelectCust){
 			private static final long serialVersionUID = 1L;
-//			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
-//				Component c = super.prepareRenderer(renderer, row, column);
-//				Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
-//				// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
-//				c.setForeground(color);
-//				return c;
-//			}
+			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
+				Component c = super.prepareRenderer(renderer, row, column);
+				Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
+				// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
+				c.setForeground(color);
+				return c;
+			}
 		};
 		table_selection.getSelectionModel().
 		addListSelectionListener(new ListSelectionListenerImpl());
@@ -686,10 +688,7 @@ public class GUI {
 			}
 			else if(e.getStateChange() == ItemEvent.DESELECTED
 					&& (e.getSource() instanceof AbstractButton)){
-//				Active.getActiveDisplayModel().removeRowInterval(min, max, table_selection);
-//				function in SelectionTableModel: removeRows(List<List> rowData)
-//				if model contain row, remove it
-//				TODO: remove the items currently in the selection list from the display list
+				Active.getActiveDisplayModel().partialRemoval(min, max, table_selection);
 			}
 		}
 	}
