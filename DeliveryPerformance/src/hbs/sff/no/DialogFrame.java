@@ -1,6 +1,10 @@
 package hbs.sff.no;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -13,8 +17,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.border.EmptyBorder;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 public class DialogFrame extends JFrame {
 
@@ -27,7 +29,14 @@ public class DialogFrame extends JFrame {
 
 	public DialogFrame(){
 		this.setVisible(true);
-		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		this.setResizable(false);
+		this.addWindowListener(new WindowAdapter(){
+			@Override
+			public void windowClosing(WindowEvent evt){
+				creator.cancel(true);
+				DialogFrame.this.dispose();
+			}
+		});
 		setTitle("Creating report");
 		setBounds(100, 100, 560, 189);
 		contentPane = new JPanel();

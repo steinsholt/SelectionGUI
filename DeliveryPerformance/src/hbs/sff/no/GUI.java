@@ -307,7 +307,7 @@ public class GUI {
 		btnGenerateReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				DialogFrame dialogFrame = new DialogFrame();
-				dialogFrame.setLocationRelativeTo(panel);
+				dialogFrame.setLocationRelativeTo(frame);
 				dialogFrame.runReport(stmDisplayCust.getRowData(), 
 						stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
 			}
