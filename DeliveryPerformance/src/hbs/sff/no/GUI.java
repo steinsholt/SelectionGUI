@@ -20,7 +20,6 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -30,7 +29,6 @@ import javax.swing.JTextField;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
-import javax.swing.SwingWorker;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.ListSelectionEvent;
@@ -235,6 +233,12 @@ public class GUI {
 		configureTableColumns(table_customers);
 		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
 		scrollPaneCustomers.setViewportView(table_customers);
+
+		//		table_selection.setAutoCreateRowSorter(true);
+		//		table_statuses.setAutoCreateRowSorter(true);
+		//		table_customers.setAutoCreateRowSorter(true);
+		//		table_projects.setAutoCreateRowSorter(true);
+
 	}
 
 	private void addScrollPaneThree(JPanel panel_2, SpringLayout sl_panel_2) {
@@ -302,32 +306,10 @@ public class GUI {
 		btnGenerateReport.setForeground(Color.blue);
 		btnGenerateReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				final JDialog dialog = new JDialog();
-//				dialog.setUndecorated(true);                 // removes frame
-				JPanel dialogPanel = new JPanel();
-				JLabel label = new JLabel();
-				label.setText("Please wait, creating report");
-				label.setFont(new Font("Serif", Font.PLAIN, 40));
-				dialogPanel.add(label);
-				dialog.add(dialogPanel);
-				dialog.pack();
-				dialog.setLocationRelativeTo(panel);
-				dialog.setVisible(true);
-				SwingWorker<Void, Void> worker = new SwingWorker<Void, Void>(){
-					@Override
-					protected Void doInBackground() throws Exception {
-						ExcelDocumentCreator creator = new ExcelDocumentCreator();
-						creator.createReport(stmDisplayCust.getRowData(), 
-								stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
-						return null;
-					}
-					
-					@Override
-					protected void done(){
-						dialog.dispose();
-					}
-				};
-				worker.execute();
+				DialogFrame dialogFrame = new DialogFrame();
+				dialogFrame.setLocationRelativeTo(panel);
+				dialogFrame.runReport(stmDisplayCust.getRowData(), 
+						stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
 			}
 		});
 		sl_panel_2.putConstraint(SpringLayout.SOUTH, btnGenerateReport, -10,

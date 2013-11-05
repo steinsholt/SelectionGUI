@@ -51,14 +51,14 @@ public class Data {
 		else return projectData.size();
 	}
 
-	public static Database getConnection(){
+	public static Database getDatabase(){
 
 		db.openConnection();
 		return db;
 	}
 
 	public void loadData(){
-		getConnection();
+		getDatabase();
 
 		try{
 			Statement st = db.getJdbcConnection().createStatement();
