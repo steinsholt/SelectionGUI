@@ -3,6 +3,9 @@ package hbs.sff.no;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionListener;
 
+/*
+ * This class is used to stop any selection from a JTable
+ */
 public class NullSelectionModel implements ListSelectionModel{
 	public boolean isSelectionEmpty() { return true; }  
 	public boolean isSelectedIndex(int index) { return false; }  

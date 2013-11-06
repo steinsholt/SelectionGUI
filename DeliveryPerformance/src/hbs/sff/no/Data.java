@@ -7,6 +7,10 @@ import java.util.List;
 
 import com.borland.dx.sql.dataset.Database;
 
+/*
+ * This class holds the connection to the database and loads all customer names,
+ *  customer Ids and project names at startup.
+ */
 public class Data {
 	private List<Object[]> statusData;
 	private List<Object[]> customerData;
@@ -57,7 +61,7 @@ public class Data {
 		return db;
 	}
 
-	public void loadData(){
+	public void loadDataAtStartup(){
 		getDatabase();
 
 		try{

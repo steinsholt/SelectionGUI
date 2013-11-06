@@ -13,9 +13,6 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
@@ -78,8 +75,9 @@ public class GUI {
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
 	private boolean headerClick;
+	private Regex regex;
 
-	public enum Active{
+	public static enum Active{
 		STATUS, CUSTOMER, PROJECT;
 		private static SelectionTableModel display;
 		private static SelectionTableModel select;
@@ -120,7 +118,9 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-
+		
+		regex = new Regex();
+		
 		headerClick = true;
 		addColumnNames();
 		SpringLayout springLayout = createFrame();
@@ -171,7 +171,7 @@ public class GUI {
 
 		addTables();
 		data = new Data();
-		data.loadData();
+		data.loadDataAtStartup();
 		for(Object[] item : data.getStatusData()){
 			stmSelectStat.addRow(Arrays.asList(item));
 		}
@@ -210,7 +210,6 @@ public class GUI {
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
-		//		table_selection.getTableHeader().setBackground(bg);   //TODO: This sets the header color
 
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
@@ -393,7 +392,8 @@ public class GUI {
 				SpringLayout.EAST, panel_1);
 		btnSearch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				executeSearch();
+				regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+				synchronizeHeader();
 			}
 		});
 		panel_1.add(btnSearch);
@@ -431,7 +431,8 @@ public class GUI {
 		nameField.addKeyListener(new KeyAdapter(){
 			public void keyPressed(KeyEvent e){
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					executeSearch();
+					regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+					synchronizeHeader();
 				}
 			}
 		});
@@ -449,7 +450,8 @@ public class GUI {
 		idField.addKeyListener(new KeyAdapter(){
 			public void keyPressed(KeyEvent e){
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					executeSearch();
+					regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+					synchronizeHeader();
 				}
 			}
 		});
@@ -638,9 +640,6 @@ public class GUI {
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
-		// TODO: set row sorter after searches 
-		// watch out for interaction with select all
-		// table.setAutoCreateRowSorter(true);
 		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(100);
 		table.getColumnModel().getColumn(0).setMaxWidth(80);
 		table.getTableHeader().setReorderingAllowed(false);
@@ -649,57 +648,6 @@ public class GUI {
 		tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		return tc;
-	}
-
-	@SuppressWarnings("rawtypes")
-	private void executeSearch() {
-		try{
-			if(!Active.getActiveSelectModel().getRowData().isEmpty()){
-				Active.getActiveSelectModel().getRowData().clear();
-				Active.getActiveSelectModel().fireTableDataChanged();
-			}
-			String name = nameField.getText().toLowerCase();
-			String ID = idField.getText();
-			if(Active.getActiveDisplayModel()==stmDisplayProj){
-				for(Object[] item : data.getProjectData()){
-					String project = ((String) item[1]).toLowerCase();
-					Pattern p = Pattern.compile(".*" + name + ".*");
-					Matcher m = p.matcher(project);
-					if(m.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, project));
-				}
-			}
-			else{
-				for(Object[] item : data.getCustomerData()){
-					String customerName = ((String) item[2]).toLowerCase();
-					String customerID = Integer.toString((int) item[1]);
-					Pattern pName = Pattern.compile(".*" + name + ".*");
-					Pattern pId = Pattern.compile(".*" + ID + ".*");
-					Matcher mName = pName.matcher(customerName);
-					Matcher mId = pId.matcher(customerID);
-					if(ID.isEmpty()){
-						if(mName.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
-					}
-					else if(!ID.isEmpty() && !name.isEmpty()){
-						if(mName.matches() && mId.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
-					}
-					else{
-						if(mId.matches()) Active.getActiveSelectModel().addRow(Arrays.asList(false, customerID, customerName));
-					}
-				}
-			}
-			for(List rowDisplay : Active.getActiveDisplayModel().getRowData()){
-				SelectionTableModel model = Active.getActiveSelectModel();
-				for(List rowSelect : model.getRowData()){
-					if(rowDisplay.get(1).equals(rowSelect.get(1))){
-						int index = model.getRowData().indexOf(rowSelect);
-						model.setValueAt(true, index, 0);
-					}
-				}
-			}
-			synchronizeHeader();
-		}catch(PatternSyntaxException e){
-			e.printStackTrace();
-		}
 	}
 
 	class MyItemListener implements ItemListener{

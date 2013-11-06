@@ -23,7 +23,10 @@ import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
 
-
+/*
+ * This class creates the excel document in another thread, using a swing worker
+ * to publish the process progress.
+ */
 @SuppressWarnings("rawtypes")
 public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private XSSFWorkbook workbook;
@@ -74,7 +77,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	@Override
 	protected String doInBackground() {
 		try{
-
+			
+			/*
+			 * Changes are made to temp lists to maintain the state of the
+			 * original lists. The keyword "ALL" is registered and used to
+			 * define the SQL-search, then removed from the temp list. All work
+			 * is done in a worker thread and can be canceled at any time. All
+			 * progress is published to the progress bar and text fields on the
+			 * dialog frame.
+			 */
+			
 			boolean allCustSelected = customerData.get(0).contains("ALL") ? true : false;
 			boolean allProjSelected = projectData.get(0).contains("ALL") ? true : false;
 			boolean allStatSelected = statusData.get(0).contains("ALL") ? true : false;
@@ -140,6 +152,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private StringBuilder generateQuery(boolean allCustSelected,
 			boolean allProjSelected, boolean allStatSelected,
 			List<List> temp_cust, List<List> temp_proj, List<List> temp_stat) {
+		
+		/*
+		 * The base statement is used no matter the user selection
+		 */
 		StringBuilder query = new StringBuilder(5000);
 		String basicStatement = "select \"Project\" = Project.pr_name,"
 				+ " \"Client\" = customerList.assoc_name,"
@@ -181,6 +197,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " and clientItemList.suppl_id = supplierList.assoc_id" 
 				+ " and clientItemList.currency_id = Exchange.currency_id"
 				+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status";
+		
+		/*
+		 * If the user have NOT selected all items in the list the method will
+		 * specify the search to only include the selected items.
+		 */
 		query.append(basicStatement);
 		if(!allCustSelected){
 			query.append(" and customerList.assoc_id in (");

@@ -7,6 +7,10 @@ import java.util.List;
 import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 
+/*
+ * This class allows for specialized removal and insertion not implemented
+ * in standard table models.
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class SelectionTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;

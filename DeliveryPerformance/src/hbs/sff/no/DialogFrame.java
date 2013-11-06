@@ -18,6 +18,11 @@ import javax.swing.JTextField;
 import javax.swing.SpringLayout;
 import javax.swing.border.EmptyBorder;
 
+/*
+ * This custom JFrame is shown during the excel document creation. The progress
+ * made during the creation is posted to this frame and shown on the progress
+ * bar and in the text fields.
+ */
 public class DialogFrame extends JFrame {
 
 	private static final long serialVersionUID = 1L;

@@ -12,6 +12,10 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 
+/*
+ * This class is a custom implemented header for JTables. It contains a 
+ * JCheckbox and handles click events.
+ */
 public class CheckBoxHeader extends JCheckBox 
 implements TableCellRenderer, MouseListener  {
 	private static final long serialVersionUID = 1L;
