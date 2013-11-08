@@ -43,8 +43,7 @@ implements TableCellRenderer, MouseListener  {
 		}
 		setColumn(column);
 		rendererComponent.setText("Select All");
-		rendererComponent.
-		setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+		rendererComponent.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		return rendererComponent;
 	}
 
