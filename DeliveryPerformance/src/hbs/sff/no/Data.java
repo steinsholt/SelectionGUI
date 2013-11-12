@@ -9,7 +9,7 @@ import com.borland.dx.sql.dataset.Database;
 
 /*
  * This class holds the connection to the database and loads all customer names,
- *  customer Ids and project names at startup.
+ * customer numbers and project names at startup.
  */
 public class Data {
 	private List<Object[]> statusData;
