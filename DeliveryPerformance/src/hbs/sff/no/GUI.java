@@ -33,6 +33,10 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 
 public class GUI {
 
@@ -164,7 +168,10 @@ public class GUI {
 			sl_panel_5.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, label_1);
 			buttonPanel.add(lblName);
 			lblName.setFont(subheadline);
+			
+			PlainDocument doc = createDocumentFilter();
 			idField = new JTextField();
+			idField.setDocument(doc);
 			sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, label_1);
 			sl_panel_5.putConstraint(SpringLayout.WEST, idField, 63, SpringLayout.EAST, lblID);
 			sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
@@ -308,6 +315,25 @@ public class GUI {
 		SpringUtilities.makeCompactGrid(rightPanel, 3, 1, 0, 0, 0, 20);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 		enableCustomerSelection();		
+	}
+
+	private PlainDocument createDocumentFilter() {
+		PlainDocument doc = new PlainDocument();
+		doc.setDocumentFilter(new DocumentFilter() {
+		    @Override
+		    public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
+		        throws BadLocationException 
+		    {
+		        fb.insertString(off, str.replaceAll("\\D++", ""), attr);
+		    } 
+		    @Override
+		    public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
+		        throws BadLocationException 
+		    {
+		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr); 
+		    }
+		});
+		return doc;
 	}
 
 	public JFrame getFrame() {
