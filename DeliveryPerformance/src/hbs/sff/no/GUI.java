@@ -11,6 +11,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +23,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -305,10 +309,28 @@ public class GUI {
 		btnGenerateReport.setFont(bold);
 		btnGenerateReport.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				DialogFrame dialogFrame = new DialogFrame();
-				dialogFrame.setLocationRelativeTo(frame);
-				dialogFrame.runReport(stmDisplayCust.getRowData(), 
-						stmDisplayProj.getRowData(), stmDisplayStat.getRowData());
+				boolean isFileUnlocked = false;
+				FileOutputStream out = null;
+				File output = null;
+				String directory = "C:/vendorLogistics/Logistics/vendorUser/";
+				String fileName = "report.xlsx";
+				try{
+					output = new File(directory + fileName);
+					out = new FileOutputStream(output, false);
+				    isFileUnlocked = true;
+				}catch(IOException e){
+					isFileUnlocked = false;
+				}
+				if(isFileUnlocked){
+					DialogFrame dialogFrame = new DialogFrame();
+					dialogFrame.setLocationRelativeTo(frame);
+					dialogFrame.runReport(stmDisplayCust.getRowData(), 
+							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output);
+				}
+				else{
+					JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
+				}
+				
 			}
 		});
 		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);

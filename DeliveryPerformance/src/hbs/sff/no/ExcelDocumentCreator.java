@@ -39,14 +39,17 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private List<List> statusData;
 	private JTextField publishedOutput;
 	private JTextField progressField;
+	private FileOutputStream out;
 
-	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, List<List> statusData, JTextField publishedOutput, JTextField progressField){
+	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, List<List> statusData, JTextField publishedOutput, JTextField progressField, FileOutputStream out, File output){
 		try {
 			this.customerData = customerData;
 			this.projectData = projectData;
 			this.statusData = statusData;
 			this.publishedOutput = publishedOutput;
 			this.progressField = progressField;
+			this.out = out;
+			this.output = output;
 
 			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
 			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
@@ -54,8 +57,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetTable = workbook.getSheet("Table");
 			sheetTable.setZoom(70);
 			sheetProject = workbook.getSheet("Project");
-
-			output = File.createTempFile("temp", ".xlsx");
 
 		} catch (IOException | InvalidFormatException e) {
 			e.printStackTrace();
@@ -65,7 +66,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private void saveWorkbook() {
 		try {
 			workbook.setActiveSheet(0);
-			FileOutputStream out = new FileOutputStream(output, false);
 			workbook.write(out);
 			out.close();
 			Desktop.getDesktop().open(output);

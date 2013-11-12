@@ -7,6 +7,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -106,9 +108,9 @@ public class DialogFrame extends JFrame {
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void runReport(List<List> customerData, List<List> projectData, List<List> statusData){
+	public void runReport(List<List> customerData, List<List> projectData, List<List> statusData, FileOutputStream out, File output){
 		creator = new ExcelDocumentCreator(customerData, 
-				projectData, statusData, stateField, progressField);
+				projectData, statusData, stateField, progressField, out, output);
 		creator.addPropertyChangeListener(new PropertyChangeListener(){
 			@Override
             public void propertyChange(PropertyChangeEvent evt) {
