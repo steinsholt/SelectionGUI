@@ -297,6 +297,8 @@ public class GUI {
 		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
 		scrollPaneCustomers.setViewportView(table_customers);
 
+		// TODO: Fix overlapping panels after resize
+		
 		reportPanel = new JPanel();
 		reportPanel.setMinimumSize(new Dimension(100,100));
 		rightPanel.add(reportPanel);
@@ -322,11 +324,9 @@ public class GUI {
 					isFileUnlocked = false;
 				}
 				if(isFileUnlocked){
+					@SuppressWarnings("unused")
 					ProgressDialog dialogFrame = new ProgressDialog(stmDisplayCust.getRowData(), 
 							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output, frame);
-//					dialogFrame.setLocationRelativeTo(frame);
-//					dialogFrame.runReport(stmDisplayCust.getRowData(), 
-//							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output);
 				}
 				else{
 					JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
@@ -334,7 +334,7 @@ public class GUI {
 			}
 		});
 		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
-		SpringUtilities.makeCompactGrid(rightPanel, 3, 1, 0, 0, 0, 20);
+		SpringUtilities.makeCompactGrid(rightPanel, 3, 1, 0, 0, 0, 5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 		enableCustomerSelection();		
 	}

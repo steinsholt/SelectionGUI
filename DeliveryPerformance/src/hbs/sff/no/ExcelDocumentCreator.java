@@ -220,7 +220,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		if(!allCustSelected){
 			query.append(" and customerList.assoc_id in (");
 			for(List l : temp_cust){
-				int id = Integer.parseInt((String) l.get(1));
+				int id =  (int) l.get(1);
 				query.append(id + ", ");
 			}
 			query.delete(query.length()-2, query.length());

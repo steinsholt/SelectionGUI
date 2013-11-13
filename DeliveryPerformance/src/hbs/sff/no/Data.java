@@ -73,19 +73,19 @@ public class Data {
 				Object[] dataRow = {false, status};
 				statusData.add(dataRow);
 			}	
-			rs = st.executeQuery("select assoc_id, assoc_name from Assoc customerList");
- 			while(rs.next()){
-				String name = rs.getString("assoc_name").trim();
-				int ID = rs.getInt("assoc_id");
-				Object[] dataRow = {false, ID, name};
-				customerData.add(dataRow);
-			}
-			rs = st.executeQuery("select pr_name from Project");
-			while(rs.next()){
-				String name = rs.getString("pr_name").trim();
-				Object[] dataRow = {false, name};
-				projectData.add(dataRow);
-			}
+//			rs = st.executeQuery("select assoc_id, assoc_name from Assoc customerList");
+// 			while(rs.next()){
+//				String name = rs.getString("assoc_name").trim();
+//				int ID = rs.getInt("assoc_id");
+//				Object[] dataRow = {false, ID, name};
+//				customerData.add(dataRow);
+//			}
+//			rs = st.executeQuery("select pr_name from Project");
+//			while(rs.next()){
+//				String name = rs.getString("pr_name").trim();
+//				Object[] dataRow = {false, name};
+//				projectData.add(dataRow);
+//			}
 			
 			st.close();
 			rs.close();

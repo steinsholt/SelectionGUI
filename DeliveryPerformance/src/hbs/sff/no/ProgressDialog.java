@@ -104,7 +104,7 @@ public class ProgressDialog extends JDialog {
 		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnCancel, -10, SpringLayout.SOUTH, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.EAST, btnCancel, -10, SpringLayout.EAST, panel_1);
 		panel_1.add(btnCancel);
-		runReport(statusData, statusData, statusData, out, output);
+		runReport(customerData, projectData, statusData, out, output);
 		this.setModalityType(ModalityType.APPLICATION_MODAL);
 		this.setLocationRelativeTo(frame);
 		this.setResizable(false);
