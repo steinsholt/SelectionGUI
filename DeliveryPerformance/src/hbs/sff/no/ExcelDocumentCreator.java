@@ -14,6 +14,8 @@ import javax.swing.SwingWorker;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -109,6 +111,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			int rowCount = dataSet.getRowCount();
 			int processed = 0;
+			
+			CellStyle decimalStyle = workbook.createCellStyle();
+			CellStyle sixDigitStyle = workbook.createCellStyle();
+			DataFormat format = workbook.createDataFormat();
+			decimalStyle.setDataFormat(format.getFormat("##00.00"));
+			sixDigitStyle.setDataFormat(format.getFormat("000000"));
 
 			publishedOutput.setText("Generating Excel Document");
 			while(!isCancelled()){
@@ -119,6 +127,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetTable.createRow(dataSet.getRow());
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
 						Cell cell = sheetTable.getRow(dataSet.getRow()).createCell(column);
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Unit Price"))){
+							cell.setCellStyle(decimalStyle);
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Vendor nr."))){
+							cell.setCellStyle(sixDigitStyle);
+						}
 						try{
 							String s = dataSet.getString(column);
 							cell.setCellValue(s);
