@@ -322,15 +322,15 @@ public class GUI {
 					isFileUnlocked = false;
 				}
 				if(isFileUnlocked){
-					DialogFrame dialogFrame = new DialogFrame();
-					dialogFrame.setLocationRelativeTo(frame);
-					dialogFrame.runReport(stmDisplayCust.getRowData(), 
-							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output);
+					ProgressDialog dialogFrame = new ProgressDialog(stmDisplayCust.getRowData(), 
+							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output, frame);
+//					dialogFrame.setLocationRelativeTo(frame);
+//					dialogFrame.runReport(stmDisplayCust.getRowData(), 
+//							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output);
 				}
 				else{
 					JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
 				}
-				
 			}
 		});
 		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
@@ -416,7 +416,7 @@ public class GUI {
 
 	private SpringLayout createFrame() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 989, 906);
+		frame.setBounds(100, 100, 1000, 900);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		springLayout_1 = new SpringLayout();
 		frame.getContentPane().setLayout(springLayout_1);

@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
@@ -25,7 +26,7 @@ import javax.swing.border.EmptyBorder;
  * made during the creation is posted to this frame and shown on the progress
  * bar and in the text fields.
  */
-public class DialogFrame extends JFrame {
+public class ProgressDialog extends JDialog {
 
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
@@ -34,14 +35,13 @@ public class DialogFrame extends JFrame {
 	private JProgressBar progressBar;
 	private ExcelDocumentCreator creator;
 
-	public DialogFrame(){
-		this.setVisible(true);
-		this.setResizable(false);
+	@SuppressWarnings("rawtypes")
+	public ProgressDialog(List<List> customerData, List<List> projectData, List<List> statusData, FileOutputStream out, File output, JFrame frame){
 		this.addWindowListener(new WindowAdapter(){
 			@Override
 			public void windowClosing(WindowEvent evt){
 				creator.cancel(true);
-				DialogFrame.this.dispose();
+				ProgressDialog.this.dispose();
 			}
 		});
 		setTitle("Creating report");
@@ -104,17 +104,21 @@ public class DialogFrame extends JFrame {
 		sl_panel_1.putConstraint(SpringLayout.SOUTH, btnCancel, -10, SpringLayout.SOUTH, panel_1);
 		sl_panel_1.putConstraint(SpringLayout.EAST, btnCancel, -10, SpringLayout.EAST, panel_1);
 		panel_1.add(btnCancel);
-		this.requestFocus();
+		runReport(statusData, statusData, statusData, out, output);
+		this.setModalityType(ModalityType.APPLICATION_MODAL);
+		this.setLocationRelativeTo(frame);
+		this.setResizable(false);
+		this.setVisible(true);
 	}
 	
 	@SuppressWarnings("rawtypes")
-	public void runReport(List<List> customerData, List<List> projectData, List<List> statusData, FileOutputStream out, File output){
+	private void runReport(List<List> customerData, List<List> projectData, List<List> statusData, FileOutputStream out, File output){
 		creator = new ExcelDocumentCreator(customerData, 
 				projectData, statusData, stateField, progressField, out, output);
 		creator.addPropertyChangeListener(new PropertyChangeListener(){
 			@Override
             public void propertyChange(PropertyChangeEvent evt) {
-				if(creator.isDone()) DialogFrame.this.dispose();
+				if(creator.isDone()) ProgressDialog.this.dispose();
 				
                 if ("progress".equals(evt.getPropertyName())) {
                     progressBar.setValue((Integer) evt.getNewValue());
