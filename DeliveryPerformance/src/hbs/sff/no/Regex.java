@@ -11,11 +11,6 @@ import javax.swing.JTextField;
 
 import com.borland.dx.sql.dataset.Database;
 
-/*
- * This class is used to match the user search input to the data loaded from the
- * database, then display it in the tables and finally synchronize the 
- * associated tables
- */
 public class Regex {
 	@SuppressWarnings("rawtypes")
 	public void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, DatabaseConnection data, JTextField nameField,
@@ -28,10 +23,6 @@ public class Regex {
 				selectionModel.getRowData().clear();
 				selectionModel.fireTableDataChanged();
 			}
-			/*
-			 * Checks the current selection model then attempts to match the 
-			 * user input with the customer name and/or customer id
-			 */
 			String name = nameField.getText().toLowerCase();
 			String ID = idField.getText();
 			Database db = DatabaseConnection.getDatabase();

@@ -2,16 +2,10 @@ package hbs.sff.no;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import com.borland.dx.sql.dataset.Database;
 
-/*
- * This class holds the connection to the database and loads all customer names,
- * customer numbers and project names at startup.
- */
 public class DatabaseConnection {
 	private static Database db;
 
