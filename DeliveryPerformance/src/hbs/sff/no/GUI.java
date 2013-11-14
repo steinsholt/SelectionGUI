@@ -74,7 +74,7 @@ public class GUI {
 	private JButton bProjects;
 	private JButton bStatuses;
 	private CheckBoxHeader header;
-	private Data data;
+	private DatabaseConnection databaseConnection;
 	private List<String> colNames_sComp;
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
@@ -138,11 +138,8 @@ public class GUI {
 		stmSelectStat = new SelectionTableModel(colNames_sStat);
 
 		addTables();
-		data = new Data();
-		data.loadDataAtStartup();
-		for(Object[] item : data.getStatusData()){
-			stmSelectStat.addRow(Arrays.asList(item));
-		}
+		databaseConnection = new DatabaseConnection();
+		databaseConnection.loadStatusData(stmSelectStat);
 
 		JPanel rightPanel = new JPanel();
 		{
@@ -230,14 +227,14 @@ public class GUI {
 			btnSearch.setFont(bold);
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+					regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 					synchronizeHeader();
 				}
 			});
 			nameField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}
@@ -245,7 +242,7 @@ public class GUI {
 			idField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), data, nameField, idField);
+						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}

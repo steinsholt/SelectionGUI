@@ -18,10 +18,9 @@ import com.borland.dx.sql.dataset.Database;
  */
 public class Regex {
 	@SuppressWarnings("rawtypes")
-	public void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, Data data, JTextField nameField,
+	public void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, DatabaseConnection data, JTextField nameField,
 			JTextField idField) {
 		try{
-
 			/*
 			 * Clears the table after previous searches
 			 */
@@ -29,14 +28,13 @@ public class Regex {
 				selectionModel.getRowData().clear();
 				selectionModel.fireTableDataChanged();
 			}
-
 			/*
 			 * Checks the current selection model then attempts to match the 
 			 * user input with the customer name and/or customer id
 			 */
 			String name = nameField.getText().toLowerCase();
 			String ID = idField.getText();
-			Database db = Data.getDatabase();
+			Database db = DatabaseConnection.getDatabase();
 			Statement st = db.getJdbcConnection().createStatement();
 			st.setQueryTimeout(60);
 			if(selectionModel.getColumnCount()==2){
@@ -44,12 +42,6 @@ public class Regex {
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getString(1).trim()));
 				}
-				//				for(Object[] item : data.getProjectData()){
-				//					String project = ((String) item[1]).toLowerCase();
-				//					Pattern p = Pattern.compile(".*" + name + ".*");
-				//					Matcher m = p.matcher(project);
-				//					if(m.matches()) selectionModel.addRow(Arrays.asList(false, project));
-				//				}
 			}
 			else{
 				ResultSet rs = st.executeQuery("select assoc_id, assoc_name"
@@ -59,26 +51,7 @@ public class Regex {
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getInt(1), rs.getString(2).trim()));
 				}
-
-				//				for(Object[] item : data.getCustomerData()){
-				//					String customerName = ((String) item[2]).toLowerCase();
-				//					String customerID = Integer.toString((int) item[1]);
-				//					Pattern pName = Pattern.compile(".*" + name + ".*");
-				//					Pattern pId = Pattern.compile(".*" + ID + ".*");
-				//					Matcher mName = pName.matcher(customerName);
-				//					Matcher mId = pId.matcher(customerID);
-				//					if(ID.isEmpty()){
-				//						if(mName.matches()) selectionModel.addRow(Arrays.asList(false, customerID, customerName));
-				//					}
-				//					else if(!ID.isEmpty() && !name.isEmpty()){
-				//						if(mName.matches() && mId.matches()) selectionModel.addRow(Arrays.asList(false, customerID, customerName));
-				//					}
-				//					else{
-				//						if(mId.matches()) selectionModel.addRow(Arrays.asList(false, customerID, customerName));
-				//					}
-				//				}
 			}
-
 			/*
 			 * Synchronizes the currently selectable lists
 			 */

@@ -104,7 +104,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			StringBuilder query = generateQuery(allCustSelected,allProjSelected, 
 					allStatSelected, temp_cust, temp_proj, temp_stat);
 
-			Database db = Data.getDatabase();
+			Database db = DatabaseConnection.getDatabase();
 			QueryDataSet dataSet = new QueryDataSet();
 			dataSet.setQuery(new QueryDescriptor(db, query.toString()));
 			dataSet.open();
