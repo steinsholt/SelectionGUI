@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -283,12 +284,15 @@ public class GUI {
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
 		table_statuses = new JTable(stmDisplayStat);
+		table_statuses.setName("statuses");
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
 		table_projects = new JTable(stmDisplayProj);
+		table_projects.setName("projects");
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
 		table_customers = new JTable(stmDisplayCust);
+		table_customers.setName("customers");
 		configureTableColumns(table_customers);
 		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
 		scrollPaneCustomers.setViewportView(table_customers);
@@ -384,8 +388,8 @@ public class GUI {
 				return c;
 			}
 		};
-		table_selection.getSelectionModel().
-		addListSelectionListener(new ListSelectionListenerImpl());
+		table_selection.setName("selection");
+		table_selection.getSelectionModel().addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
 		header = new CheckBoxHeader(new MyItemListener());
 		tc.setHeaderRenderer(header);
@@ -529,8 +533,13 @@ public class GUI {
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
 		TableColumn tc = table.getColumnModel().getColumn(0);
-		tc.setCellEditor(table.getDefaultEditor(Boolean.class));
-		tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
+		if(table.getName().equals("selection")){
+			tc.setCellEditor(table.getDefaultEditor(Boolean.class));
+			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
+		}else{
+			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
+		}
+			
 		return tc;
 	}
 

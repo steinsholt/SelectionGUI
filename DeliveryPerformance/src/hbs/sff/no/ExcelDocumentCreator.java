@@ -53,6 +53,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			this.out = out;
 			this.output = output;
 
+			//TODO: relative path
 			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
 			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
 
