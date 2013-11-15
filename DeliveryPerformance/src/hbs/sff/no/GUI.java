@@ -110,8 +110,7 @@ public class GUI {
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
 		partialSelectionModel = new PartialSelectionModel();
-		partialSelectionModel.addListSelectionListener(new 
-				ListSelectionListenerImpl());
+		partialSelectionModel.addListSelectionListener(new ListSelectionListenerImpl());
 
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
@@ -294,7 +293,7 @@ public class GUI {
 		table_customers = new JTable(stmDisplayCust);
 		table_customers.setName("customers");
 		configureTableColumns(table_customers);
-		table_customers.getColumnModel().getColumn(1).setMaxWidth(100);
+		table_customers.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(table_customers);
 
 		// TODO: Fix overlapping panels after resize
@@ -383,7 +382,6 @@ public class GUI {
 			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
 				Component c = super.prepareRenderer(renderer, row, column);
 				Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
-				// TODO: Change to setBackground or setForeground at will. Remember to also change colors above
 				c.setForeground(color);
 				return c;
 			}
@@ -391,20 +389,15 @@ public class GUI {
 		table_selection.setName("selection");
 		table_selection.getSelectionModel().addListSelectionListener(new ListSelectionListenerImpl());
 		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new MyItemListener());
+		header = new CheckBoxHeader(new SelectionHeaderListener());
 		tc.setHeaderRenderer(header);
 
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
 
 		stmDisplayStat = new SelectionTableModel(colNames_sStat);
-		stmDisplayStat.setTrueAll();
-
 		stmDisplayProj = new SelectionTableModel(colNames_sProj);
-		stmDisplayProj.setTrueAll();
-
 		stmDisplayCust = new SelectionTableModel(colNames_sComp);
-		stmDisplayCust.setTrueAll();
 
 		//		table_selection.setAutoCreateRowSorter(true);
 		//		table_statuses.setAutoCreateRowSorter(true);
@@ -528,8 +521,8 @@ public class GUI {
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
-		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(100);
-		table.getColumnModel().getColumn(0).setMaxWidth(80);
+		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(50);
+		table.getColumnModel().getColumn(0).setMaxWidth(100);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
 		TableColumn tc = table.getColumnModel().getColumn(0);
@@ -538,12 +531,27 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
+			tc.setHeaderRenderer(new CheckBoxHeader(new DisplayHeaderListener()));
 		}
 			
 		return tc;
 	}
+	
+	// TODO: synch display headers
+	class DisplayHeaderListener implements ItemListener{
+		public void itemStateChanged(ItemEvent e){
+			if(e.getStateChange() == ItemEvent.SELECTED){
+				SelectionTableModel model = Active.getActiveDisplayModel();
+				JTable table = Active.getActiveDisplayTable();
+				if(model.getRowData().isEmpty()){
+					((CheckBoxHeader) table.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
+				}
+				else model.removeRowInterval(0, model.getRowData().size() - 1, table_selection);
+			}
+		}
+	}
 
-	class MyItemListener implements ItemListener{
+	class SelectionHeaderListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
 			if(headerClick){
 				int min = 0;

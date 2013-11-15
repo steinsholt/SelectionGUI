@@ -38,7 +38,6 @@ public class SelectionTableModel extends AbstractTableModel {
 			else addRow(Arrays.asList(deleteIcon, model.getRow(i).get(1)));
 			table.setValueAt(true, i, 0);
 		}
-		if(!data.get(0).contains("Remove all"))setRemoveAll();
 		model.fireTableDataChanged();
 	}
 
@@ -60,28 +59,23 @@ public class SelectionTableModel extends AbstractTableModel {
 				table.setValueAt(false, i, 0);
 			}
 		}
-		if(data.size() < 2) setTrueAll();
 		model.fireTableDataChanged();
 	}
 
 	public void removeRowInterval(int min, int max, JTable table){
 		SelectionTableModel model = (SelectionTableModel) table.getModel();
-		if(data.get(min).contains("Remove all")){
-			max = data.size() - 1;
-		}
 		for(int i = min; i <= max; i++){
 			List row = this.getRow(min);
 			List temp = new ArrayList(row);
 			temp.set(0, true);
-			if(model.getRowData().contains(row)){
-				int index = model.getRowContaining(row);
+			if(model.getRowData().contains(temp)){
+				int index = model.getRowContaining(temp);
 				model.setValueAt(false, index, 0);
 			}
 			if(data.size()>0) data.remove(min);
 		}
 		fireTableRowsDeleted(min, max);
 		model.fireTableDataChanged();
-		if(data.size() < 2) setTrueAll();
 	}
 
 	public int getRowContaining(Object id){
@@ -126,17 +120,5 @@ public class SelectionTableModel extends AbstractTableModel {
 
 	public List getRow(int i) {
 		return data.get(i);
-	}
-
-	public void setRemoveAll(){
-		if(columnNames.size()==3)data.add(0,Arrays.asList(false,"Remove all",""));
-		else data.add(0,Arrays.asList(false,"Remove all"));
-		if(data.size()>1)data.remove(1);
-	}
-
-	public void setTrueAll(){
-		if(columnNames.size()==3)data.add(0,Arrays.asList(true,"ALL",""));
-		else data.add(0,Arrays.asList(true,"ALL"));
-		if(data.size()>1)data.remove(1);
 	}
 }

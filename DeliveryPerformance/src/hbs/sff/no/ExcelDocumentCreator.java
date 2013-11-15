@@ -81,29 +81,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	protected String doInBackground() {
 		try{
 			
-			/*
-			 * Changes are made to temp lists to maintain the state of the
-			 * original lists. The keyword "ALL" is registered and used to
-			 * define the SQL-search, then removed from the temp list. All work
-			 * is done in a worker thread and can be canceled at any time. All
-			 * progress is published to the progress bar and text fields on the
-			 * dialog frame.
-			 */
-			
-			boolean allCustSelected = customerData.get(0).contains("ALL") ? true : false;
-			boolean allProjSelected = projectData.get(0).contains("ALL") ? true : false;
-			boolean allStatSelected = statusData.get(0).contains("ALL") ? true : false;
-
-			List<List> temp_cust = new ArrayList<List>(customerData);
-			List<List> temp_proj = new ArrayList<List>(projectData);
-			List<List> temp_stat = new ArrayList<List>(statusData);
-
-			if(!allCustSelected)temp_cust.remove(0);
-			if(!allProjSelected)temp_proj.remove(0);
-			if(!allStatSelected)temp_stat.remove(0);
+			boolean allCustSelected = customerData.size()==0 ? true : false;
+			boolean allProjSelected = projectData.size()==0 ? true : false;
+			boolean allStatSelected = statusData.size()==0 ? true : false;
 
 			StringBuilder query = generateQuery(allCustSelected,allProjSelected, 
-					allStatSelected, temp_cust, temp_proj, temp_stat);
+					allStatSelected, customerData, projectData, statusData);
 
 			Database db = DatabaseConnection.getDatabase();
 			QueryDataSet dataSet = new QueryDataSet();
