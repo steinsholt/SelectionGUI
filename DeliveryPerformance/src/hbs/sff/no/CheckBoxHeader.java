@@ -42,11 +42,11 @@ implements TableCellRenderer, MouseListener  {
 			}
 		}
 		setColumn(column);
-		rendererComponent.setText("Select All");
+		rendererComponent.setText(value.toString());
 		rendererComponent.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
 		return rendererComponent;
 	}
-
+	
 	protected void setColumn(int column) {
 		this.column = column;
 	}

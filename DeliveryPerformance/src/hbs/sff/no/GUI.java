@@ -522,31 +522,51 @@ public class GUI {
 
 	private TableColumn configureTableColumns(JTable table) {
 		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(50);
+		table.getColumnModel().getColumn(0).setMinWidth(80);
 		table.getColumnModel().getColumn(0).setMaxWidth(100);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
 		TableColumn tc = table.getColumnModel().getColumn(0);
+		tc.setHeaderValue("Select All");
 		if(table.getName().equals("selection")){
 			tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			tc.setHeaderRenderer(new CheckBoxHeader(new DisplayHeaderListener()));
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new DisplayHeaderListener());
+			checkboxHeader.setEnabled(false);
+			checkboxHeader.setSelected(true);
+			tc.setHeaderRenderer(checkboxHeader);
 		}
-			
 		return tc;
 	}
 	
+	private void synchDisplayHeaders(JTable activeTable){
+		TableColumn column = activeTable.getColumnModel().getColumn(0);
+		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
+		if(activeTable.getRowCount() > 0){
+			checkBoxHeader.setEnabled(true);
+			checkBoxHeader.setSelected(false);
+			column.setHeaderValue("Remove All");
+		}else{
+			checkBoxHeader.setEnabled(false);
+			checkBoxHeader.setSelected(true);
+			column.setHeaderValue("Select All");
+		}
+	}
+	
+	// TODO: disable headers when table not active, setEnabled(false)
 	// TODO: synch display headers
 	class DisplayHeaderListener implements ItemListener{
 		public void itemStateChanged(ItemEvent e){
-			if(e.getStateChange() == ItemEvent.SELECTED){
-				SelectionTableModel model = Active.getActiveDisplayModel();
+			SelectionTableModel model = Active.getActiveDisplayModel();
+			if(e.getStateChange() == ItemEvent.SELECTED && model != null){
 				JTable table = Active.getActiveDisplayTable();
 				if(model.getRowData().isEmpty()){
 					((CheckBoxHeader) table.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
 				}
 				else model.removeRowInterval(0, model.getRowData().size() - 1, table_selection);
+				synchDisplayHeaders(Active.getActiveDisplayTable());
 			}
 		}
 	}
@@ -565,6 +585,7 @@ public class GUI {
 						&& (e.getSource() instanceof AbstractButton)){
 					Active.getActiveDisplayModel().partialRemoval(min, max, table_selection);
 				}
+				synchDisplayHeaders(Active.getActiveDisplayTable());
 			}
 		}
 	}
@@ -587,6 +608,7 @@ public class GUI {
 				}
 				lsm.clearSelection();
 				synchronizeHeader();
+				synchDisplayHeaders(Active.getActiveDisplayTable());
 			}
 		}
 	}
