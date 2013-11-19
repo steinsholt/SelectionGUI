@@ -95,7 +95,14 @@ public class ProgressDialog extends JDialog {
 		SpringLayout sl_panel_1 = new SpringLayout();
 		panel_1.setLayout(sl_panel_1);
 		
-		JButton btnCancel = new JButton("Cancel");
+		JButton btnCancel = new JButton("Cancel"){
+			private static final long serialVersionUID = 1L;
+			public void addNotify(){
+				super.addNotify();
+				requestFocus();
+			}
+		};
+		
 		btnCancel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				creator.cancel(true);
