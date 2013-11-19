@@ -8,12 +8,12 @@ import java.awt.event.ItemListener;
 import javax.swing.AbstractButton;
 import javax.swing.JTable;
 
-public class SelectionHeaderListener implements ItemListener{
+public class ReportParameterHeaderListener implements ItemListener{
 	
 	private final GUI gui;
 	private final JTable table;
 	
-	public SelectionHeaderListener(GUI gui, JTable table){
+	public ReportParameterHeaderListener(GUI gui, JTable table){
 		this.gui = gui;
 		this.table = table;
 	}

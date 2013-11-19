@@ -48,11 +48,11 @@ public class GUI {
 	private JScrollPane scrollPane;
 	private JTable table_selection;
 	private JScrollPane scrollPaneCustomers;
-	private JTable table_customers;
+	private ReportParameterTable table_customers;
 	private JScrollPane scrollPaneProjects;
-	private JTable table_projects;
+	private ReportParameterTable table_projects;
 	private JScrollPane scrollPaneStatuses;
-	private JTable table_statuses;
+	private ReportParameterTable table_statuses;
 	private SelectionTableModel stmDisplayCust;
 	private SelectionTableModel stmDisplayProj;
 	private SelectionTableModel stmDisplayStat;
@@ -73,7 +73,6 @@ public class GUI {
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
 	private boolean headerClick;
-	private Regex regex;
 	private SpringLayout sl_panel_3;
 	private JPanel displayPanel;
 	private Font bold;
@@ -100,8 +99,6 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-
-		regex = new Regex();
 
 		headerClick = true;
 		addColumnNames();
@@ -224,14 +221,14 @@ public class GUI {
 			btnSearch.setFont(bold);
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+					Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 					synchronizeHeader();
 				}
 			});
 			nameField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+						Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}
@@ -239,7 +236,7 @@ public class GUI {
 			idField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+						Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}
@@ -280,15 +277,15 @@ public class GUI {
 		scrollPaneStatuses = new JScrollPane();
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
-		table_statuses = new JTable(stmDisplayStat);
+		table_statuses = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayStat);
 		table_statuses.setName("statuses");
 		configureTableColumns(table_statuses);
 		scrollPaneStatuses.setViewportView(table_statuses);
-		table_projects = new JTable(stmDisplayProj);
+		table_projects = new ReportParameterTable(partialSelectionModel, nullSelectionModel,stmDisplayProj);
 		table_projects.setName("projects");
 		configureTableColumns(table_projects);
 		scrollPaneProjects.setViewportView(table_projects);
-		table_customers = new JTable(stmDisplayCust);
+		table_customers = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayCust);
 		table_customers.setName("customers");
 		configureTableColumns(table_customers);
 		table_customers.getColumnModel().getColumn(1).setMaxWidth(50);
@@ -387,7 +384,7 @@ public class GUI {
 		table_selection.setName("selection");
 		table_selection.getSelectionModel().addListSelectionListener(new TableSelectionListener(this, table_selection));
 		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new SelectionHeaderListener(this, table_selection));
+		header = new CheckBoxHeader(new ReportParameterHeaderListener(this, table_selection));
 		tc.setHeaderRenderer(header);
 
 		scrollPane.setViewportView(table_selection);
@@ -430,18 +427,9 @@ public class GUI {
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 
-		table_customers.setBackground(Color.white);
-		table_projects.setBackground(Color.lightGray);
-		table_statuses.setBackground(Color.lightGray);
-		table_customers.setForeground(Color.black);
-		table_projects.setForeground(Color.gray);
-		table_statuses.setForeground(Color.gray);
-		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
-		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
-		scrollPaneCustomers.getViewport().setBackground(Color.white);
-		table_customers.setSelectionModel(partialSelectionModel);
-		table_projects.setSelectionModel(nullSelectionModel);
-		table_statuses.setSelectionModel(nullSelectionModel);
+		table_customers.enable();
+		table_projects.disable();
+		table_statuses.disable();
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -453,7 +441,7 @@ public class GUI {
 
 	private void enableProjectSelection(){
 		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, table_projects);
-		label_1.setText("Select Projects");
+		label_1.setText("Select Projects"); // set text active table get name
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
 		lblID.setVisible(false);
@@ -465,18 +453,9 @@ public class GUI {
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 
-		table_projects.setBackground(Color.white);
-		table_customers.setBackground(Color.lightGray);
-		table_statuses.setBackground(Color.lightGray);
-		table_projects.setForeground(Color.black);
-		table_customers.setForeground(Color.gray);
-		table_statuses.setForeground(Color.gray);
-		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
-		scrollPaneStatuses.getViewport().setBackground(Color.lightGray);
-		scrollPaneProjects.getViewport().setBackground(Color.white);
-		table_projects.setSelectionModel(partialSelectionModel);
-		table_customers.setSelectionModel(nullSelectionModel);
-		table_statuses.setSelectionModel(nullSelectionModel);
+		table_customers.disable();
+		table_projects.enable();
+		table_statuses.disable();
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -499,18 +478,9 @@ public class GUI {
 		TableColumn tc = configureTableColumns(table_selection);		
 		tc.setHeaderRenderer(header);
 
-		table_statuses.setBackground(Color.white);
-		table_customers.setBackground(Color.lightGray);
-		table_projects.setBackground(Color.lightGray);
-		table_statuses.setForeground(Color.black);
-		table_customers.setForeground(Color.gray);
-		table_projects.setForeground(Color.gray);
-		scrollPaneCustomers.getViewport().setBackground(Color.lightGray);
-		scrollPaneProjects.getViewport().setBackground(Color.lightGray);
-		scrollPaneStatuses.getViewport().setBackground(Color.white);
-		table_statuses.setSelectionModel(partialSelectionModel);
-		table_customers.setSelectionModel(nullSelectionModel);
-		table_projects.setSelectionModel(nullSelectionModel);
+		table_customers.disable();
+		table_projects.disable();
+		table_statuses.enable();
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);

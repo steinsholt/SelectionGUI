@@ -13,7 +13,7 @@ import com.borland.dx.sql.dataset.Database;
 
 public class Regex {
 	@SuppressWarnings("rawtypes")
-	public void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, DatabaseConnection data, JTextField nameField,
+	public static void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, DatabaseConnection data, JTextField nameField,
 			JTextField idField) {
 		try{
 			/*
