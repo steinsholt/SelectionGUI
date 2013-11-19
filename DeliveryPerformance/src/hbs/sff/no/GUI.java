@@ -443,7 +443,7 @@ public class GUI {
 		table_projects.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
-		nameField.grabFocus();
+		nameField.requestFocusInWindow();
 
 		bCustomers.setSelected(true);
 		bProjects.setSelected(false);
@@ -478,7 +478,7 @@ public class GUI {
 		table_customers.setSelectionModel(nullSelectionModel);
 		table_statuses.setSelectionModel(nullSelectionModel);
 		nameField.setText("");
-		nameField.grabFocus();
+		nameField.requestFocusInWindow();
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(true);
