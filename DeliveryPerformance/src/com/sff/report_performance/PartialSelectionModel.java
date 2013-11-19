@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import javax.swing.DefaultListSelectionModel;
 

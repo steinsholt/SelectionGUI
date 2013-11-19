@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,9 +11,9 @@ import javax.swing.JTextField;
 
 import com.borland.dx.sql.dataset.Database;
 
-public class Regex {
+public class DatabaseSearch {
 	@SuppressWarnings("rawtypes")
-	public static void executeSearch(SelectionTableModel selectionModel, SelectionTableModel displayModel, DatabaseConnection data, JTextField nameField,
+	public static void executeSearch(MyTableModel selectionModel, MyTableModel displayModel, DatabaseConnection data, JTextField nameField,
 			JTextField idField) {
 		try{
 			/*

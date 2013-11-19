@@ -1,11 +1,11 @@
-package hbs.sff.no;
-
-import hbs.sff.no.GUI.Active;
+package com.sff.report_performance;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.JTable;
+
+import com.sff.report_performance.GUI.Active;
 
 public class DisplayHeaderListener implements ItemListener{
 	
@@ -18,7 +18,7 @@ public class DisplayHeaderListener implements ItemListener{
 	}
 	
 	public void itemStateChanged(ItemEvent e){
-		SelectionTableModel model = Active.getActiveDisplayModel();
+		MyTableModel model = Active.getActiveDisplayModel();
 		if(e.getStateChange() == ItemEvent.SELECTED && model != null){
 			JTable display = Active.getActiveDisplayTable();
 			if(model.getRowData().isEmpty()){

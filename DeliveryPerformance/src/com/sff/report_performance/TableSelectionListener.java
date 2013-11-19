@@ -1,11 +1,11 @@
-package hbs.sff.no;
-
-import hbs.sff.no.GUI.Active;
+package com.sff.report_performance;
 
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+
+import com.sff.report_performance.GUI.Active;
 
 public class TableSelectionListener implements ListSelectionListener{
 	
@@ -22,7 +22,7 @@ public class TableSelectionListener implements ListSelectionListener{
 		int min = lsm.getMinSelectionIndex();
 		int max = lsm.getMaxSelectionIndex();
 		boolean isAdjusting = e.getValueIsAdjusting();
-		SelectionTableModel model = Active.getActiveDisplayModel();
+		MyTableModel model = Active.getActiveDisplayModel();
 
 		if(!lsm.isSelectionEmpty() && !isAdjusting){
 			if(e.getSource() == table.getSelectionModel()){

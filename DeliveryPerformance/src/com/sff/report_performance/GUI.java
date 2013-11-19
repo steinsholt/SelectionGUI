@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -53,12 +53,12 @@ public class GUI {
 	private ReportParameterTable table_projects;
 	private JScrollPane scrollPaneStatuses;
 	private ReportParameterTable table_statuses;
-	private SelectionTableModel stmDisplayCust;
-	private SelectionTableModel stmDisplayProj;
-	private SelectionTableModel stmDisplayStat;
-	private SelectionTableModel stmSelectCust;
-	private SelectionTableModel stmSelectProj;
-	private SelectionTableModel stmSelectStat;
+	private MyTableModel stmDisplayCust;
+	private MyTableModel stmDisplayProj;
+	private MyTableModel stmDisplayStat;
+	private MyTableModel stmSelectCust;
+	private MyTableModel stmSelectProj;
+	private MyTableModel stmSelectStat;
 	private NullSelectionModel nullSelectionModel;
 	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
@@ -126,9 +126,9 @@ public class GUI {
 		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, leftPanel);
 		leftPanel.add(scrollPane);
 
-		stmSelectCust = new SelectionTableModel(colNames_sComp);
-		stmSelectProj = new SelectionTableModel(colNames_sProj);
-		stmSelectStat = new SelectionTableModel(colNames_sStat);
+		stmSelectCust = new MyTableModel(colNames_sComp);
+		stmSelectProj = new MyTableModel(colNames_sProj);
+		stmSelectStat = new MyTableModel(colNames_sStat);
 
 		addTables();
 		partialSelectionModel.addListSelectionListener(new TableSelectionListener(this, table_selection));
@@ -221,14 +221,14 @@ public class GUI {
 			btnSearch.setFont(bold);
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 					synchronizeHeader();
 				}
 			});
 			nameField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}
@@ -236,7 +236,7 @@ public class GUI {
 			idField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						Regex.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 						synchronizeHeader();
 					}
 				}
@@ -390,9 +390,9 @@ public class GUI {
 		scrollPane.setViewportView(table_selection);
 		scrollPane.getViewport().setBackground(Color.white);
 
-		stmDisplayStat = new SelectionTableModel(colNames_sStat);
-		stmDisplayProj = new SelectionTableModel(colNames_sProj);
-		stmDisplayCust = new SelectionTableModel(colNames_sComp);
+		stmDisplayStat = new MyTableModel(colNames_sStat);
+		stmDisplayProj = new MyTableModel(colNames_sProj);
+		stmDisplayCust = new MyTableModel(colNames_sComp);
 
 		//		table_selection.setAutoCreateRowSorter(true);
 		//		table_statuses.setAutoCreateRowSorter(true);
@@ -541,15 +541,15 @@ public class GUI {
 
 	public static enum Active{
 		STATUS, CUSTOMER, PROJECT;
-		private static SelectionTableModel display;
-		private static SelectionTableModel select;
+		private static MyTableModel display;
+		private static MyTableModel select;
 		private static JTable table;
 
-		public static SelectionTableModel getActiveDisplayModel(){
+		public static MyTableModel getActiveDisplayModel(){
 			return display;
 		}
 
-		public static SelectionTableModel getActiveSelectModel(){
+		public static MyTableModel getActiveSelectModel(){
 			return select;
 		}
 
@@ -557,7 +557,7 @@ public class GUI {
 			return table;
 		}
 
-		public static void setActiveTableModels(SelectionTableModel dis, SelectionTableModel sel, JTable t){
+		public static void setActiveTableModels(MyTableModel dis, MyTableModel sel, JTable t){
 			display = dis;
 			select = sel;
 			table = t;

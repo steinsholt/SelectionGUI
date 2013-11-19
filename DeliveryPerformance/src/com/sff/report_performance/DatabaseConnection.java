@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -26,7 +26,7 @@ public class DatabaseConnection {
 		return db;
 	}
 
-	public void loadStatusData(SelectionTableModel selectionModel){
+	public void loadStatusData(MyTableModel selectionModel){
 		getDatabase();
 
 		try{

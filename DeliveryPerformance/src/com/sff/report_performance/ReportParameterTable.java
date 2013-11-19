@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import java.awt.Color;
 
@@ -10,7 +10,7 @@ public class ReportParameterTable extends JTable {
 	private PartialSelectionModel partialSelectionModel;
 	private NullSelectionModel nullSelectionModel;
 	
-	public ReportParameterTable(PartialSelectionModel partialSelectionModel, NullSelectionModel nullSelectionModel, SelectionTableModel model){
+	public ReportParameterTable(PartialSelectionModel partialSelectionModel, NullSelectionModel nullSelectionModel, MyTableModel model){
 		this.partialSelectionModel = partialSelectionModel;
 		this.nullSelectionModel = nullSelectionModel;
 		this.setModel(model);

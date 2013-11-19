@@ -1,12 +1,12 @@
-package hbs.sff.no;
-
-import hbs.sff.no.GUI.Active;
+package com.sff.report_performance;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.AbstractButton;
 import javax.swing.JTable;
+
+import com.sff.report_performance.GUI.Active;
 
 public class ReportParameterHeaderListener implements ItemListener{
 	

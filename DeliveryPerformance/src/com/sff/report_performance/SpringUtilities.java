@@ -29,7 +29,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import javax.swing.*;
 import javax.swing.SpringLayout;

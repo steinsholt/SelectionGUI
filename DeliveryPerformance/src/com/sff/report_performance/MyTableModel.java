@@ -1,4 +1,4 @@
-package hbs.sff.no;
+package com.sff.report_performance;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,13 +13,13 @@ import javax.swing.table.AbstractTableModel;
  * in standard table models.
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SelectionTableModel extends AbstractTableModel {
+public class MyTableModel extends AbstractTableModel {
 	private static final long serialVersionUID = 1L;
 	private List<String> columnNames = new ArrayList<String>();
 	private List<List> data = new ArrayList<List>();
 	private ImageIcon deleteIcon;
 
-	public SelectionTableModel(List<String> columnNames){
+	public MyTableModel(List<String> columnNames){
 		this.columnNames = columnNames;
 		this.deleteIcon = new ImageIcon("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/img/delete_16.png");
 	}
@@ -32,7 +32,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void addRowInterval(int min, int max, JTable table){
-		SelectionTableModel model = (SelectionTableModel) table.getModel();
+		MyTableModel model = (MyTableModel) table.getModel();
 		for(int i = min; i <= max; i++){
 			if(columnNames.size()==3) addRow(Arrays.asList(deleteIcon, model.getRow(i).get(1), model.getRow(i).get(2)));
 			else addRow(Arrays.asList(deleteIcon, model.getRow(i).get(1)));
@@ -49,7 +49,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void partialRemoval(int min, int max, JTable table){
-		SelectionTableModel model = (SelectionTableModel) table.getModel();
+		MyTableModel model = (MyTableModel) table.getModel();
 		for(int i = min; i <= max; i++){
 			List row = model.getRow(i); // create new class and use comparator or override equals
 			List temp = new ArrayList(row);
@@ -63,7 +63,7 @@ public class SelectionTableModel extends AbstractTableModel {
 	}
 
 	public void removeRowInterval(int min, int max, JTable table){
-		SelectionTableModel model = (SelectionTableModel) table.getModel();
+		MyTableModel model = (MyTableModel) table.getModel();
 		for(int i = min; i <= max; i++){
 			List row = this.getRow(min);
 			List temp = new ArrayList(row);
