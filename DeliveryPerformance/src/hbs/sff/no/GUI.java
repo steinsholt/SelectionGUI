@@ -7,8 +7,6 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
@@ -17,7 +15,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -29,12 +26,9 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.ListSelectionModel;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.AttributeSet;
@@ -94,6 +88,10 @@ public class GUI {
 		initialize();
 	}
 
+	public boolean isHeaderClick() {
+		return headerClick;
+	}
+
 	private void initialize() {
 		try {
 			UIManager.setLookAndFeel(
@@ -110,7 +108,6 @@ public class GUI {
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
 		partialSelectionModel = new PartialSelectionModel();
-		partialSelectionModel.addListSelectionListener(new ListSelectionListenerImpl());
 
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
@@ -137,6 +134,7 @@ public class GUI {
 		stmSelectStat = new SelectionTableModel(colNames_sStat);
 
 		addTables();
+		partialSelectionModel.addListSelectionListener(new TableSelectionListener(this, table_selection));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -168,7 +166,7 @@ public class GUI {
 			sl_panel_5.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, label_1);
 			buttonPanel.add(lblName);
 			lblName.setFont(subheadline);
-			
+
 			PlainDocument doc = createDocumentFilter();
 			idField = new JTextField();
 			idField.setDocument(doc);
@@ -297,7 +295,7 @@ public class GUI {
 		scrollPaneCustomers.setViewportView(table_customers);
 
 		// TODO: Fix overlapping panels after resize
-		
+
 		reportPanel = new JPanel();
 		reportPanel.setMinimumSize(new Dimension(100,100));
 		rightPanel.add(reportPanel);
@@ -318,7 +316,7 @@ public class GUI {
 				try{
 					output = new File(directory + fileName);
 					out = new FileOutputStream(output, false);
-				    isFileUnlocked = true;
+					isFileUnlocked = true;
 				}catch(IOException e){
 					isFileUnlocked = false;
 				}
@@ -341,18 +339,18 @@ public class GUI {
 	private PlainDocument createDocumentFilter() {
 		PlainDocument doc = new PlainDocument();
 		doc.setDocumentFilter(new DocumentFilter() {
-		    @Override
-		    public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.insertString(off, str.replaceAll("\\D++", ""), attr);
-		    } 
-		    @Override
-		    public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
-		        throws BadLocationException 
-		    {
-		        fb.replace(off, len, str.replaceAll("\\D++", ""), attr); 
-		    }
+			@Override
+			public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
+					throws BadLocationException 
+					{
+				fb.insertString(off, str.replaceAll("\\D++", ""), attr);
+					} 
+			@Override
+			public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
+					throws BadLocationException 
+					{
+				fb.replace(off, len, str.replaceAll("\\D++", ""), attr); 
+					}
 		});
 		return doc;
 	}
@@ -387,9 +385,9 @@ public class GUI {
 			}
 		};
 		table_selection.setName("selection");
-		table_selection.getSelectionModel().addListSelectionListener(new ListSelectionListenerImpl());
+		table_selection.getSelectionModel().addListSelectionListener(new TableSelectionListener(this, table_selection));
 		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new SelectionHeaderListener());
+		header = new CheckBoxHeader(new SelectionHeaderListener(this, table_selection));
 		tc.setHeaderRenderer(header);
 
 		scrollPane.setViewportView(table_selection);
@@ -533,15 +531,15 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new DisplayHeaderListener());
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new DisplayHeaderListener(this, table_selection));
 			checkboxHeader.setEnabled(false);
 			checkboxHeader.setSelected(true);
 			tc.setHeaderRenderer(checkboxHeader);
 		}
 		return tc;
 	}
-	
-	private void synchDisplayHeaders(JTable activeTable){
+
+	public void synchDisplayHeaders(JTable activeTable){
 		TableColumn column = activeTable.getColumnModel().getColumn(0);
 		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
 		if(activeTable.getRowCount() > 0){
@@ -554,66 +552,8 @@ public class GUI {
 			column.setHeaderValue("Select All");
 		}
 	}
-	
-	// TODO: disable headers when table not active, setEnabled(false)
-	// TODO: synch display headers
-	class DisplayHeaderListener implements ItemListener{
-		public void itemStateChanged(ItemEvent e){
-			SelectionTableModel model = Active.getActiveDisplayModel();
-			if(e.getStateChange() == ItemEvent.SELECTED && model != null){
-				JTable table = Active.getActiveDisplayTable();
-				if(model.getRowData().isEmpty()){
-					((CheckBoxHeader) table.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
-				}
-				else model.removeRowInterval(0, model.getRowData().size() - 1, table_selection);
-				synchDisplayHeaders(Active.getActiveDisplayTable());
-			}
-		}
-	}
 
-	class SelectionHeaderListener implements ItemListener{
-		public void itemStateChanged(ItemEvent e){
-			if(headerClick){
-				int min = 0;
-				int max = table_selection.getRowCount() - 1;
-
-				if(e.getStateChange() == ItemEvent.SELECTED
-						&& (e.getSource() instanceof AbstractButton)){
-					Active.getActiveDisplayModel().addRowInterval(min, max, table_selection);
-				}
-				else if(e.getStateChange() == ItemEvent.DESELECTED
-						&& (e.getSource() instanceof AbstractButton)){
-					Active.getActiveDisplayModel().partialRemoval(min, max, table_selection);
-				}
-				synchDisplayHeaders(Active.getActiveDisplayTable());
-			}
-		}
-	}
-
-	class ListSelectionListenerImpl implements ListSelectionListener{
-		public void valueChanged(ListSelectionEvent e) {
-			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
-			int min = lsm.getMinSelectionIndex();
-			int max = lsm.getMaxSelectionIndex();
-			boolean isAdjusting = e.getValueIsAdjusting();
-			SelectionTableModel model = Active.getActiveDisplayModel();
-
-			if(!lsm.isSelectionEmpty() && !isAdjusting){
-				if(e.getSource() == table_selection.getSelectionModel()){
-					if((boolean) table_selection.getValueAt(min, 0)) model.partialRemoval(min, max, table_selection);
-					else model.addRowInterval(min, max, table_selection);
-				}
-				else if(e.getSource() == Active.getActiveDisplayTable().getSelectionModel()){
-					model.removeRowInterval(min, max, table_selection);
-				}
-				lsm.clearSelection();
-				synchronizeHeader();
-				synchDisplayHeaders(Active.getActiveDisplayTable());
-			}
-		}
-	}
-
-	private void synchronizeHeader(){
+	public void synchronizeHeader(){
 		boolean checked = true;
 		if(table_selection.getRowCount() == 0) header.setSelected(false);
 		else{ 
@@ -656,4 +596,3 @@ public class GUI {
 }
 
 // TODO: Look into separating creating buttons and actions. Single Responsibility Principle
-
