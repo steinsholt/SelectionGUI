@@ -2,10 +2,8 @@ package com.sff.report_performance;
 
 import java.awt.Color;
 
-import javax.swing.Icon;
 import javax.swing.JTable;
 import javax.swing.JViewport;
-import javax.swing.table.TableColumn;
 
 public class ReportParameterTable extends JTable {
 	private static final long serialVersionUID = 1L;
