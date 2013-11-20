@@ -129,7 +129,7 @@ public class GUI {
 		stmSelectStat = new MyTableModel(colNames_sStat);
 
 		addTables();
-		partialSelectionModel.addListSelectionListener(new TableSelectionListener(this, selectionTable));
+		partialSelectionModel.addListSelectionListener(new MySelectionListener(this, selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -372,9 +372,9 @@ public class GUI {
 	private void addTables(){
 		selectionTable = new SelectionTable(stmSelectCust);
 		selectionTable.setName("selection");
-		selectionTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(this, selectionTable));
+		selectionTable.getSelectionModel().addListSelectionListener(new MySelectionListener(this, selectionTable));
 		TableColumn tc = configureTableColumns(selectionTable);
-		header = new CheckBoxHeader(new SelectionHeaderListener(this, selectionTable));
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(this, selectionTable));
 		tc.setHeaderRenderer(header);
 
 		scrollPane.setViewportView(selectionTable);
@@ -486,7 +486,7 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterHeaderListener(this, selectionTable));
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterTableHeaderListener(this, selectionTable));
 			checkboxHeader.setEnabled(false);
 			checkboxHeader.setSelected(true);
 			tc.setHeaderRenderer(checkboxHeader);

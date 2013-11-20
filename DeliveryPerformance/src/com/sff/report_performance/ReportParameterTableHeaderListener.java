@@ -7,12 +7,12 @@ import javax.swing.JTable;
 
 import com.sff.report_performance.GUI.Active;
 
-public class ReportParameterHeaderListener implements ItemListener{
+public class ReportParameterTableHeaderListener implements ItemListener{
 	
 	private GUI gui;
 	private JTable selectionTable;
 	
-	public ReportParameterHeaderListener(GUI gui, JTable selectionTable){
+	public ReportParameterTableHeaderListener(GUI gui, JTable selectionTable){
 		this.gui = gui;
 		this.selectionTable = selectionTable;
 	}

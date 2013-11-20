@@ -7,12 +7,12 @@ import javax.swing.event.ListSelectionListener;
 
 import com.sff.report_performance.GUI.Active;
 
-public class TableSelectionListener implements ListSelectionListener{
+public class MySelectionListener implements ListSelectionListener{
 	
 	private JTable table;
 	private GUI gui;
 	
-	public TableSelectionListener(GUI gui, JTable table){
+	public MySelectionListener(GUI gui, JTable table){
 		this.gui = gui;
 		this.table = table;
 	}

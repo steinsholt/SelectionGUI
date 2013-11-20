@@ -8,12 +8,12 @@ import javax.swing.JTable;
 
 import com.sff.report_performance.GUI.Active;
 
-public class SelectionHeaderListener implements ItemListener{
+public class SelectionTableHeaderListener implements ItemListener{
 	
 	private GUI gui;
 	private JTable table;
 	
-	public SelectionHeaderListener(GUI gui, JTable table){
+	public SelectionTableHeaderListener(GUI gui, JTable table){
 		this.gui = gui;
 		this.table = table;
 	}
