@@ -46,13 +46,13 @@ public class GUI {
 	private JLabel lblName;
 	private JButton btnSearch;
 	private JScrollPane scrollPane;
-	private JTable table_selection;
+	private SelectionTable selectionTable;
 	private JScrollPane scrollPaneCustomers;
-	private ReportParameterTable table_customers;
+	private ReportParameterTable customerTable;
 	private JScrollPane scrollPaneProjects;
-	private ReportParameterTable table_projects;
+	private ReportParameterTable projectTable;
 	private JScrollPane scrollPaneStatuses;
-	private ReportParameterTable table_statuses;
+	private ReportParameterTable statusTable;
 	private MyTableModel stmDisplayCust;
 	private MyTableModel stmDisplayProj;
 	private MyTableModel stmDisplayStat;
@@ -131,7 +131,7 @@ public class GUI {
 		stmSelectStat = new MyTableModel(colNames_sStat);
 
 		addTables();
-		partialSelectionModel.addListSelectionListener(new TableSelectionListener(this, table_selection));
+		partialSelectionModel.addListSelectionListener(new TableSelectionListener(this, selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -277,19 +277,19 @@ public class GUI {
 		scrollPaneStatuses = new JScrollPane();
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
-		table_statuses = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayStat);
-		table_statuses.setName("statuses");
-		configureTableColumns(table_statuses);
-		scrollPaneStatuses.setViewportView(table_statuses);
-		table_projects = new ReportParameterTable(partialSelectionModel, nullSelectionModel,stmDisplayProj);
-		table_projects.setName("projects");
-		configureTableColumns(table_projects);
-		scrollPaneProjects.setViewportView(table_projects);
-		table_customers = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayCust);
-		table_customers.setName("customers");
-		configureTableColumns(table_customers);
-		table_customers.getColumnModel().getColumn(1).setMaxWidth(50);
-		scrollPaneCustomers.setViewportView(table_customers);
+		statusTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayStat);
+		statusTable.setName("statuses");
+		configureTableColumns(statusTable);
+		scrollPaneStatuses.setViewportView(statusTable);
+		projectTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel,stmDisplayProj);
+		projectTable.setName("projects");
+		configureTableColumns(projectTable);
+		scrollPaneProjects.setViewportView(projectTable);
+		customerTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayCust);
+		customerTable.setName("customers");
+		configureTableColumns(customerTable);
+		customerTable.getColumnModel().getColumn(1).setMaxWidth(50);
+		scrollPaneCustomers.setViewportView(customerTable);
 
 		// TODO: Fix overlapping panels after resize
 
@@ -372,32 +372,19 @@ public class GUI {
 	}
 
 	private void addTables(){
-		table_selection = new JTable(stmSelectCust){
-			private static final long serialVersionUID = 1L;
-			public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
-				Component c = super.prepareRenderer(renderer, row, column);
-				Color color = (boolean) table_selection.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
-				c.setForeground(color);
-				return c;
-			}
-		};
-		table_selection.setName("selection");
-		table_selection.getSelectionModel().addListSelectionListener(new TableSelectionListener(this, table_selection));
-		TableColumn tc = configureTableColumns(table_selection);
-		header = new CheckBoxHeader(new ReportParameterHeaderListener(this, table_selection));
+		selectionTable = new SelectionTable(stmSelectCust);
+		selectionTable.setName("selection");
+		selectionTable.getSelectionModel().addListSelectionListener(new TableSelectionListener(this, selectionTable));
+		TableColumn tc = configureTableColumns(selectionTable);
+		header = new CheckBoxHeader(new SelectionHeaderListener(this, selectionTable));
 		tc.setHeaderRenderer(header);
 
-		scrollPane.setViewportView(table_selection);
+		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
 
 		stmDisplayStat = new MyTableModel(colNames_sStat);
 		stmDisplayProj = new MyTableModel(colNames_sProj);
 		stmDisplayCust = new MyTableModel(colNames_sComp);
-
-		//		table_selection.setAutoCreateRowSorter(true);
-		//		table_statuses.setAutoCreateRowSorter(true);
-		//		table_customers.setAutoCreateRowSorter(true);
-		//		table_projects.setAutoCreateRowSorter(true);
 
 	}
 
@@ -413,7 +400,7 @@ public class GUI {
 	}
 
 	private void enableCustomerSelection(){
-		Active.setActiveTableModels(stmDisplayCust, stmSelectCust, table_customers);
+		Active.setActiveTableModels(stmDisplayCust, stmSelectCust, customerTable);
 		label_1.setText("Select Customers");
 		lblName.setVisible(true);
 		lblName.setText("Customer Name");
@@ -423,13 +410,13 @@ public class GUI {
 		idField.setVisible(true);
 		btnSearch.setVisible(true);
 
-		table_selection.setModel(stmSelectCust);
-		TableColumn tc = configureTableColumns(table_selection);		
+		selectionTable.setModel(stmSelectCust);
+		TableColumn tc = configureTableColumns(selectionTable);		
 		tc.setHeaderRenderer(header);
 
-		table_customers.enable();
-		table_projects.disable();
-		table_statuses.disable();
+		customerTable.enable();
+		projectTable.disable();
+		statusTable.disable();
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -440,8 +427,8 @@ public class GUI {
 	}
 
 	private void enableProjectSelection(){
-		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, table_projects);
-		label_1.setText("Select Projects"); // set text active table get name
+		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, projectTable);
+		label_1.setText("Select Projects"); 
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
 		lblID.setVisible(false);
@@ -449,13 +436,13 @@ public class GUI {
 		idField.setVisible(false);
 		btnSearch.setVisible(true);
 
-		table_selection.setModel(stmSelectProj);
-		TableColumn tc = configureTableColumns(table_selection);		
+		selectionTable.setModel(stmSelectProj);
+		TableColumn tc = configureTableColumns(selectionTable);		
 		tc.setHeaderRenderer(header);
 
-		table_customers.disable();
-		table_projects.enable();
-		table_statuses.disable();
+		customerTable.disable();
+		projectTable.enable();
+		statusTable.disable();
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -466,7 +453,7 @@ public class GUI {
 	}
 
 	private void enableStatusSelection(){
-		Active.setActiveTableModels(stmDisplayStat, stmSelectStat, table_statuses);
+		Active.setActiveTableModels(stmDisplayStat, stmSelectStat, statusTable);
 		label_1.setText("Select Item Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
@@ -474,13 +461,13 @@ public class GUI {
 		idField.setVisible(false);
 		btnSearch.setVisible(false);
 
-		table_selection.setModel(stmSelectStat);
-		TableColumn tc = configureTableColumns(table_selection);		
+		selectionTable.setModel(stmSelectStat);
+		TableColumn tc = configureTableColumns(selectionTable);		
 		tc.setHeaderRenderer(header);
 
-		table_customers.disable();
-		table_projects.disable();
-		table_statuses.enable();
+		customerTable.disable();
+		projectTable.disable();
+		statusTable.enable();
 
 		bCustomers.setSelected(false);
 		bProjects.setSelected(false);
@@ -489,7 +476,7 @@ public class GUI {
 	}
 
 	private TableColumn configureTableColumns(JTable table) {
-		if(Active.getActiveDisplayModel()==stmDisplayCust) table_selection.getColumnModel().getColumn(1).setMaxWidth(50);
+		if(Active.getActiveDisplayModel()==stmDisplayCust) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		table.getColumnModel().getColumn(0).setMinWidth(80);
 		table.getColumnModel().getColumn(0).setMaxWidth(100);
 		table.getTableHeader().setReorderingAllowed(false);
@@ -501,7 +488,7 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new DisplayHeaderListener(this, table_selection));
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterHeaderListener(this, selectionTable));
 			checkboxHeader.setEnabled(false);
 			checkboxHeader.setSelected(true);
 			tc.setHeaderRenderer(checkboxHeader);
@@ -525,10 +512,10 @@ public class GUI {
 
 	public void synchronizeHeader(){
 		boolean checked = true;
-		if(table_selection.getRowCount() == 0) header.setSelected(false);
+		if(selectionTable.getRowCount() == 0) header.setSelected(false);
 		else{ 
-			for(int x = 0; x < table_selection.getRowCount(); x++){
-				if(!(boolean) table_selection.getValueAt(x, 0)){
+			for(int x = 0; x < selectionTable.getRowCount(); x++){
+				if(!(boolean) selectionTable.getValueAt(x, 0)){
 					checked = false;
 				}
 			}
