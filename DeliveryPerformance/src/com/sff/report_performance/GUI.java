@@ -57,7 +57,7 @@ public class GUI {
 	private NullSelectionModel nullSelectionModel;
 	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
-	private JPanel leftPanel;
+	private JPanel selectionPanel;
 	private SpringLayout sl_panel;
 	private JButton bCustomers;
 	private JButton bProjects;
@@ -78,6 +78,10 @@ public class GUI {
 	private JLabel selectionHeadline;
 	private JPanel reportPanel;
 
+	public JFrame getFrame() {
+		return frame;
+	}
+	
 	public GUI() {
 		initialize();
 	}
@@ -96,7 +100,20 @@ public class GUI {
 		}
 
 		headerClick = true;
-		addColumnNames();
+		
+		colNames_sComp = new ArrayList<String>();
+		colNames_sComp.add("");
+		colNames_sComp.add("ID");
+		colNames_sComp.add("Customers");
+
+		colNames_sProj = new ArrayList<String>();
+		colNames_sProj.add("");
+		colNames_sProj.add("Projects");
+
+		colNames_sStat = new ArrayList<String>();
+		colNames_sStat.add("");
+		colNames_sStat.add("Item Statuses");
+		
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
 		partialSelectionModel = new PartialSelectionModel();
@@ -105,20 +122,20 @@ public class GUI {
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 
-		leftPanel = new JPanel();
-		leftPanel.setBackground(Color.white);
-		frame.getContentPane().add(leftPanel);
+		selectionPanel = new JPanel();
+		selectionPanel.setBackground(Color.white);
+		frame.getContentPane().add(selectionPanel);
 
 		sl_panel = new SpringLayout();
-		leftPanel.setLayout(sl_panel);
+		selectionPanel.setLayout(sl_panel);
 		scrollPane = new JScrollPane();
-		sl_panel.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, leftPanel);
-		sl_panel.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, leftPanel);
-		springLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, leftPanel);
-		sl_panel.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, leftPanel);
+		sl_panel.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, selectionPanel);
+		sl_panel.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, selectionPanel);
+		springLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, selectionPanel);
+		sl_panel.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, selectionPanel);
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, leftPanel);
-		leftPanel.add(scrollPane);
+		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
+		selectionPanel.add(scrollPane);
 
 		stmSelectCust = new MyTableModel(colNames_sComp);
 		stmSelectProj = new MyTableModel(colNames_sProj);
@@ -128,8 +145,17 @@ public class GUI {
 		stmDisplayProj = new MyTableModel(colNames_sProj);
 		stmDisplayCust = new MyTableModel(colNames_sComp);
 
-		addTables();
-		partialSelectionModel.addListSelectionListener(new MySelectionListener(this, selectionTable));
+		selectionTable = new SelectionTable(stmSelectCust);
+		selectionTable.setName("selection");
+		selectionTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener(this, selectionTable));
+		TableColumn tc = configureTableColumns(selectionTable);
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(this, selectionTable));
+		tc.setHeaderRenderer(header);
+
+		scrollPane.setViewportView(selectionTable);
+		scrollPane.getViewport().setBackground(Color.white);
+		
+		partialSelectionModel.addListSelectionListener(new MyListSelectionListener(this, selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -138,9 +164,9 @@ public class GUI {
 			buttonPanel = new JPanel();
 			sl_panel.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
 			springLayout_1.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
-			springLayout_1.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, leftPanel);
-			springLayout_1.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, leftPanel);
-			leftPanel.add(buttonPanel);
+			springLayout_1.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
+			springLayout_1.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
+			selectionPanel.add(buttonPanel);
 			buttonPanel.setPreferredSize(new Dimension(460,150));
 			buttonPanel.setBackground(Color.white);
 			SpringLayout sl_panel_5 = new SpringLayout();
@@ -330,38 +356,6 @@ public class GUI {
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 		enableCustomerSelection();		
 	}
-
-	public JFrame getFrame() {
-		return frame;
-	}
-
-	private void addColumnNames() {
-		colNames_sComp = new ArrayList<String>();
-		colNames_sComp.add("");
-		colNames_sComp.add("ID");
-		colNames_sComp.add("Customers");
-
-		colNames_sProj = new ArrayList<String>();
-		colNames_sProj.add("");
-		colNames_sProj.add("Projects");
-
-		colNames_sStat = new ArrayList<String>();
-		colNames_sStat.add("");
-		colNames_sStat.add("Item Statuses");
-	}
-
-	private void addTables(){
-		selectionTable = new SelectionTable(stmSelectCust);
-		selectionTable.setName("selection");
-		selectionTable.getSelectionModel().addListSelectionListener(new MySelectionListener(this, selectionTable));
-		TableColumn tc = configureTableColumns(selectionTable);
-		header = new CheckBoxHeader(new SelectionTableHeaderListener(this, selectionTable));
-		tc.setHeaderRenderer(header);
-
-		scrollPane.setViewportView(selectionTable);
-		scrollPane.getViewport().setBackground(Color.white);
-	}
-
 
 	private SpringLayout createFrame() {
 		frame = new JFrame();
