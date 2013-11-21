@@ -8,9 +8,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +16,6 @@ import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -322,35 +318,17 @@ public class GUI {
 		reportPerformancePanel.add(reportPanel);
 		SpringLayout sl_panel_6 = new SpringLayout();
 		reportPanel.setLayout(sl_panel_6);
-		btnGenerateReport = new JButton("Generate report");
+		btnGenerateReport = new JButton();
 		sl_panel_6.putConstraint(SpringLayout.EAST, btnGenerateReport, -5, SpringLayout.EAST, reportPanel);
+		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
 		reportPanel.add(btnGenerateReport);
+		
+		btnGenerateReport.setAction(new GenerateReportAction(stmDisplayCust.getRowData(), stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), frame));
 		btnGenerateReport.setForeground(Color.blue);
 		btnGenerateReport.setFont(bold);
-		btnGenerateReport.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				boolean isFileUnlocked = false;
-				FileOutputStream out = null;
-				File output = null;
-				String directory = "C:/vendorLogistics/Logistics/vendorUser/";
-				String fileName = "report.xlsx";
-				try{
-					output = new File(directory + fileName);
-					out = new FileOutputStream(output, false);
-					isFileUnlocked = true;
-				}catch(IOException e){
-					isFileUnlocked = false;
-				}
-				if(isFileUnlocked){
-					ProgressDialog.runReport(stmDisplayCust.getRowData(),stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output, frame);
-				}
-				else{
-					JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
-				}
-			}
-		});
-		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
-		SpringUtilities.makeCompactGrid(reportPerformancePanel, 3, 1, 0, 0, 0, 5);
+		btnGenerateReport.setText("Generate Report");
+		
+		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,0,0,5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 		enableCustomerSelection();		
 	}
