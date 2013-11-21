@@ -29,9 +29,6 @@ import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableColumn;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
 import javax.swing.text.PlainDocument;
 
 public class GUI {
@@ -78,7 +75,7 @@ public class GUI {
 	private JButton button;
 	private JLabel label;
 	private JPanel buttonPanel;
-	private JLabel label_1;
+	private JLabel selectionHeadline;
 	private JPanel reportPanel;
 
 	public GUI() {
@@ -107,7 +104,6 @@ public class GUI {
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
-		//		Font errorMessage = new Font("Serif", Font.PLAIN, 14);
 
 		leftPanel = new JPanel();
 		leftPanel.setBackground(Color.white);
@@ -127,13 +123,17 @@ public class GUI {
 		stmSelectCust = new MyTableModel(colNames_sComp);
 		stmSelectProj = new MyTableModel(colNames_sProj);
 		stmSelectStat = new MyTableModel(colNames_sStat);
+		
+		stmDisplayStat = new MyTableModel(colNames_sStat);
+		stmDisplayProj = new MyTableModel(colNames_sProj);
+		stmDisplayCust = new MyTableModel(colNames_sComp);
 
 		addTables();
 		partialSelectionModel.addListSelectionListener(new MySelectionListener(this, selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
-		JPanel rightPanel = new JPanel();
+		JPanel reportPerformancePanel = new JPanel();
 		{
 			buttonPanel = new JPanel();
 			sl_panel.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
@@ -146,26 +146,26 @@ public class GUI {
 			SpringLayout sl_panel_5 = new SpringLayout();
 			buttonPanel.setLayout(sl_panel_5);
 			{
-				label_1 = new JLabel("Select Customers");
-				sl_panel_5.putConstraint(SpringLayout.NORTH, label_1, 10, SpringLayout.NORTH, buttonPanel);
-				sl_panel_5.putConstraint(SpringLayout.WEST, label_1, 10, SpringLayout.WEST, buttonPanel);
-				label_1.setFont(headline);
-				buttonPanel.add(label_1);
+				selectionHeadline = new JLabel("Select Customers");
+				sl_panel_5.putConstraint(SpringLayout.NORTH, selectionHeadline, 10, SpringLayout.NORTH, buttonPanel);
+				sl_panel_5.putConstraint(SpringLayout.WEST, selectionHeadline, 10, SpringLayout.WEST, buttonPanel);
+				selectionHeadline.setFont(headline);
+				buttonPanel.add(selectionHeadline);
 			}
 			lblID = new JLabel("Customer ID");
-			sl_panel_5.putConstraint(SpringLayout.NORTH, lblID, 6, SpringLayout.SOUTH, label_1);
-			sl_panel_5.putConstraint(SpringLayout.WEST, lblID, 0, SpringLayout.WEST, label_1);
+			sl_panel_5.putConstraint(SpringLayout.NORTH, lblID, 6, SpringLayout.SOUTH, selectionHeadline);
+			sl_panel_5.putConstraint(SpringLayout.WEST, lblID, 0, SpringLayout.WEST, selectionHeadline);
 			buttonPanel.add(lblID);
 			lblID.setFont(subheadline);
 			lblName = new JLabel("Customer Name");
-			sl_panel_5.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, label_1);
+			sl_panel_5.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, selectionHeadline);
 			buttonPanel.add(lblName);
 			lblName.setFont(subheadline);
 
-			PlainDocument doc = createDocumentFilter();
+			PlainDocument doc = MyDocumentFilter.createDocumentFilter();
 			idField = new JTextField();
 			idField.setDocument(doc);
-			sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, label_1);
+			sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, selectionHeadline);
 			sl_panel_5.putConstraint(SpringLayout.WEST, idField, 63, SpringLayout.EAST, lblID);
 			sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
 			buttonPanel.add(idField);
@@ -179,7 +179,7 @@ public class GUI {
 			nameField.setColumns(10);
 
 			toolBar = new JToolBar();
-			sl_panel_5.putConstraint(SpringLayout.WEST, toolBar, 0, SpringLayout.WEST, label_1);
+			sl_panel_5.putConstraint(SpringLayout.WEST, toolBar, 0, SpringLayout.WEST, selectionHeadline);
 			sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 10, SpringLayout.SOUTH, buttonPanel);
 			sl_panel_5.putConstraint(SpringLayout.EAST, toolBar, 0, SpringLayout.EAST, idField);
 			buttonPanel.add(toolBar);
@@ -240,13 +240,13 @@ public class GUI {
 				}
 			});
 		}
-		springLayout_1.putConstraint(SpringLayout.SOUTH, rightPanel, -10, SpringLayout.SOUTH, frame.getContentPane());
-		frame.getContentPane().add(rightPanel);
-		rightPanel.setLayout(new SpringLayout());
+		springLayout_1.putConstraint(SpringLayout.SOUTH, reportPerformancePanel, -10, SpringLayout.SOUTH, frame.getContentPane());
+		frame.getContentPane().add(reportPerformancePanel);
+		reportPerformancePanel.setLayout(new SpringLayout());
 
 		JPanel helpPanel = new JPanel();
 		helpPanel.setMinimumSize(new Dimension(100, 100));
-		rightPanel.add(helpPanel);
+		reportPerformancePanel.add(helpPanel);
 		SpringLayout sl_panel_4 = new SpringLayout();
 		helpPanel.setLayout(sl_panel_4);
 		{
@@ -264,7 +264,7 @@ public class GUI {
 		}
 
 		displayPanel = new JPanel();
-		rightPanel.add(displayPanel);
+		reportPerformancePanel.add(displayPanel);
 		sl_panel_3 = new SpringLayout();
 		displayPanel.setLayout(sl_panel_3);
 
@@ -293,7 +293,7 @@ public class GUI {
 
 		reportPanel = new JPanel();
 		reportPanel.setMinimumSize(new Dimension(100,100));
-		rightPanel.add(reportPanel);
+		reportPerformancePanel.add(reportPanel);
 		SpringLayout sl_panel_6 = new SpringLayout();
 		reportPanel.setLayout(sl_panel_6);
 		btnGenerateReport = new JButton("Generate report");
@@ -326,28 +326,9 @@ public class GUI {
 			}
 		});
 		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
-		SpringUtilities.makeCompactGrid(rightPanel, 3, 1, 0, 0, 0, 5);
+		SpringUtilities.makeCompactGrid(reportPerformancePanel, 3, 1, 0, 0, 0, 5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 		enableCustomerSelection();		
-	}
-
-	private PlainDocument createDocumentFilter() {
-		PlainDocument doc = new PlainDocument();
-		doc.setDocumentFilter(new DocumentFilter() {
-			@Override
-			public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
-					throws BadLocationException 
-					{
-				fb.insertString(off, str.replaceAll("\\D++", ""), attr);
-					} 
-			@Override
-			public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
-					throws BadLocationException 
-					{
-				fb.replace(off, len, str.replaceAll("\\D++", ""), attr); 
-					}
-		});
-		return doc;
 	}
 
 	public JFrame getFrame() {
@@ -379,11 +360,6 @@ public class GUI {
 
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
-
-		stmDisplayStat = new MyTableModel(colNames_sStat);
-		stmDisplayProj = new MyTableModel(colNames_sProj);
-		stmDisplayCust = new MyTableModel(colNames_sComp);
-
 	}
 
 
@@ -399,7 +375,7 @@ public class GUI {
 
 	private void enableCustomerSelection(){
 		Active.setActiveTableModels(stmDisplayCust, stmSelectCust, customerTable);
-		label_1.setText("Select Customers");
+		selectionHeadline.setText("Select Customers");
 		lblName.setVisible(true);
 		lblName.setText("Customer Name");
 		lblID.setVisible(true);
@@ -415,6 +391,7 @@ public class GUI {
 		customerTable.enable();
 		projectTable.disable();
 		statusTable.disable();
+		
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -426,7 +403,7 @@ public class GUI {
 
 	private void enableProjectSelection(){
 		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, projectTable);
-		label_1.setText("Select Projects"); 
+		selectionHeadline.setText("Select Projects"); 
 		lblName.setVisible(true);
 		lblName.setText("Project Name");
 		lblID.setVisible(false);
@@ -441,6 +418,7 @@ public class GUI {
 		customerTable.disable();
 		projectTable.enable();
 		statusTable.disable();
+		
 		nameField.setText("");
 		nameField.requestFocusInWindow();
 
@@ -452,7 +430,7 @@ public class GUI {
 
 	private void enableStatusSelection(){
 		Active.setActiveTableModels(stmDisplayStat, stmSelectStat, statusTable);
-		label_1.setText("Select Item Statuses");
+		selectionHeadline.setText("Select Item Statuses");
 		lblName.setVisible(false);
 		lblID.setVisible(false);
 		nameField.setVisible(false);
@@ -466,8 +444,10 @@ public class GUI {
 		customerTable.disable();
 		projectTable.disable();
 		statusTable.enable();
+		
+		frame.requestFocusInWindow();
 
-		bCustomers.setSelected(false);
+		bCustomers.setSelected(false); 
 		bProjects.setSelected(false);
 		bStatuses.setSelected(true);
 		synchronizeHeader();
@@ -475,7 +455,7 @@ public class GUI {
 
 	private TableColumn configureTableColumns(JTable table) {
 		if(Active.getActiveDisplayModel()==stmDisplayCust) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
-		table.getColumnModel().getColumn(0).setMinWidth(80);
+		table.getColumnModel().getColumn(0).setMinWidth(80); 
 		table.getColumnModel().getColumn(0).setMaxWidth(100);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
