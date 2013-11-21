@@ -342,9 +342,7 @@ public class GUI {
 					isFileUnlocked = false;
 				}
 				if(isFileUnlocked){
-					@SuppressWarnings("unused")
-					ProgressDialog dialogFrame = new ProgressDialog(stmDisplayCust.getRowData(), 
-							stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output, frame);
+					ProgressDialog.runReport(stmDisplayCust.getRowData(),stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), out, output, frame);
 				}
 				else{
 					JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
@@ -523,5 +521,3 @@ public class GUI {
 		}
 	}
 }
-
-// TODO: Look into separating creating buttons and actions. Single Responsibility Principle
