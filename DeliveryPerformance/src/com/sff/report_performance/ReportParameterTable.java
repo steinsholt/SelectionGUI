@@ -2,6 +2,7 @@ package com.sff.report_performance;
 
 import java.awt.Color;
 
+import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JViewport;
 
@@ -22,6 +23,8 @@ public class ReportParameterTable extends JTable {
 		this.setForeground(Color.gray);
 		this.setSelectionModel(nullSelectionModel);
 		((JViewport)this.getParent()).setBackground(Color.lightGray);
+		((JComponent) this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(false);
+		this.getParent().getParent().repaint();
 	}
 	@Override
 	public void enable(){
@@ -29,5 +32,7 @@ public class ReportParameterTable extends JTable {
 		this.setForeground(Color.black);
 		this.setSelectionModel(partialSelectionModel);
 		((JViewport)this.getParent()).setBackground(Color.white);
+		((JComponent) this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(true);
+		this.getParent().getParent().repaint();
 	}
 }

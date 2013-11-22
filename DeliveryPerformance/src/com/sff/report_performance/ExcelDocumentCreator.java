@@ -143,7 +143,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int rowPosition = 4;
 				CellStyle cellStyle = sheetProject.getRow(5).getCell(1).getCellStyle();
 				
-				sheetProject.shiftRows(4, 8, currencySet.size());
+				sheetProject.shiftRows(4, 8, currencySet.size()); // TODO: if empty report this crashes, fix
 				
 				for(String currency : currencySet){
 					Row row = sheetProject.createRow(rowPosition++);
