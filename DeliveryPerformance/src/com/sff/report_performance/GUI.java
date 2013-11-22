@@ -86,6 +86,7 @@ public class GUI {
 		return headerClick;
 	}
 
+	// TODO: Headers not disabled if Remove all and switching tabs
 	private void initialize() {
 		try {
 			UIManager.setLookAndFeel(

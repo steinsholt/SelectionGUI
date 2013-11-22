@@ -26,6 +26,7 @@ public class DatabaseConnection {
 		return db;
 	}
 
+	// TODO: I don't like this here. Does not fit the class name
 	public void loadStatusData(MyTableModel selectionModel){
 		getDatabase();
 

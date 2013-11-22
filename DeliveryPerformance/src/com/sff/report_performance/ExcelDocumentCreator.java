@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
@@ -15,6 +17,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -103,6 +106,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			publishedOutput.setText("Generating Excel Document");
 			while(!isCancelled()){
+				Set<String> currencySet = new HashSet<String>();
 				while(dataSet.next()){
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
@@ -115,6 +119,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Vendor nr."))){
 							cell.setCellStyle(sixDigitStyle);
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
+							currencySet.add(dataSet.getString(column));
 						}
 						try{
 							String s = dataSet.getString(column);
@@ -130,11 +137,28 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 					}
 				}
-				publishedOutput.setText("Opening Excel Document");
-
-				// TODO: Does not account for the currency exchange rates
+				
+				// TODO: Does not account for the currency exchange rates.
 				int last = sheetTable.getLastRowNum() + 1;
-				sheetProject.getRow(5).getCell(1).setCellFormula("SUM(Table!$M$2:$M$" + last + ")");
+				int rowPosition = 4;
+				CellStyle cellStyle = sheetProject.getRow(5).getCell(1).getCellStyle();
+				
+				sheetProject.shiftRows(4, 8, currencySet.size());
+				
+				for(String currency : currencySet){
+					Row row = sheetProject.createRow(rowPosition++);
+					
+					Cell description = row.createCell(0);
+					description.setCellValue("Total Value [" + currency + "]:");
+					description.setCellStyle(cellStyle);
+					
+					Cell sum = row.createCell(1);
+					sum.setCellFormula("SUMIF(Table!$N$2:$N$" + last + ",\""+ currency + "\"," + "Table!$M$2:$M$" + last + ")");
+					sum.setCellStyle(cellStyle);
+					
+				}
+				
+				publishedOutput.setText("Opening Excel Document");
 
 				saveWorkbook();
 				dataSet.close();
