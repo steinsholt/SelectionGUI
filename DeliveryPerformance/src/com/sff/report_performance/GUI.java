@@ -24,6 +24,7 @@ import javax.swing.JToolBar;
 import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.PlainDocument;
 
@@ -39,17 +40,17 @@ public class GUI {
 	private JScrollPane scrollPane;
 	private SelectionTable selectionTable;
 	private JScrollPane scrollPaneCustomers;
-	private ReportParameterTable customerTable;
+	private static ReportParameterTable customerTable;
 	private JScrollPane scrollPaneProjects;
-	private ReportParameterTable projectTable;
+	private static ReportParameterTable projectTable;
 	private JScrollPane scrollPaneStatuses;
-	private ReportParameterTable statusTable;
-	private MyTableModel stmDisplayCust;
-	private MyTableModel stmDisplayProj;
-	private MyTableModel stmDisplayStat;
-	private MyTableModel stmSelectCust;
-	private MyTableModel stmSelectProj;
-	private MyTableModel stmSelectStat;
+	private static ReportParameterTable statusTable;
+	private static MyTableModel stmDisplayCust;
+	private static MyTableModel stmDisplayProj;
+	private static MyTableModel stmDisplayStat;
+	private static MyTableModel stmSelectCust;
+	private static MyTableModel stmSelectProj;
+	private static MyTableModel stmSelectStat;
 	private NullSelectionModel nullSelectionModel;
 	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
@@ -77,7 +78,7 @@ public class GUI {
 	public JFrame getFrame() {
 		return frame;
 	}
-	
+
 	public GUI() {
 		initialize();
 	}
@@ -97,7 +98,7 @@ public class GUI {
 		}
 
 		headerClick = true;
-		
+
 		colNames_sComp = new ArrayList<String>();
 		colNames_sComp.add("");
 		colNames_sComp.add("ID");
@@ -110,7 +111,7 @@ public class GUI {
 		colNames_sStat = new ArrayList<String>();
 		colNames_sStat.add("");
 		colNames_sStat.add("Item Statuses");
-		
+
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
 		partialSelectionModel = new PartialSelectionModel();
@@ -118,6 +119,14 @@ public class GUI {
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
+
+		stmSelectCust = new MyTableModel(colNames_sComp);
+		stmSelectProj = new MyTableModel(colNames_sProj);
+		stmSelectStat = new MyTableModel(colNames_sStat);
+
+		stmDisplayStat = new MyTableModel(colNames_sStat);
+		stmDisplayProj = new MyTableModel(colNames_sProj);
+		stmDisplayCust = new MyTableModel(colNames_sComp);
 
 		selectionPanel = new JPanel();
 		selectionPanel.setBackground(Color.white);
@@ -134,14 +143,6 @@ public class GUI {
 		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
 		selectionPanel.add(scrollPane);
 
-		stmSelectCust = new MyTableModel(colNames_sComp);
-		stmSelectProj = new MyTableModel(colNames_sProj);
-		stmSelectStat = new MyTableModel(colNames_sStat);
-		
-		stmDisplayStat = new MyTableModel(colNames_sStat);
-		stmDisplayProj = new MyTableModel(colNames_sProj);
-		stmDisplayCust = new MyTableModel(colNames_sComp);
-
 		selectionTable = new SelectionTable(stmSelectCust);
 		selectionTable.setName("selection");
 		selectionTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener(this, selectionTable));
@@ -151,7 +152,7 @@ public class GUI {
 
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
-		
+
 		partialSelectionModel.addListSelectionListener(new MyListSelectionListener(this, selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
@@ -208,31 +209,16 @@ public class GUI {
 			buttonPanel.add(toolBar);
 			toolBar.setLayout(new GridLayout());
 			toolBar.setFloatable(false);
-			bCustomers = new JButton("Customers");
-			bCustomers.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					enableCustomerSelection();
-				}
-			});
-			bCustomers.setSelected(true);
+			
+			bCustomers = new JButton();
 			bCustomers.setBorder(BorderFactory.createSoftBevelBorder(0));
-			toolBar.add(bCustomers);
-			bProjects = new JButton("Projects");
+			
+			bProjects = new JButton();
 			bProjects.setBorder(BorderFactory.createSoftBevelBorder(0));
-			bProjects.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					enableProjectSelection();
-				}
-			});
-			toolBar.add(bProjects);
-			bStatuses = new JButton("Item Statuses");
+			
+			bStatuses = new JButton();
 			bStatuses.setBorder(BorderFactory.createSoftBevelBorder(0));
-			bStatuses.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					enableStatusSelection();
-				}
-			});
-			toolBar.add(bStatuses);
+
 			btnSearch = new JButton("Search");
 			sl_panel_5.putConstraint(SpringLayout.SOUTH, btnSearch, -8, SpringLayout.SOUTH, buttonPanel);
 			sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 0, SpringLayout.SOUTH, btnSearch);
@@ -298,19 +284,25 @@ public class GUI {
 		scrollPaneStatuses = new JScrollPane();
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
+		
 		statusTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayStat);
 		statusTable.setName("statuses");
 		configureTableColumns(statusTable);
 		scrollPaneStatuses.setViewportView(statusTable);
+		statusTable.disable();
+		
 		projectTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel,stmDisplayProj);
 		projectTable.setName("projects");
 		configureTableColumns(projectTable);
 		scrollPaneProjects.setViewportView(projectTable);
+		projectTable.disable();
+		
 		customerTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayCust);
 		customerTable.setName("customers");
 		configureTableColumns(customerTable);
 		customerTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(customerTable);
+		customerTable.enable();
 
 		// TODO: Fix overlapping panels after resize
 
@@ -323,15 +315,31 @@ public class GUI {
 		sl_panel_6.putConstraint(SpringLayout.EAST, btnGenerateReport, -5, SpringLayout.EAST, reportPanel);
 		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
 		reportPanel.add(btnGenerateReport);
-		
+
 		btnGenerateReport.setAction(new GenerateReportAction(stmDisplayCust.getRowData(), stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), frame));
 		btnGenerateReport.setForeground(Color.blue);
 		btnGenerateReport.setFont(bold);
 		btnGenerateReport.setText("Generate Report");
-		
+
 		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,0,0,5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
-		enableCustomerSelection();		
+		
+		EnableSelectionAction selectCustomers = new EnableSelectionAction(this, State.CUSTOMER);
+		bCustomers.setAction(selectCustomers);
+		bCustomers.setText("Select Customers");
+		
+		EnableSelectionAction selectProjects = new EnableSelectionAction(this, State.PROJECT);
+		bProjects.setAction(selectProjects);
+		bProjects.setText("Select Projects");
+		
+		EnableSelectionAction selectStatuses = new EnableSelectionAction(this, State.STATUS);
+		bStatuses.setAction(selectStatuses);
+		bStatuses.setText("Select Statuses");
+		
+		toolBar.add(bCustomers);
+		toolBar.add(bProjects);
+		toolBar.add(bStatuses);
+		Active.setState(State.CUSTOMER);
 	}
 
 	private SpringLayout createFrame() {
@@ -343,88 +351,7 @@ public class GUI {
 		frame.getContentPane().setBackground(Color.white);
 		return springLayout_1;
 	}
-
-	private void enableCustomerSelection(){
-		Active.setActiveTableModels(stmDisplayCust, stmSelectCust, customerTable);
-		selectionHeadline.setText("Select Customers");
-		lblName.setVisible(true);
-		lblName.setText("Customer Name");
-		lblID.setVisible(true);
-		lblID.setText("Customer ID");
-		nameField.setVisible(true);
-		idField.setVisible(true);
-		btnSearch.setVisible(true);
-
-		selectionTable.setModel(stmSelectCust);
-		TableColumn tc = configureTableColumns(selectionTable);		
-		tc.setHeaderRenderer(header);
-
-		customerTable.enable();
-		projectTable.disable();
-		statusTable.disable();
-		
-		nameField.setText("");
-		nameField.requestFocusInWindow();
-
-		bCustomers.setSelected(true);
-		bProjects.setSelected(false);
-		bStatuses.setSelected(false);
-		synchronizeHeader();
-	}
-
-	private void enableProjectSelection(){
-		Active.setActiveTableModels(stmDisplayProj, stmSelectProj, projectTable);
-		selectionHeadline.setText("Select Projects"); 
-		lblName.setVisible(true);
-		lblName.setText("Project Name");
-		lblID.setVisible(false);
-		nameField.setVisible(true);
-		idField.setVisible(false);
-		btnSearch.setVisible(true);
-
-		selectionTable.setModel(stmSelectProj);
-		TableColumn tc = configureTableColumns(selectionTable);		
-		tc.setHeaderRenderer(header);
-
-		customerTable.disable();
-		projectTable.enable();
-		statusTable.disable();
-		
-		nameField.setText("");
-		nameField.requestFocusInWindow();
-
-		bCustomers.setSelected(false);
-		bProjects.setSelected(true);
-		bStatuses.setSelected(false);	
-		synchronizeHeader();
-	}
-
-	private void enableStatusSelection(){
-		Active.setActiveTableModels(stmDisplayStat, stmSelectStat, statusTable);
-		selectionHeadline.setText("Select Item Statuses");
-		lblName.setVisible(false);
-		lblID.setVisible(false);
-		nameField.setVisible(false);
-		idField.setVisible(false);
-		btnSearch.setVisible(false);
-
-		selectionTable.setModel(stmSelectStat);
-		TableColumn tc = configureTableColumns(selectionTable);		
-		tc.setHeaderRenderer(header);
-
-		customerTable.disable();
-		projectTable.disable();
-		statusTable.enable();
-		
-		frame.requestFocusInWindow();
-
-		bCustomers.setSelected(false); 
-		bProjects.setSelected(false);
-		bStatuses.setSelected(true);
-		synchronizeHeader();
-	}
-
-	private TableColumn configureTableColumns(JTable table) {
+	public TableColumn configureTableColumns(JTable table) {
 		if(Active.getActiveDisplayModel()==stmDisplayCust) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		table.getColumnModel().getColumn(0).setMinWidth(80); 
 		table.getColumnModel().getColumn(0).setMaxWidth(100);
@@ -444,7 +371,6 @@ public class GUI {
 		}
 		return tc;
 	}
-
 	public void synchDisplayHeaders(JTable activeTable){
 		TableColumn column = activeTable.getColumnModel().getColumn(0);
 		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
@@ -458,7 +384,6 @@ public class GUI {
 			column.setHeaderValue("Select All");
 		}
 	}
-
 	public void synchronizeHeader(){
 		boolean checked = true;
 		if(selectionTable.getRowCount() == 0) header.setSelected(false);
@@ -474,12 +399,13 @@ public class GUI {
 			headerClick = true;
 		}
 	}
+	public enum State {CUSTOMER, PROJECT, STATUS};
+	public static class Active{
 
-	public static enum Active{
-		STATUS, CUSTOMER, PROJECT;
 		private static MyTableModel display;
 		private static MyTableModel select;
-		private static JTable table;
+		private static ReportParameterTable table;
+		private static State activeState;
 
 		public static MyTableModel getActiveDisplayModel(){
 			return display;
@@ -489,14 +415,96 @@ public class GUI {
 			return select;
 		}
 
-		public static JTable getActiveDisplayTable(){
+		public static ReportParameterTable getActiveDisplayTable(){
 			return table;
 		}
-
-		public static void setActiveTableModels(MyTableModel dis, MyTableModel sel, JTable t){
-			display = dis;
-			select = sel;
-			table = t;
+		
+		public static State getState(){
+			return activeState;
 		}
+
+		public static void setState(State state){
+			switch (state){
+			case CUSTOMER:
+				display = stmDisplayCust;
+				select = stmSelectCust;
+				table = customerTable;
+				activeState = state;
+				break;
+			case PROJECT:
+				display = stmDisplayProj;
+				select = stmSelectProj;
+				table = projectTable;
+				activeState = state;
+				break;
+			case STATUS:
+				display = stmDisplayStat;
+				select = stmSelectStat;
+				table = statusTable;
+				activeState = state;
+				break;
+			}
+		}
+	}
+
+	public JTextField getIdField() {
+		return idField;
+	}
+	public JTextField getNameField() {
+		return nameField;
+	}
+	public JLabel getLblID() {
+		return lblID;
+	}
+	public JLabel getLblName() {
+		return lblName;
+	}
+	public JButton getBtnSearch() {
+		return btnSearch;
+	}
+	public SelectionTable getSelectionTable() {
+		return selectionTable;
+	}
+	public ReportParameterTable getCustomerTable() {
+		return customerTable;
+	}
+	public ReportParameterTable getProjectTable() {
+		return projectTable;
+	}
+	public ReportParameterTable getStatusTable() {
+		return statusTable;
+	}
+	public MyTableModel getStmDisplayCust() {
+		return stmDisplayCust;
+	}
+	public MyTableModel getStmDisplayProj() {
+		return stmDisplayProj;
+	}
+	public MyTableModel getStmDisplayStat() {
+		return stmDisplayStat;
+	}
+	public MyTableModel getStmSelectCust() {
+		return stmSelectCust;
+	}
+	public MyTableModel getStmSelectProj() {
+		return stmSelectProj;
+	}
+	public MyTableModel getStmSelectStat() {
+		return stmSelectStat;
+	}
+	public JButton getbCustomers() {
+		return bCustomers;
+	}
+	public JButton getbProjects() {
+		return bProjects;
+	}
+	public JButton getbStatuses() {
+		return bStatuses;
+	}
+	public JLabel getSelectionHeadline() {
+		return selectionHeadline;
+	}	
+	public TableCellRenderer getHeader() {
+		return header;
 	}
 }
