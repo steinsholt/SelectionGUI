@@ -26,6 +26,7 @@ public class ReportParameterTableHeaderListener implements ItemListener{
 			}
 			else model.removeRowInterval(0, model.getRowData().size() - 1, selectionTable);
 			gui.synchDisplayHeaders(Active.getActiveDisplayTable());
+			gui.synchronizeHeader();
 		}
 	}
 }
