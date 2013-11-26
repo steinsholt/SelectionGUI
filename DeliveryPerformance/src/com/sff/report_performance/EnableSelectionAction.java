@@ -20,6 +20,7 @@ public class EnableSelectionAction extends AbstractAction{
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
+		
 		Active.setState(state);
 		
 		boolean isCustomerEnabled = Active.getState() == State.CUSTOMER;
@@ -69,5 +70,6 @@ public class EnableSelectionAction extends AbstractAction{
 		else gui.getbStatuses().setSelected(false);
 		
 		gui.synchronizeHeader();
+		
 	}
 }
