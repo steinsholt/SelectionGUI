@@ -82,7 +82,6 @@ public class GUI {
 		initialize();
 	}
 
-	// TODO: Headers not disabled if Remove all and switching tabs
 	private void initialize() {
 		try {
 			UIManager.setLookAndFeel(
@@ -474,4 +473,3 @@ public class GUI {
 		return header;
 	}
 }
-// TODO: At startup selection table ID field is the wrong size

@@ -18,8 +18,6 @@ public class ReportParameterTable extends JTable {
 		this.nullSelectionModel = nullSelectionModel;
 	}
 	
-	// TODO: Move synch in here?
-	
 	@Override
 	public void disable(){
 		this.setBackground(Color.lightGray);
