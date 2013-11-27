@@ -69,7 +69,6 @@ public class EnableSelectionAction extends AbstractAction{
 		if(isStatusEnabled)gui.getbStatuses().setSelected(true);
 		else gui.getbStatuses().setSelected(false);
 		
-		gui.synchronizeHeader();
-		
+		gui.getSelectionTable().synchronizeHeader();
 	}
 }

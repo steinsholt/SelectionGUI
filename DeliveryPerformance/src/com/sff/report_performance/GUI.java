@@ -64,7 +64,6 @@ public class GUI {
 	private List<String> colNames_sComp;
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
-	private boolean headerClick;
 	private SpringLayout sl_panel_3;
 	private JPanel displayPanel;
 	private Font bold;
@@ -83,10 +82,6 @@ public class GUI {
 		initialize();
 	}
 
-	public boolean isHeaderClick() {
-		return headerClick;
-	}
-
 	// TODO: Headers not disabled if Remove all and switching tabs
 	private void initialize() {
 		try {
@@ -96,8 +91,6 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-
-		headerClick = true;
 
 		colNames_sComp = new ArrayList<String>();
 		colNames_sComp.add("");
@@ -145,15 +138,15 @@ public class GUI {
 
 		selectionTable = new SelectionTable(stmSelectCust);
 		selectionTable.setName("selection");
-		selectionTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener(this, selectionTable));
+		selectionTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener(selectionTable));
 		TableColumn tc = configureTableColumns(selectionTable);
-		header = new CheckBoxHeader(new SelectionTableHeaderListener(this, selectionTable));
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(selectionTable));
 		tc.setHeaderRenderer(header);
-
+		
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
 
-		partialSelectionModel.addListSelectionListener(new MyListSelectionListener(this, selectionTable));
+		partialSelectionModel.addListSelectionListener(new MyListSelectionListener(selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -229,14 +222,14 @@ public class GUI {
 			btnSearch.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-					synchronizeHeader();
+					selectionTable.synchronizeHeader();
 				}
 			});
 			nameField.addKeyListener(new KeyAdapter(){
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
 						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-						synchronizeHeader();
+						selectionTable.synchronizeHeader();
 					}
 				}
 			});
@@ -244,7 +237,7 @@ public class GUI {
 				public void keyPressed(KeyEvent e){
 					if(e.getKeyCode() == KeyEvent.VK_ENTER){
 						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-						synchronizeHeader();
+						selectionTable.synchronizeHeader();
 					}
 				}
 			});
@@ -352,7 +345,7 @@ public class GUI {
 		return springLayout_1;
 	}
 	public TableColumn configureTableColumns(JTable table) {
-		if(Active.getActiveDisplayModel()==stmDisplayCust) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
+		if(table.getColumnCount()==3) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		table.getColumnModel().getColumn(0).setMinWidth(80); 
 		table.getColumnModel().getColumn(0).setMaxWidth(100);
 		table.getTableHeader().setReorderingAllowed(false);
@@ -364,41 +357,14 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterTableHeaderListener(this, selectionTable));
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterTableHeaderListener(selectionTable));
 			checkboxHeader.setEnabled(false);
 			checkboxHeader.setSelected(true);
 			tc.setHeaderRenderer(checkboxHeader);
 		}
 		return tc;
 	}
-	public void synchDisplayHeaders(JTable activeTable){
-		TableColumn column = activeTable.getColumnModel().getColumn(0);
-		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
-		if(activeTable.getRowCount() > 0){
-			checkBoxHeader.setEnabled(true);
-			checkBoxHeader.setSelected(false);
-			column.setHeaderValue("Remove All");
-		}else{
-			checkBoxHeader.setEnabled(false);
-			checkBoxHeader.setSelected(true);
-			column.setHeaderValue("Select All");
-		}
-	}
-	public void synchronizeHeader(){
-		boolean checked = true;
-		if(selectionTable.getRowCount() == 0) header.setSelected(false);
-		else{ 
-			for(int x = 0; x < selectionTable.getRowCount(); x++){
-				if(!(boolean) selectionTable.getValueAt(x, 0)){
-					checked = false;
-				}
-			}
-			headerClick = false;
-			header.setSelected(checked);
-			frame.getContentPane().repaint();
-			headerClick = true;
-		}
-	}
+	
 	public enum State {CUSTOMER, PROJECT, STATUS};
 	public static class Active{
 
@@ -508,3 +474,4 @@ public class GUI {
 		return header;
 	}
 }
+// TODO: At startup selection table ID field is the wrong size

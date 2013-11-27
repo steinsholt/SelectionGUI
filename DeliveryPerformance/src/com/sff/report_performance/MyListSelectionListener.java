@@ -1,6 +1,5 @@
 package com.sff.report_performance;
 
-import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -9,11 +8,9 @@ import com.sff.report_performance.GUI.Active;
 
 public class MyListSelectionListener implements ListSelectionListener{
 	
-	private JTable table;
-	private GUI gui;
+	private SelectionTable table;
 	
-	public MyListSelectionListener(GUI gui, JTable table){
-		this.gui = gui;
+	public MyListSelectionListener(SelectionTable table){
 		this.table = table;
 	}
 	
@@ -33,8 +30,8 @@ public class MyListSelectionListener implements ListSelectionListener{
 				model.removeRowInterval(min, max, table);
 			}
 			lsm.clearSelection();
-			gui.synchronizeHeader();
-			gui.synchDisplayHeaders(Active.getActiveDisplayTable());
+			table.synchronizeHeader();
+			Active.getActiveDisplayTable().SynchronizeHeader();
 		}
 	}
 }

@@ -8,6 +8,7 @@ import javax.swing.table.TableCellRenderer;
 
 public class SelectionTable extends JTable {
 	private static final long serialVersionUID = 1L;
+	private boolean headerClick;
 
 	public SelectionTable(MyTableModel model){
 		super(model);
@@ -19,5 +20,25 @@ public class SelectionTable extends JTable {
 		Color color = (boolean) this.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
 		c.setForeground(color);
 		return c;
+	}
+	
+	public void synchronizeHeader(){
+		boolean checked = true;
+		if(this.getRowCount() == 0)((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(false);
+		else{ 
+			for(int x = 0; x < this.getRowCount(); x++){
+				if(!(boolean) this.getValueAt(x, 0)){
+					checked = false;
+				}
+			}
+			headerClick = false;
+			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(checked);
+			this.getParent().getParent().repaint();
+			headerClick = true;
+		}
+	}
+	
+	public boolean isHeaderClicked(){
+		return headerClick;
 	}
 }

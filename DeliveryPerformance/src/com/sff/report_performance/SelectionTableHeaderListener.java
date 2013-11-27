@@ -4,22 +4,19 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 
 import javax.swing.AbstractButton;
-import javax.swing.JTable;
 
 import com.sff.report_performance.GUI.Active;
 
 public class SelectionTableHeaderListener implements ItemListener{
 	
-	private GUI gui;
-	private JTable table;
+	private SelectionTable table;
 	
-	public SelectionTableHeaderListener(GUI gui, JTable table){
-		this.gui = gui;
+	public SelectionTableHeaderListener(SelectionTable table){
 		this.table = table;
 	}
 	
 	public void itemStateChanged(ItemEvent e){
-		if(gui.isHeaderClick()){
+		if(table.isHeaderClicked()){
 			int min = 0;
 			int max = table.getRowCount() - 1;
 
@@ -31,7 +28,7 @@ public class SelectionTableHeaderListener implements ItemListener{
 					&& (e.getSource() instanceof AbstractButton)){
 				Active.getActiveDisplayModel().partialRemoval(min, max, table);
 			}
-			gui.synchDisplayHeaders(Active.getActiveDisplayTable());
+			Active.getActiveDisplayTable().SynchronizeHeader();
 		}
 	}
 }

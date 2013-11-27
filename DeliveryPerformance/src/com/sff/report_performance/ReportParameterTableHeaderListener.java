@@ -9,11 +9,9 @@ import com.sff.report_performance.GUI.Active;
 
 public class ReportParameterTableHeaderListener implements ItemListener{
 	
-	private GUI gui;
-	private JTable selectionTable;
+	private SelectionTable selectionTable;
 	
-	public ReportParameterTableHeaderListener(GUI gui, JTable selectionTable){
-		this.gui = gui;
+	public ReportParameterTableHeaderListener(SelectionTable selectionTable){
 		this.selectionTable = selectionTable;
 	}
 	
@@ -25,8 +23,8 @@ public class ReportParameterTableHeaderListener implements ItemListener{
 				((CheckBoxHeader) display.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
 			}
 			else model.removeRowInterval(0, model.getRowData().size() - 1, selectionTable);
-			gui.synchDisplayHeaders(Active.getActiveDisplayTable());
-			gui.synchronizeHeader();
+			Active.getActiveDisplayTable().SynchronizeHeader();
+			selectionTable.synchronizeHeader();
 		}
 	}
 }

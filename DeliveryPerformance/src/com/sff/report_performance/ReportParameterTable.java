@@ -5,6 +5,7 @@ import java.awt.Color;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JViewport;
+import javax.swing.table.TableColumn;
 
 public class ReportParameterTable extends JTable {
 	private static final long serialVersionUID = 1L;
@@ -17,7 +18,7 @@ public class ReportParameterTable extends JTable {
 		this.nullSelectionModel = nullSelectionModel;
 	}
 	
-	//TODO: disable header when switching tabs, enable when switching back *IF* appropriate
+	// TODO: Move synch in here?
 	
 	@Override
 	public void disable(){
@@ -36,5 +37,21 @@ public class ReportParameterTable extends JTable {
 		((JViewport)this.getParent()).setBackground(Color.white);
 		this.getTableHeader().setForeground(Color.black);
 		if(this.getRowCount() > 0) ((JComponent) this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(true);
+	}
+	
+	public void SynchronizeHeader(){
+		TableColumn column = this.getColumnModel().getColumn(0);
+		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
+		if(this.getRowCount() > 0){
+			checkBoxHeader.setEnabled(true);
+			checkBoxHeader.setSelected(false);
+			column.setHeaderValue("Remove All");
+			this.getParent().getParent().repaint();
+		}else{
+			checkBoxHeader.setEnabled(false);
+			checkBoxHeader.setSelected(true);
+			column.setHeaderValue("Select All");
+			this.getParent().getParent().repaint();
+		}
 	}
 }
