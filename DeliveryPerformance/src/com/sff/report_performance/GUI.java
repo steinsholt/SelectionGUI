@@ -55,7 +55,7 @@ public class GUI {
 	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
 	private JPanel selectionPanel;
-	private SpringLayout sl_panel;
+	private SpringLayout selectionPanelLayout;
 	private JButton bCustomers;
 	private JButton bProjects;
 	private JButton bStatuses;
@@ -64,10 +64,10 @@ public class GUI {
 	private List<String> colNames_sComp;
 	private List<String> colNames_sProj;
 	private List<String> colNames_sStat;
-	private SpringLayout sl_panel_3;
+	private SpringLayout displayPanelLayout;
 	private JPanel displayPanel;
 	private Font bold;
-	private SpringLayout springLayout_1;
+	private SpringLayout reportPerformancePanelLayout;
 	private JButton button;
 	private JLabel label;
 	private JPanel buttonPanel;
@@ -124,13 +124,13 @@ public class GUI {
 		selectionPanel.setBackground(Color.white);
 		frame.getContentPane().add(selectionPanel);
 
-		sl_panel = new SpringLayout();
-		selectionPanel.setLayout(sl_panel);
+		selectionPanelLayout = new SpringLayout();
+		selectionPanel.setLayout(selectionPanelLayout);
 		scrollPane = new JScrollPane();
-		sl_panel.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, selectionPanel);
-		sl_panel.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, selectionPanel);
+		selectionPanelLayout.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, selectionPanel);
+		selectionPanelLayout.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, selectionPanel);
 		springLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, selectionPanel);
-		sl_panel.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, selectionPanel);
+		selectionPanelLayout.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, selectionPanel);
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
 		selectionPanel.add(scrollPane);
@@ -152,10 +152,10 @@ public class GUI {
 		JPanel reportPerformancePanel = new JPanel();
 		{
 			buttonPanel = new JPanel();
-			sl_panel.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
-			springLayout_1.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
-			springLayout_1.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
-			springLayout_1.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
+			selectionPanelLayout.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
+			reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
+			reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
+			reportPerformancePanelLayout.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
 			selectionPanel.add(buttonPanel);
 			buttonPanel.setPreferredSize(new Dimension(460,150));
 			buttonPanel.setBackground(Color.white);
@@ -241,7 +241,7 @@ public class GUI {
 				}
 			});
 		}
-		springLayout_1.putConstraint(SpringLayout.SOUTH, reportPerformancePanel, -10, SpringLayout.SOUTH, frame.getContentPane());
+		reportPerformancePanelLayout.putConstraint(SpringLayout.SOUTH, reportPerformancePanel, -10, SpringLayout.SOUTH, frame.getContentPane());
 		frame.getContentPane().add(reportPerformancePanel);
 		reportPerformancePanel.setLayout(new SpringLayout());
 
@@ -266,8 +266,8 @@ public class GUI {
 
 		displayPanel = new JPanel();
 		reportPerformancePanel.add(displayPanel);
-		sl_panel_3 = new SpringLayout();
-		displayPanel.setLayout(sl_panel_3);
+		displayPanelLayout = new SpringLayout();
+		displayPanel.setLayout(displayPanelLayout);
 
 		scrollPaneCustomers = new JScrollPane();
 		displayPanel.add(scrollPaneCustomers);	
@@ -331,6 +331,7 @@ public class GUI {
 		toolBar.add(bCustomers);
 		toolBar.add(bProjects);
 		toolBar.add(bStatuses);
+		
 		Active.setState(State.CUSTOMER);
 	}
 
@@ -338,10 +339,10 @@ public class GUI {
 		frame = new JFrame();
 		frame.setBounds(100, 100, 1000, 900);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		springLayout_1 = new SpringLayout();
-		frame.getContentPane().setLayout(springLayout_1);
+		reportPerformancePanelLayout = new SpringLayout();
+		frame.getContentPane().setLayout(reportPerformancePanelLayout);
 		frame.getContentPane().setBackground(Color.white);
-		return springLayout_1;
+		return reportPerformancePanelLayout;
 	}
 	public TableColumn configureTableColumns(JTable table) {
 		if(table.getColumnCount()==3) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
