@@ -17,7 +17,7 @@ public class SelectionTable extends JTable {
 	@Override
 	public Component prepareRenderer(TableCellRenderer renderer, int row, int column){
 		Component c = super.prepareRenderer(renderer, row, column);
-		Color color = (boolean) this.getModel().getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
+		Color color = (boolean) this.getValueAt(row, 0) ? Color.BLUE : Color.BLACK;
 		c.setForeground(color);
 		return c;
 	}

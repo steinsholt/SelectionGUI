@@ -15,16 +15,14 @@ public class MyDocumentFilter {
 		doc.setDocumentFilter(new DocumentFilter() {
 			@Override
 			public void insertString(FilterBypass fb, int off, String str, AttributeSet attr) 
-					throws BadLocationException 
-					{
+					throws BadLocationException{
 				fb.insertString(off, str.replaceAll("\\D++", ""), attr);
-					} 
+			} 
 			@Override
 			public void replace(FilterBypass fb, int off, int len, String str, AttributeSet attr) 
-					throws BadLocationException 
-					{
+					throws BadLocationException{
 				fb.replace(off, len, str.replaceAll("\\D++", ""), attr); 
-					}
+			}
 		});
 		return doc;
 	}

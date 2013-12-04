@@ -18,6 +18,10 @@ public class ReportParameterTable extends JTable {
 		this.nullSelectionModel = nullSelectionModel;
 	}
 	
+	public PartialSelectionModel getPartialSelectionModel() {
+		return partialSelectionModel;
+	}
+
 	@Override
 	public void disable(){
 		this.setBackground(Color.lightGray);
@@ -37,7 +41,7 @@ public class ReportParameterTable extends JTable {
 		if(this.getRowCount() > 0) ((JComponent) this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(true);
 	}
 	
-	public void SynchronizeHeader(){
+	public void synchronizeHeader(){
 		TableColumn column = this.getColumnModel().getColumn(0);
 		CheckBoxHeader checkBoxHeader = (CheckBoxHeader) column.getHeaderRenderer();
 		if(this.getRowCount() > 0){

@@ -52,7 +52,6 @@ public class GUI {
 	private static MyTableModel stmSelectProj;
 	private static MyTableModel stmSelectStat;
 	private NullSelectionModel nullSelectionModel;
-	private PartialSelectionModel partialSelectionModel;
 	private JToolBar toolBar;
 	private JPanel selectionPanel;
 	private SpringLayout selectionPanelLayout;
@@ -106,7 +105,6 @@ public class GUI {
 
 		SpringLayout springLayout = createFrame();
 		nullSelectionModel = new NullSelectionModel();
-		partialSelectionModel = new PartialSelectionModel();
 
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
@@ -137,7 +135,7 @@ public class GUI {
 
 		selectionTable = new SelectionTable(stmSelectCust);
 		selectionTable.setName("selection");
-		selectionTable.getSelectionModel().addListSelectionListener(new MyListSelectionListener(selectionTable));
+		selectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(selectionTable));
 		TableColumn tc = configureTableColumns(selectionTable);
 		header = new CheckBoxHeader(new SelectionTableHeaderListener(selectionTable));
 		tc.setHeaderRenderer(header);
@@ -145,7 +143,6 @@ public class GUI {
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
 
-		partialSelectionModel.addListSelectionListener(new MyListSelectionListener(selectionTable));
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(stmSelectStat);
 
@@ -277,19 +274,25 @@ public class GUI {
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
 		
-		statusTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayStat);
+		PartialSelectionModel statusSelectionModel = new PartialSelectionModel();
+		statusTable = new ReportParameterTable(statusSelectionModel, nullSelectionModel, stmDisplayStat);
+		statusSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(statusTable,selectionTable));
 		statusTable.setName("statuses");
 		configureTableColumns(statusTable);
 		scrollPaneStatuses.setViewportView(statusTable);
 		statusTable.disable();
 		
-		projectTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel,stmDisplayProj);
+		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
+		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,stmDisplayProj);
+		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,selectionTable));
 		projectTable.setName("projects");
 		configureTableColumns(projectTable);
 		scrollPaneProjects.setViewportView(projectTable);
 		projectTable.disable();
 		
-		customerTable = new ReportParameterTable(partialSelectionModel, nullSelectionModel, stmDisplayCust);
+		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
+		customerTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, stmDisplayCust);
+		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(customerTable,selectionTable));
 		customerTable.setName("customers");
 		configureTableColumns(customerTable);
 		customerTable.getColumnModel().getColumn(1).setMaxWidth(50);
@@ -333,6 +336,7 @@ public class GUI {
 		toolBar.add(bStatuses);
 		
 		Active.setState(State.CUSTOMER);
+		selectionTable.setAutoCreateRowSorter(true);
 	}
 
 	private SpringLayout createFrame() {

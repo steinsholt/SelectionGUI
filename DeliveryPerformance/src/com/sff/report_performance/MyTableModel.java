@@ -31,14 +31,14 @@ public class MyTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void addRowInterval(int min, int max, JTable table){
+	public void addRowInterval(int[] selection, JTable table){
+
 		MyTableModel model = (MyTableModel) table.getModel();
-		for(int i = min; i <= max; i++){
+		for(int i : selection){
 			if(columnNames.size()==3) addRow(Arrays.asList(deleteIcon, model.getRow(i).get(1), model.getRow(i).get(2)));
 			else addRow(Arrays.asList(deleteIcon, model.getRow(i).get(1)));
-			table.setValueAt(true, i, 0);
+			table.setValueAt(true, table.convertRowIndexToView(i), 0);
 		}
-		model.fireTableDataChanged();
 	}
 
 	public void removeRow(int row){
@@ -48,34 +48,46 @@ public class MyTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void partialRemoval(int min, int max, JTable table){
+	public void partialRemoval(int[] selection, JTable table){
 		MyTableModel model = (MyTableModel) table.getModel();
-		for(int i = min; i <= max; i++){
+		for(int i : selection){
 			List row = model.getRow(i); // create new class and use comparator or override equals
 			List temp = new ArrayList(row);
 			temp.set(0, deleteIcon);
 			if(data.contains(temp)){    
 				removeRow(data.indexOf(temp));
-				table.setValueAt(false, i, 0);
+				table.setValueAt(false, table.convertRowIndexToView(i), 0);
 			}
 		}
-		model.fireTableDataChanged();
 	}
 
-	public void removeRowInterval(int min, int max, JTable table){
-		MyTableModel model = (MyTableModel) table.getModel();
-		for(int i = min; i <= max; i++){
-			List row = this.getRow(min);
+	public void clear(JTable selectionTable){
+		MyTableModel model = (MyTableModel) selectionTable.getModel();
+		while(data.size()!=0){
+
+			List row = this.getRow(0);
 			List temp = new ArrayList(row);
 			temp.set(0, true);
 			if(model.getRowData().contains(temp)){
 				int index = model.getRowContaining(temp);
 				model.setValueAt(false, index, 0);
 			}
-			if(data.size()>0) data.remove(min);
+			removeRow(0);
 		}
-		fireTableRowsDeleted(min, max);
-		model.fireTableDataChanged();
+	}
+
+	public void removeRowInterval(int[] selection, JTable selectionTable){
+		MyTableModel model = (MyTableModel) selectionTable.getModel();
+		for(int i = selection.length; --i >= 0;){
+			List row = this.getRow(selection[i]);
+			List temp = new ArrayList(row);
+			temp.set(0, true);
+			if(model.getRowData().contains(temp)){
+				int index = model.getRowContaining(temp);
+				model.setValueAt(false, index, 0);
+			}
+			if(data.size()>0) data.remove(selection[i]);
+		}
 	}
 
 	public int getRowContaining(Object id){

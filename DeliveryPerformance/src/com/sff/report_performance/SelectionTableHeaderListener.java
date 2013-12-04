@@ -17,18 +17,26 @@ public class SelectionTableHeaderListener implements ItemListener{
 	
 	public void itemStateChanged(ItemEvent e){
 		if(table.isHeaderClicked()){
-			int min = 0;
-			int max = table.getRowCount() - 1;
+			
+			int[] selection = new int [table.getRowCount()];
+			
+			for(int i = 0; i < table.getRowCount(); i++){
+				selection[i] = i;
+			}
+			
+			for (int i = 0; i < selection.length; i++) {
+				selection[i] = table.convertRowIndexToModel(selection[i]);
+			}
 
 			if(e.getStateChange() == ItemEvent.SELECTED
 					&& (e.getSource() instanceof AbstractButton)){
-				Active.getActiveDisplayModel().addRowInterval(min, max, table);
+				Active.getActiveDisplayModel().addRowInterval(selection, table);
 			}
 			else if(e.getStateChange() == ItemEvent.DESELECTED
 					&& (e.getSource() instanceof AbstractButton)){
-				Active.getActiveDisplayModel().partialRemoval(min, max, table);
+				Active.getActiveDisplayModel().partialRemoval(selection, table);
 			}
-			Active.getActiveDisplayTable().SynchronizeHeader();
+			Active.getActiveDisplayTable().synchronizeHeader();
 		}
 	}
 }
