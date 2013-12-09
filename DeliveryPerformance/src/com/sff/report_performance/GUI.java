@@ -31,12 +31,12 @@ import javax.swing.text.PlainDocument;
 public class GUI {
 
 	private JFrame frame;
-	private JButton btnGenerateReport;
+	private JButton generateReportButton;
 	private JTextField idField;
 	private JTextField nameField;
-	private JLabel lblID;
-	private JLabel lblName;
-	private JButton btnSearch;
+	private JLabel idLabel;
+	private JLabel nameLabel;
+	private JButton searchButton;
 	private JScrollPane scrollPane;
 	private SelectionTable selectionTable;
 	private JScrollPane scrollPaneCustomers;
@@ -45,24 +45,24 @@ public class GUI {
 	private static ReportParameterTable projectTable;
 	private JScrollPane scrollPaneStatuses;
 	private static ReportParameterTable statusTable;
-	private static MyTableModel stmDisplayCust;
-	private static MyTableModel stmDisplayProj;
-	private static MyTableModel stmDisplayStat;
-	private static MyTableModel stmSelectCust;
-	private static MyTableModel stmSelectProj;
-	private static MyTableModel stmSelectStat;
+	private static MyTableModel reportParameterCustomerModel;
+	private static MyTableModel reportParameterProjectModel;
+	private static MyTableModel reportParameterStatusModel;
+	private static MyTableModel selectCustomerModel;
+	private static MyTableModel selectProjectModel;
+	private static MyTableModel selectStatusModel;
 	private NullSelectionModel nullSelectionModel;
 	private JToolBar toolBar;
 	private JPanel selectionPanel;
 	private SpringLayout selectionPanelLayout;
-	private JButton bCustomers;
-	private JButton bProjects;
-	private JButton bStatuses;
+	private JButton customerButton;
+	private JButton projectButton;
+	private JButton statusButton;
 	private CheckBoxHeader header;
 	private DatabaseConnection databaseConnection;
-	private List<String> colNames_sComp;
-	private List<String> colNames_sProj;
-	private List<String> colNames_sStat;
+	private List<String> customerColumnNames;
+	private List<String> projectColumnNames;
+	private List<String> statusColumnNames;
 	private SpringLayout displayPanelLayout;
 	private JPanel displayPanel;
 	private Font bold;
@@ -90,33 +90,39 @@ public class GUI {
 			e.printStackTrace();
 		}
 
-		colNames_sComp = new ArrayList<String>();
-		colNames_sComp.add("");
-		colNames_sComp.add("ID");
-		colNames_sComp.add("Customers");
+		customerColumnNames = new ArrayList<String>();
+		customerColumnNames.add("");
+		customerColumnNames.add("ID");
+		customerColumnNames.add("Customers");
 
-		colNames_sProj = new ArrayList<String>();
-		colNames_sProj.add("");
-		colNames_sProj.add("Projects");
+		projectColumnNames = new ArrayList<String>();
+		projectColumnNames.add("");
+		projectColumnNames.add("Projects");
 
-		colNames_sStat = new ArrayList<String>();
-		colNames_sStat.add("");
-		colNames_sStat.add("Item Statuses");
+		statusColumnNames = new ArrayList<String>();
+		statusColumnNames.add("");
+		statusColumnNames.add("Item Statuses");
 
-		SpringLayout springLayout = createFrame();
+		frame = new JFrame();
+		frame.setBounds(100, 100, 1000, 900);
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		reportPerformancePanelLayout = new SpringLayout();
+		frame.getContentPane().setLayout(reportPerformancePanelLayout);
+		frame.getContentPane().setBackground(Color.white);
+		
 		nullSelectionModel = new NullSelectionModel();
 
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 
-		stmSelectCust = new MyTableModel(colNames_sComp);
-		stmSelectProj = new MyTableModel(colNames_sProj);
-		stmSelectStat = new MyTableModel(colNames_sStat);
+		selectCustomerModel = new MyTableModel(customerColumnNames);
+		selectProjectModel = new MyTableModel(projectColumnNames);
+		selectStatusModel = new MyTableModel(statusColumnNames);
 
-		stmDisplayStat = new MyTableModel(colNames_sStat);
-		stmDisplayProj = new MyTableModel(colNames_sProj);
-		stmDisplayCust = new MyTableModel(colNames_sComp);
+		reportParameterStatusModel = new MyTableModel(statusColumnNames);
+		reportParameterProjectModel = new MyTableModel(projectColumnNames);
+		reportParameterCustomerModel = new MyTableModel(customerColumnNames);
 
 		selectionPanel = new JPanel();
 		selectionPanel.setBackground(Color.white);
@@ -127,117 +133,117 @@ public class GUI {
 		scrollPane = new JScrollPane();
 		selectionPanelLayout.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, selectionPanel);
 		selectionPanelLayout.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, selectionPanel);
-		springLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, selectionPanel);
+		reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, selectionPanel);
 		selectionPanelLayout.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, selectionPanel);
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-		springLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
+		reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
 		selectionPanel.add(scrollPane);
 
-		selectionTable = new SelectionTable(stmSelectCust);
+		selectionTable = new SelectionTable(selectCustomerModel);
 		selectionTable.setName("selection");
 		selectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(selectionTable));
 		TableColumn tc = configureTableColumns(selectionTable);
 		header = new CheckBoxHeader(new SelectionTableHeaderListener(selectionTable));
 		tc.setHeaderRenderer(header);
-		
+
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
 
 		databaseConnection = new DatabaseConnection();
-		databaseConnection.loadStatusData(stmSelectStat);
+		databaseConnection.loadStatusData(selectStatusModel);
 
 		JPanel reportPerformancePanel = new JPanel();
-		{
-			buttonPanel = new JPanel();
-			selectionPanelLayout.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
-			reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
-			reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
-			reportPerformancePanelLayout.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
-			selectionPanel.add(buttonPanel);
-			buttonPanel.setPreferredSize(new Dimension(460,150));
-			buttonPanel.setBackground(Color.white);
-			SpringLayout sl_panel_5 = new SpringLayout();
-			buttonPanel.setLayout(sl_panel_5);
-			{
-				selectionHeadline = new JLabel("Select Customers");
-				sl_panel_5.putConstraint(SpringLayout.NORTH, selectionHeadline, 10, SpringLayout.NORTH, buttonPanel);
-				sl_panel_5.putConstraint(SpringLayout.WEST, selectionHeadline, 10, SpringLayout.WEST, buttonPanel);
-				selectionHeadline.setFont(headline);
-				buttonPanel.add(selectionHeadline);
+
+		buttonPanel = new JPanel();
+		selectionPanelLayout.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
+		reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
+		reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
+		reportPerformancePanelLayout.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
+		selectionPanel.add(buttonPanel);
+		buttonPanel.setPreferredSize(new Dimension(460,150));
+		buttonPanel.setBackground(Color.white);
+		SpringLayout sl_panel_5 = new SpringLayout();
+		buttonPanel.setLayout(sl_panel_5);
+
+		selectionHeadline = new JLabel("Select Customers");
+		sl_panel_5.putConstraint(SpringLayout.NORTH, selectionHeadline, 10, SpringLayout.NORTH, buttonPanel);
+		sl_panel_5.putConstraint(SpringLayout.WEST, selectionHeadline, 10, SpringLayout.WEST, buttonPanel);
+		selectionHeadline.setFont(headline);
+		buttonPanel.add(selectionHeadline);
+
+		idLabel = new JLabel("Customer ID");
+		sl_panel_5.putConstraint(SpringLayout.NORTH, idLabel, 6, SpringLayout.SOUTH, selectionHeadline);
+		sl_panel_5.putConstraint(SpringLayout.WEST, idLabel, 0, SpringLayout.WEST, selectionHeadline);
+		buttonPanel.add(idLabel);
+		idLabel.setFont(subheadline);
+		nameLabel = new JLabel("Customer Name");
+		sl_panel_5.putConstraint(SpringLayout.WEST, nameLabel, 0, SpringLayout.WEST, selectionHeadline);
+		buttonPanel.add(nameLabel);
+		nameLabel.setFont(subheadline);
+
+		PlainDocument doc = MyDocumentFilter.createDocumentFilter();
+		idField = new JTextField();
+		idField.setDocument(doc);
+		sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, selectionHeadline);
+		sl_panel_5.putConstraint(SpringLayout.WEST, idField, 63, SpringLayout.EAST, idLabel);
+		sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
+		buttonPanel.add(idField);
+		idField.setColumns(10);
+		nameField = new JTextField();
+		sl_panel_5.putConstraint(SpringLayout.NORTH, nameLabel, -3, SpringLayout.NORTH, nameField);
+		sl_panel_5.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
+		sl_panel_5.putConstraint(SpringLayout.WEST, nameField, 0, SpringLayout.WEST, idField);
+		sl_panel_5.putConstraint(SpringLayout.EAST, nameField, 0, SpringLayout.EAST, idField);
+		buttonPanel.add(nameField);
+		nameField.setColumns(10);
+
+		toolBar = new JToolBar();
+		sl_panel_5.putConstraint(SpringLayout.WEST, toolBar, 0, SpringLayout.WEST, selectionHeadline);
+		sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 10, SpringLayout.SOUTH, buttonPanel);
+		sl_panel_5.putConstraint(SpringLayout.EAST, toolBar, 0, SpringLayout.EAST, idField);
+		buttonPanel.add(toolBar);
+		toolBar.setLayout(new GridLayout());
+		toolBar.setFloatable(false);
+
+		customerButton = new JButton();
+		customerButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+
+		projectButton = new JButton();
+		projectButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+
+		statusButton = new JButton();
+		statusButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+
+		searchButton = new JButton("Search");
+		sl_panel_5.putConstraint(SpringLayout.SOUTH, searchButton, -8, SpringLayout.SOUTH, buttonPanel);
+		sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 0, SpringLayout.SOUTH, searchButton);
+		sl_panel_5.putConstraint(SpringLayout.EAST, searchButton, -10, SpringLayout.EAST, buttonPanel);
+		buttonPanel.add(searchButton);
+		searchButton.setForeground(Color.blue);
+		searchButton.setFont(bold);
+		searchButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+				selectionTable.synchronizeHeader();
 			}
-			lblID = new JLabel("Customer ID");
-			sl_panel_5.putConstraint(SpringLayout.NORTH, lblID, 6, SpringLayout.SOUTH, selectionHeadline);
-			sl_panel_5.putConstraint(SpringLayout.WEST, lblID, 0, SpringLayout.WEST, selectionHeadline);
-			buttonPanel.add(lblID);
-			lblID.setFont(subheadline);
-			lblName = new JLabel("Customer Name");
-			sl_panel_5.putConstraint(SpringLayout.WEST, lblName, 0, SpringLayout.WEST, selectionHeadline);
-			buttonPanel.add(lblName);
-			lblName.setFont(subheadline);
-
-			PlainDocument doc = MyDocumentFilter.createDocumentFilter();
-			idField = new JTextField();
-			idField.setDocument(doc);
-			sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, selectionHeadline);
-			sl_panel_5.putConstraint(SpringLayout.WEST, idField, 63, SpringLayout.EAST, lblID);
-			sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
-			buttonPanel.add(idField);
-			idField.setColumns(10);
-			nameField = new JTextField();
-			sl_panel_5.putConstraint(SpringLayout.NORTH, lblName, -3, SpringLayout.NORTH, nameField);
-			sl_panel_5.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
-			sl_panel_5.putConstraint(SpringLayout.WEST, nameField, 0, SpringLayout.WEST, idField);
-			sl_panel_5.putConstraint(SpringLayout.EAST, nameField, 0, SpringLayout.EAST, idField);
-			buttonPanel.add(nameField);
-			nameField.setColumns(10);
-
-			toolBar = new JToolBar();
-			sl_panel_5.putConstraint(SpringLayout.WEST, toolBar, 0, SpringLayout.WEST, selectionHeadline);
-			sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 10, SpringLayout.SOUTH, buttonPanel);
-			sl_panel_5.putConstraint(SpringLayout.EAST, toolBar, 0, SpringLayout.EAST, idField);
-			buttonPanel.add(toolBar);
-			toolBar.setLayout(new GridLayout());
-			toolBar.setFloatable(false);
-			
-			bCustomers = new JButton();
-			bCustomers.setBorder(BorderFactory.createSoftBevelBorder(0));
-			
-			bProjects = new JButton();
-			bProjects.setBorder(BorderFactory.createSoftBevelBorder(0));
-			
-			bStatuses = new JButton();
-			bStatuses.setBorder(BorderFactory.createSoftBevelBorder(0));
-
-			btnSearch = new JButton("Search");
-			sl_panel_5.putConstraint(SpringLayout.SOUTH, btnSearch, -8, SpringLayout.SOUTH, buttonPanel);
-			sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 0, SpringLayout.SOUTH, btnSearch);
-			sl_panel_5.putConstraint(SpringLayout.EAST, btnSearch, -10, SpringLayout.EAST, buttonPanel);
-			buttonPanel.add(btnSearch);
-			btnSearch.setForeground(Color.blue);
-			btnSearch.setFont(bold);
-			btnSearch.addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
+		});
+		nameField.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
 					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
 					selectionTable.synchronizeHeader();
 				}
-			});
-			nameField.addKeyListener(new KeyAdapter(){
-				public void keyPressed(KeyEvent e){
-					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-						selectionTable.synchronizeHeader();
-					}
+			}
+		});
+		idField.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+					selectionTable.synchronizeHeader();
 				}
-			});
-			idField.addKeyListener(new KeyAdapter(){
-				public void keyPressed(KeyEvent e){
-					if(e.getKeyCode() == KeyEvent.VK_ENTER){
-						DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-						selectionTable.synchronizeHeader();
-					}
-				}
-			});
-		}
+			}
+		});
+
 		reportPerformancePanelLayout.putConstraint(SpringLayout.SOUTH, reportPerformancePanel, -10, SpringLayout.SOUTH, frame.getContentPane());
 		frame.getContentPane().add(reportPerformancePanel);
 		reportPerformancePanel.setLayout(new SpringLayout());
@@ -247,19 +253,18 @@ public class GUI {
 		reportPerformancePanel.add(helpPanel);
 		SpringLayout sl_panel_4 = new SpringLayout();
 		helpPanel.setLayout(sl_panel_4);
-		{
-			button = new JButton("Help");
-			sl_panel_4.putConstraint(SpringLayout.SOUTH, button, 0, SpringLayout.SOUTH, helpPanel);
-			sl_panel_4.putConstraint(SpringLayout.EAST, button, -10, SpringLayout.EAST, helpPanel);
-			helpPanel.add(button);
-		}
-		{
-			label = new JLabel("Report Parameters");
-			sl_panel_4.putConstraint(SpringLayout.WEST, label, 85, SpringLayout.WEST, helpPanel);
-			sl_panel_4.putConstraint(SpringLayout.SOUTH, label, 0, SpringLayout.SOUTH, helpPanel);
-			label.setFont(new Font("Serif", Font.PLAIN, 24));
-			helpPanel.add(label);
-		}
+
+		button = new JButton("Help");
+		sl_panel_4.putConstraint(SpringLayout.SOUTH, button, 0, SpringLayout.SOUTH, helpPanel);
+		sl_panel_4.putConstraint(SpringLayout.EAST, button, -10, SpringLayout.EAST, helpPanel);
+		helpPanel.add(button);
+
+
+		label = new JLabel("Report Parameters");
+		sl_panel_4.putConstraint(SpringLayout.WEST, label, 85, SpringLayout.WEST, helpPanel);
+		sl_panel_4.putConstraint(SpringLayout.SOUTH, label, 0, SpringLayout.SOUTH, helpPanel);
+		label.setFont(new Font("Serif", Font.PLAIN, 24));
+		helpPanel.add(label);
 
 		displayPanel = new JPanel();
 		reportPerformancePanel.add(displayPanel);
@@ -273,25 +278,25 @@ public class GUI {
 		scrollPaneStatuses = new JScrollPane();
 		displayPanel.add(scrollPaneStatuses);	
 		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
-		
+
 		PartialSelectionModel statusSelectionModel = new PartialSelectionModel();
-		statusTable = new ReportParameterTable(statusSelectionModel, nullSelectionModel, stmDisplayStat);
+		statusTable = new ReportParameterTable(statusSelectionModel, nullSelectionModel, reportParameterStatusModel);
 		statusSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(statusTable,selectionTable));
 		statusTable.setName("statuses");
 		configureTableColumns(statusTable);
 		scrollPaneStatuses.setViewportView(statusTable);
 		statusTable.disable();
-		
+
 		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
-		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,stmDisplayProj);
+		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel);
 		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,selectionTable));
 		projectTable.setName("projects");
 		configureTableColumns(projectTable);
 		scrollPaneProjects.setViewportView(projectTable);
 		projectTable.disable();
-		
+
 		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
-		customerTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, stmDisplayCust);
+		customerTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterCustomerModel);
 		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(customerTable,selectionTable));
 		customerTable.setName("customers");
 		configureTableColumns(customerTable);
@@ -306,48 +311,39 @@ public class GUI {
 		reportPerformancePanel.add(reportPanel);
 		SpringLayout sl_panel_6 = new SpringLayout();
 		reportPanel.setLayout(sl_panel_6);
-		btnGenerateReport = new JButton();
-		sl_panel_6.putConstraint(SpringLayout.EAST, btnGenerateReport, -5, SpringLayout.EAST, reportPanel);
-		sl_panel_6.putConstraint(SpringLayout.SOUTH, btnGenerateReport, 0, SpringLayout.SOUTH, reportPanel);
-		reportPanel.add(btnGenerateReport);
+		generateReportButton = new JButton();
+		sl_panel_6.putConstraint(SpringLayout.EAST, generateReportButton, -5, SpringLayout.EAST, reportPanel);
+		sl_panel_6.putConstraint(SpringLayout.SOUTH, generateReportButton, 0, SpringLayout.SOUTH, reportPanel);
+		reportPanel.add(generateReportButton);
 
-		btnGenerateReport.setAction(new GenerateReportAction(stmDisplayCust.getRowData(), stmDisplayProj.getRowData(), stmDisplayStat.getRowData(), frame));
-		btnGenerateReport.setForeground(Color.blue);
-		btnGenerateReport.setFont(bold);
-		btnGenerateReport.setText("Generate Report");
+		generateReportButton.setAction(new GenerateReportAction(reportParameterCustomerModel.getRowData(), reportParameterProjectModel.getRowData(), reportParameterStatusModel.getRowData(), frame));
+		generateReportButton.setForeground(Color.blue);
+		generateReportButton.setFont(bold);
+		generateReportButton.setText("Generate Report");
 
 		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,0,0,5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
-		
+
 		EnableSelectionAction selectCustomers = new EnableSelectionAction(this, State.CUSTOMER);
-		bCustomers.setAction(selectCustomers);
-		bCustomers.setText("Select Customers");
-		
+		customerButton.setAction(selectCustomers);
+		customerButton.setText("Select Customers");
+
 		EnableSelectionAction selectProjects = new EnableSelectionAction(this, State.PROJECT);
-		bProjects.setAction(selectProjects);
-		bProjects.setText("Select Projects");
-		
+		projectButton.setAction(selectProjects);
+		projectButton.setText("Select Projects");
+
 		EnableSelectionAction selectStatuses = new EnableSelectionAction(this, State.STATUS);
-		bStatuses.setAction(selectStatuses);
-		bStatuses.setText("Select Statuses");
-		
-		toolBar.add(bCustomers);
-		toolBar.add(bProjects);
-		toolBar.add(bStatuses);
-		
+		statusButton.setAction(selectStatuses);
+		statusButton.setText("Select Statuses");
+
+		toolBar.add(customerButton);
+		toolBar.add(projectButton);
+		toolBar.add(statusButton);
+
 		Active.setState(State.CUSTOMER);
 		selectionTable.setAutoCreateRowSorter(true);
 	}
 
-	private SpringLayout createFrame() {
-		frame = new JFrame();
-		frame.setBounds(100, 100, 1000, 900);
-		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		reportPerformancePanelLayout = new SpringLayout();
-		frame.getContentPane().setLayout(reportPerformancePanelLayout);
-		frame.getContentPane().setBackground(Color.white);
-		return reportPerformancePanelLayout;
-	}
 	public TableColumn configureTableColumns(JTable table) {
 		if(table.getColumnCount()==3) selectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		table.getColumnModel().getColumn(0).setMinWidth(80); 
@@ -368,7 +364,7 @@ public class GUI {
 		}
 		return tc;
 	}
-	
+
 	public enum State {CUSTOMER, PROJECT, STATUS};
 	public static class Active{
 
@@ -388,7 +384,7 @@ public class GUI {
 		public static ReportParameterTable getActiveDisplayTable(){
 			return table;
 		}
-		
+
 		public static State getState(){
 			return activeState;
 		}
@@ -396,20 +392,20 @@ public class GUI {
 		public static void setState(State state){
 			switch (state){
 			case CUSTOMER:
-				display = stmDisplayCust;
-				select = stmSelectCust;
+				display = reportParameterCustomerModel;
+				select = selectCustomerModel;
 				table = customerTable;
 				activeState = state;
 				break;
 			case PROJECT:
-				display = stmDisplayProj;
-				select = stmSelectProj;
+				display = reportParameterProjectModel;
+				select = selectProjectModel;
 				table = projectTable;
 				activeState = state;
 				break;
 			case STATUS:
-				display = stmDisplayStat;
-				select = stmSelectStat;
+				display = reportParameterStatusModel;
+				select = selectStatusModel;
 				table = statusTable;
 				activeState = state;
 				break;
@@ -423,14 +419,14 @@ public class GUI {
 	public JTextField getNameField() {
 		return nameField;
 	}
-	public JLabel getLblID() {
-		return lblID;
+	public JLabel getIdLabel() {
+		return idLabel;
 	}
-	public JLabel getLblName() {
-		return lblName;
+	public JLabel getNameLabel() {
+		return nameLabel;
 	}
-	public JButton getBtnSearch() {
-		return btnSearch;
+	public JButton getSearchButton() {
+		return searchButton;
 	}
 	public SelectionTable getSelectionTable() {
 		return selectionTable;
@@ -444,32 +440,32 @@ public class GUI {
 	public ReportParameterTable getStatusTable() {
 		return statusTable;
 	}
-	public MyTableModel getStmDisplayCust() {
-		return stmDisplayCust;
+	public MyTableModel getReportParameterCustomerModel() {
+		return reportParameterCustomerModel;
 	}
-	public MyTableModel getStmDisplayProj() {
-		return stmDisplayProj;
+	public MyTableModel getReportParameterProjectModel() {
+		return reportParameterProjectModel;
 	}
-	public MyTableModel getStmDisplayStat() {
-		return stmDisplayStat;
+	public MyTableModel getReportParameterStatusModel() {
+		return reportParameterStatusModel;
 	}
-	public MyTableModel getStmSelectCust() {
-		return stmSelectCust;
+	public MyTableModel getSelectCustomerModel() {
+		return selectCustomerModel;
 	}
-	public MyTableModel getStmSelectProj() {
-		return stmSelectProj;
+	public MyTableModel getSelectProjectModel() {
+		return selectProjectModel;
 	}
-	public MyTableModel getStmSelectStat() {
-		return stmSelectStat;
+	public MyTableModel getSelectStatusModel() {
+		return selectStatusModel;
 	}
-	public JButton getbCustomers() {
-		return bCustomers;
+	public JButton getCustomersButton() {
+		return customerButton;
 	}
-	public JButton getbProjects() {
-		return bProjects;
+	public JButton getProjectsButton() {
+		return projectButton;
 	}
-	public JButton getbStatuses() {
-		return bStatuses;
+	public JButton getStatusesButton() {
+		return statusButton;
 	}
 	public JLabel getSelectionHeadline() {
 		return selectionHeadline;

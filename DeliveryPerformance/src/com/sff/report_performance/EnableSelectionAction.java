@@ -31,14 +31,14 @@ public class EnableSelectionAction extends AbstractAction{
 		else if(isProjectEnabled)gui.getSelectionHeadline().setText("Select Projects");
 		else gui.getSelectionHeadline().setText("Select Statuses");
 		
-		if(isStatusEnabled)gui.getLblName().setVisible(false);
-		else gui.getLblName().setVisible(true);
+		if(isStatusEnabled)gui.getNameLabel().setVisible(false);
+		else gui.getNameLabel().setVisible(true);
 		
-		if(isCustomerEnabled)gui.getLblName().setText("Customer Name");
-		else gui.getLblName().setText("Project Name");
+		if(isCustomerEnabled)gui.getNameLabel().setText("Customer Name");
+		else gui.getNameLabel().setText("Project Name");
 		
-		if(isCustomerEnabled)gui.getLblID().setVisible(true);
-		else gui.getLblID().setVisible(false);
+		if(isCustomerEnabled)gui.getIdLabel().setVisible(true);
+		else gui.getIdLabel().setVisible(false);
 		
 		if(isStatusEnabled)gui.getNameField().setVisible(false);
 		else gui.getNameField().setVisible(true);
@@ -46,8 +46,8 @@ public class EnableSelectionAction extends AbstractAction{
 		if(isCustomerEnabled)gui.getIdField().setVisible(true);
 		else gui.getIdField().setVisible(false);
 		
-		if(isStatusEnabled)gui.getBtnSearch().setVisible(false);
-		else gui.getBtnSearch().setVisible(true);
+		if(isStatusEnabled)gui.getSearchButton().setVisible(false);
+		else gui.getSearchButton().setVisible(true);
 
 		gui.getSelectionTable().setModel(Active.getActiveSelectModel());
 		TableColumn tc = gui.configureTableColumns(gui.getSelectionTable());		
@@ -62,12 +62,12 @@ public class EnableSelectionAction extends AbstractAction{
 		gui.getNameField().setText("");
 		gui.getNameField().requestFocusInWindow();
 
-		if(isCustomerEnabled)gui.getbCustomers().setSelected(true);
-		else gui.getbCustomers().setSelected(false);
-		if(isProjectEnabled)gui.getbProjects().setSelected(true);
-		else gui.getbProjects().setSelected(false);
-		if(isStatusEnabled)gui.getbStatuses().setSelected(true);
-		else gui.getbStatuses().setSelected(false);
+		if(isCustomerEnabled)gui.getCustomersButton().setSelected(true);
+		else gui.getCustomersButton().setSelected(false);
+		if(isProjectEnabled)gui.getProjectsButton().setSelected(true);
+		else gui.getProjectsButton().setSelected(false);
+		if(isStatusEnabled)gui.getStatusesButton().setSelected(true);
+		else gui.getStatusesButton().setSelected(false);
 		
 		gui.getSelectionTable().synchronizeHeader();
 	}
