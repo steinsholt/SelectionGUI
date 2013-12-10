@@ -5,6 +5,7 @@ import java.awt.Component;
 
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
 
 public class SelectionTable extends JTable {
 	private static final long serialVersionUID = 1L;
@@ -40,5 +41,11 @@ public class SelectionTable extends JTable {
 	
 	public boolean isHeaderClicked(){
 		return headerClick;
+	}
+	
+	@Override
+	public void setModel(TableModel tableModel){
+		super.setModel(tableModel);
+//		if(this.getRowSorter()!=null)((TableRowSorter<?>) this.getRowSorter()).setSortable(0, false); //TODO: combine with synch header?
 	}
 }

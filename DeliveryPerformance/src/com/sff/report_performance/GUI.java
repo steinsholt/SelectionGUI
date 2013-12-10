@@ -105,6 +105,7 @@ public class GUI {
 
 		frame = new JFrame();
 		frame.setBounds(100, 100, 1000, 900);
+		frame.setMinimumSize(new Dimension(700,600));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		reportPerformancePanelLayout = new SpringLayout();
 		frame.getContentPane().setLayout(reportPerformancePanelLayout);
@@ -189,6 +190,7 @@ public class GUI {
 		sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
 		buttonPanel.add(idField);
 		idField.setColumns(10);
+		
 		nameField = new JTextField();
 		sl_panel_5.putConstraint(SpringLayout.NORTH, nameLabel, -3, SpringLayout.NORTH, nameField);
 		sl_panel_5.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
@@ -244,7 +246,6 @@ public class GUI {
 			}
 		});
 
-		reportPerformancePanelLayout.putConstraint(SpringLayout.SOUTH, reportPerformancePanel, -10, SpringLayout.SOUTH, frame.getContentPane());
 		frame.getContentPane().add(reportPerformancePanel);
 		reportPerformancePanel.setLayout(new SpringLayout());
 
@@ -258,7 +259,6 @@ public class GUI {
 		sl_panel_4.putConstraint(SpringLayout.SOUTH, button, 0, SpringLayout.SOUTH, helpPanel);
 		sl_panel_4.putConstraint(SpringLayout.EAST, button, -10, SpringLayout.EAST, helpPanel);
 		helpPanel.add(button);
-
 
 		label = new JLabel("Report Parameters");
 		sl_panel_4.putConstraint(SpringLayout.WEST, label, 85, SpringLayout.WEST, helpPanel);
@@ -309,11 +309,11 @@ public class GUI {
 		reportPanel = new JPanel();
 		reportPanel.setMinimumSize(new Dimension(100,100));
 		reportPerformancePanel.add(reportPanel);
-		SpringLayout sl_panel_6 = new SpringLayout();
-		reportPanel.setLayout(sl_panel_6);
+		SpringLayout reportPanelLayout = new SpringLayout();
+		reportPanel.setLayout(reportPanelLayout);
 		generateReportButton = new JButton();
-		sl_panel_6.putConstraint(SpringLayout.EAST, generateReportButton, -5, SpringLayout.EAST, reportPanel);
-		sl_panel_6.putConstraint(SpringLayout.SOUTH, generateReportButton, 0, SpringLayout.SOUTH, reportPanel);
+		reportPanelLayout.putConstraint(SpringLayout.EAST, generateReportButton, -5, SpringLayout.EAST, reportPanel);
+		reportPanelLayout.putConstraint(SpringLayout.SOUTH, generateReportButton, 0, SpringLayout.SOUTH, reportPanel);
 		reportPanel.add(generateReportButton);
 
 		generateReportButton.setAction(new GenerateReportAction(reportParameterCustomerModel.getRowData(), reportParameterProjectModel.getRowData(), reportParameterStatusModel.getRowData(), frame));
@@ -321,7 +321,7 @@ public class GUI {
 		generateReportButton.setFont(bold);
 		generateReportButton.setText("Generate Report");
 
-		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,0,0,5);
+		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,5,5,5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
 
 		EnableSelectionAction selectCustomers = new EnableSelectionAction(this, State.CUSTOMER);

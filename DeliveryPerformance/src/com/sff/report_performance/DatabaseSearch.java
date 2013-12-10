@@ -23,7 +23,7 @@ public class DatabaseSearch {
 				selectionModel.getRowData().clear();
 				selectionModel.fireTableDataChanged();
 			}
-			String name = nameField.getText().toLowerCase();
+			String name = nameField.getText();
 			String ID = idField.getText();
 			Database db = DatabaseConnection.getDatabase();
 			Statement st = db.getJdbcConnection().createStatement();

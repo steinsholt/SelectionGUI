@@ -61,6 +61,8 @@ public class EnableSelectionAction extends AbstractAction{
 		
 		gui.getNameField().setText("");
 		gui.getNameField().requestFocusInWindow();
+		
+		gui.getIdField().setText("");
 
 		if(isCustomerEnabled)gui.getCustomersButton().setSelected(true);
 		else gui.getCustomersButton().setSelected(false);
