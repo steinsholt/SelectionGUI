@@ -21,11 +21,7 @@ public class SelectionTableHeaderListener implements ItemListener{
 			int[] selection = new int [table.getRowCount()];
 			
 			for(int i = 0; i < table.getRowCount(); i++){
-				selection[i] = i;
-			}
-			
-			for (int i = 0; i < selection.length; i++) {
-				selection[i] = table.convertRowIndexToModel(selection[i]);
+				selection[i] = table.convertRowIndexToModel(i);
 			}
 
 			if(e.getStateChange() == ItemEvent.SELECTED
