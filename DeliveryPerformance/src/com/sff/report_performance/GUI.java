@@ -153,7 +153,7 @@ public class GUI {
 		databaseConnection = new DatabaseConnection();
 		databaseConnection.loadStatusData(selectStatusModel);
 
-		JPanel reportPerformancePanel = new JPanel();
+		final JPanel reportPerformancePanel = new JPanel();
 
 		buttonPanel = new JPanel();
 		selectionPanelLayout.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
@@ -249,8 +249,8 @@ public class GUI {
 		frame.getContentPane().add(reportPerformancePanel);
 		reportPerformancePanel.setLayout(new SpringLayout());
 
-		JPanel helpPanel = new JPanel();
-		helpPanel.setMinimumSize(new Dimension(100, 100));
+		final JPanel helpPanel = new JPanel();
+		helpPanel.setPreferredSize(new Dimension(100, 75));
 		reportPerformancePanel.add(helpPanel);
 		SpringLayout sl_panel_4 = new SpringLayout();
 		helpPanel.setLayout(sl_panel_4);
@@ -304,10 +304,10 @@ public class GUI {
 		scrollPaneCustomers.setViewportView(customerTable);
 		customerTable.enable();
 
-		// TODO: Fix overlapping panels after resize
+		// TODO: Fix overlapping panels after resize. GUI looks horrible at certain screen sizes.
 
 		reportPanel = new JPanel();
-		reportPanel.setMinimumSize(new Dimension(100,100));
+		reportPanel.setPreferredSize(new Dimension(100,75));
 		reportPerformancePanel.add(reportPanel);
 		SpringLayout reportPanelLayout = new SpringLayout();
 		reportPanel.setLayout(reportPanelLayout);
@@ -323,7 +323,7 @@ public class GUI {
 
 		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,5,5,5);
 		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
-
+		
 		EnableSelectionAction selectCustomers = new EnableSelectionAction(this, State.CUSTOMER);
 		customerButton.setAction(selectCustomers);
 		customerButton.setText("Select Customers");

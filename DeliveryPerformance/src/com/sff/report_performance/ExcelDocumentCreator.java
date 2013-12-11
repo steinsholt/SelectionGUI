@@ -138,7 +138,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					}
 				}
 				
-				// TODO: Does not account for the currency exchange rates.
+				// TODO: Does not account for the currency exchange rates. You can now do this with ' "c.rate" = Tr_hdr.currency_rate, '
 				int last = sheetTable.getLastRowNum() + 1;
 				int rowPosition = 4;
 				CellStyle cellStyle = sheetProject.getRow(5).getCell(1).getCellStyle();
