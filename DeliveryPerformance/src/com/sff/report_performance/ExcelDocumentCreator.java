@@ -17,7 +17,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -138,25 +137,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					}
 				}
 				
-				// TODO: Does not account for the currency exchange rates. You can now do this with ' "c.rate" = Tr_hdr.currency_rate, '
 				int last = sheetTable.getLastRowNum() + 1;
-				int rowPosition = 4;
-				CellStyle cellStyle = sheetProject.getRow(5).getCell(1).getCellStyle();
-				
-				if(currencySet.size()!=0)sheetProject.shiftRows(4, 8, currencySet.size()); 
-				
-				for(String currency : currencySet){
-					Row row = sheetProject.createRow(rowPosition++);
-					
-					Cell description = row.createCell(0);
-					description.setCellValue("Total Value [" + currency + "]:");
-					description.setCellStyle(cellStyle);
-					
-					Cell sum = row.createCell(1);
-					sum.setCellFormula("SUMIF(Table!$N$2:$N$" + last + ",\""+ currency + "\"," + "Table!$M$2:$M$" + last + ")");
-					sum.setCellStyle(cellStyle);
-					
-				}
+				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$M$2:$M$" + last + ",Table!$O$2:$O$" + last + ")");
 				
 				publishedOutput.setText("Opening Excel Document");
 
@@ -192,6 +174,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " \"Unit Price\" = clientItemList.price,"
 				+ " \"Total Price\" = clientItemList.qnt*clientItemList.price,"
 				+ " \"currency\" = Exchange.curr_name,"
+				+ " \"currency rate\" = Tr_hdr.currency_rate,"
 				+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 104),"
 				+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 104),"
 				+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 104)," 
