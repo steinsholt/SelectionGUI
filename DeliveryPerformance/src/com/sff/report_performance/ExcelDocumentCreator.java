@@ -17,6 +17,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -105,6 +106,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			publishedOutput.setText("Generating Excel Document");
 			while(!isCancelled()){
+				CellStyle style = workbook.createCellStyle();
+				style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+				style.setFillPattern(CellStyle.SOLID_FOREGROUND);
 				Set<String> currencySet = new HashSet<String>();
 				while(dataSet.next()){
 					setProgress(100 * processed++ / rowCount);
@@ -121,6 +125,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
 							currencySet.add(dataSet.getString(column));
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Total Price"))){
+							cell.setCellStyle(style);
 						}
 						try{
 							String s = dataSet.getString(column);
@@ -139,6 +146,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				
 				int last = sheetTable.getLastRowNum() + 1;
 				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$M$2:$M$" + last + ",Table!$O$2:$O$" + last + ")");
+				sheetProject.getRow(5).getCell(2).setCellFormula("SUMPRODUCT(Table!$K$2:$K$" + last + ")");
 				
 				publishedOutput.setText("Opening Excel Document");
 
@@ -172,7 +180,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " \"Supplier\" = supplierList.assoc_name ,"
 				+ " \"QTY\" = clientItemList.qnt,"
 				+ " \"Unit Price\" = clientItemList.price,"
-				+ " \"Total Price\" = clientItemList.qnt*clientItemList.price,"
 				+ " \"currency\" = Exchange.curr_name,"
 				+ " \"currency rate\" = Tr_hdr.currency_rate,"
 				+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 104),"
@@ -180,7 +187,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 104)," 
 				+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 104),"
 				+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 104),"
-				+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname"
+				+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname,"
+				+ " \"Total Price\" = clientItemList.qnt*clientItemList.price"                     //TODO: This should be an excel formula in case of manual changes
 				+ " from vendor.dbo.Tr_hdr," 
 				+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
 				+ " on (clientItemList.vnd_no = supplierItemList.vnd_no"           
