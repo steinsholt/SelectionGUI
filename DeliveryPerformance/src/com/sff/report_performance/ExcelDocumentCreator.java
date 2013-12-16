@@ -71,6 +71,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private void saveWorkbook() {
 		try {
 			workbook.setActiveSheet(0);
+			workbook.getSheetAt(0).showInPane((short)0, (short)0);
 			workbook.write(out);
 			out.close();
 			Desktop.getDesktop().open(output);
@@ -87,8 +88,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			boolean allProjSelected = projectData.size()==0 ? true : false;
 			boolean allStatSelected = statusData.size()==0 ? true : false;
 
-			StringBuilder query = generateQuery(allCustSelected,allProjSelected, 
-					allStatSelected, customerData, projectData, statusData);
+			StringBuilder query = generateQuery(allCustSelected, allProjSelected, allStatSelected, customerData, projectData, statusData);
 
 			Database db = DatabaseConnection.getDatabase();
 			QueryDataSet dataSet = new QueryDataSet();
@@ -106,14 +106,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			publishedOutput.setText("Generating Excel Document");
 			while(!isCancelled()){
-				CellStyle style = workbook.createCellStyle();
-				style.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-				style.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				CellStyle yellow = workbook.createCellStyle();
+				yellow.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+				yellow.setFillPattern(CellStyle.SOLID_FOREGROUND);
 				Set<String> currencySet = new HashSet<String>();
 				while(dataSet.next()){
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
 
+					// TODO: What about 0 date fields?
+					
 					sheetTable.createRow(dataSet.getRow());
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
 						Cell cell = sheetTable.getRow(dataSet.getRow()).createCell(column);
@@ -127,11 +129,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 							currencySet.add(dataSet.getString(column));
 						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Total Price"))){
-							cell.setCellStyle(style);
+							cell.setCellStyle(yellow);
 						}
 						try{
 							String s = dataSet.getString(column);
-							cell.setCellValue(s);
+							if(s.length()>0)cell.setCellValue(s);
 						}catch(VariantException e){
 							try{
 								Double d = dataSet.getDouble(column);
@@ -144,9 +146,39 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					}
 				}
 				
+				CellStyle aqua = workbook.createCellStyle();
+				aqua.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
+				aqua.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				
+				setProgress(0);
+				processed = 0;
 				int last = sheetTable.getLastRowNum() + 1;
-				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$M$2:$M$" + last + ",Table!$O$2:$O$" + last + ")");
-				sheetProject.getRow(5).getCell(2).setCellFormula("SUMPRODUCT(Table!$K$2:$K$" + last + ")");
+				
+				for(int row = 1; row < last; row++){
+					int index = row + 1;
+					int lastColumn = sheetTable.getRow(row).getLastCellNum();
+					progressField.setText("Processing row: " + processed);
+					setProgress(100 * processed++ / rowCount);
+					
+					Cell delay = sheetTable.getRow(row).createCell(lastColumn++);
+					delay.setCellFormula("(" + "$Q$" + index + "-$O$" + index + ")/7"); 
+					delay.setCellStyle(aqua);
+					
+					Cell roundDelay = sheetTable.getRow(row).createCell(lastColumn++);
+					roundDelay.setCellFormula("ROUND($V$"+ index + ",0)");
+					roundDelay.setCellStyle(aqua);
+					
+					Cell changeName = sheetTable.getRow(row).createCell(lastColumn++);
+					changeName.setCellFormula("ROUND((($Q$"+ index + "-$E$" + index + ")/7),0)");
+					changeName.setCellStyle(aqua);
+					
+					Cell changeThis = sheetTable.getRow(row).createCell(lastColumn++);
+					changeThis.setCellFormula("ROUND((($O$"+ index + "-$E$" + index + ")/7),0)");
+					changeThis.setCellStyle(aqua);
+				}
+				
+				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$N$2:$N$" + last + ",Table!$U$2:$U$" + last + ")");
+				sheetProject.getRow(5).getCell(2).setCellFormula("SUM(Table!$K$2:$K$" + last + ")");
 				
 				publishedOutput.setText("Opening Excel Document");
 
