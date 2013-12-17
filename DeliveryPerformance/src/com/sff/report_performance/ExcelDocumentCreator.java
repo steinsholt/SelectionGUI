@@ -17,6 +17,7 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -76,7 +77,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			workbook.getSheetAt(0).showInPane((short)0, (short)0);
 			workbook.write(out);
 			out.close();
-//			Desktop.getDesktop().open(output);
+			Desktop.getDesktop().open(output);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -160,12 +161,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				setProgress(0);
 				processed = 0;
-				int last = sheetTable.getLastRowNum() + 1;
+				int lastRow = sheetTable.getLastRowNum() + 1;
 
 				/*
 				 *  Creates the delay part of the "Table"-sheet.
 				 */
-				for(int row = 1; row < last; row++){
+				// TODO: If empty cell, do not insert formula
+				for(int row = 1; row < lastRow; row++){
 					int index = row + 1;
 					int lastColumn = sheetTable.getRow(row).getLastCellNum();
 					progressField.setText("Processing row: " + processed);
@@ -191,31 +193,54 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
 				 */
-				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$N$2:$N$" + last + ",Table!$U$2:$U$" + last + ")");
-				sheetProject.getRow(5).getCell(2).setCellFormula("SUM(Table!$K$2:$K$" + last + ")");
+				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$N$2:$N$" + lastRow + ",Table!$U$2:$U$" + lastRow + ")");
+				sheetProject.getRow(5).getCell(2).setCellFormula("SUM(Table!$K$2:$K$" + lastRow + ")");
 
-
-				sheetMill.createRow(3).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
-				sheetMill.createRow(4).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
-				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
-				sheetMill.createRow(6).createCell(0).setCellValue("No of Units:");
-				sheetMill.createRow(7).createCell(0).setCellValue("No of Items:");
-				sheetMill.createRow(8).createCell(0).setCellValue("Value:");
+				/*
+				 * Creates and populates the "Mill"-sheet
+				 */
+				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
+				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
+				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
+				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
+				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
+				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
+				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
+				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
 
 				setProgress(0);
 				processed = 0;
-				int columnCount = customerSet.size() + 1;
+				int columnCount = customerSet.size();
+//				int lastColumnId = sheetTable.getRow(0).getLastCellNum();
+//				String lastColumnName = CellReference.convertNumToColString(lastColumnId);
 
+				CellStyle style = workbook.createCellStyle();
+				Font font = workbook.createFont();
+				font.setFontHeightInPoints((short)8);
+				style.setFont(font);
 				int column = 2;
 				for(String customer : customerSet){
 
-					progressField.setText("Graphing Mill: " + processed);
+					progressField.setText("Creating Mill Graph: " + processed);
 					setProgress(100 * processed++ / columnCount);
 
-					sheetMill.getRow(3).createCell(column).setCellValue(customer); // create rows above, get rows here
+					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
+					sheetMill.getRow(2).getCell(column).setCellStyle(style);
+					sheetMill.getRow(3).createCell(column).setCellValue(customer);
+					sheetMill.getRow(3).getCell(column).setCellStyle(style);
+					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
+					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
+					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
+					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
+					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
+					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
 					column++;
 
 				}
+				
+				// TODO: Hard coded column names will break if changes are made
+				// TODO: Auto-adjust column width in helper class
+				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
 
 				publishedOutput.setText("Opening Excel Document");
 				saveWorkbook();
