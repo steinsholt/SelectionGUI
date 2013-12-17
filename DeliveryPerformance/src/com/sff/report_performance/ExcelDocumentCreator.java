@@ -38,6 +38,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private InputStream template;
 	private XSSFSheet sheetTable;
 	private XSSFSheet sheetProject;
+	private XSSFSheet sheetMill;
 	private List<List> customerData;
 	private List<List> projectData;
 	private List<List> statusData;
@@ -62,6 +63,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetTable = workbook.getSheet("Table");
 			sheetTable.setZoom(70);
 			sheetProject = workbook.getSheet("Project");
+			sheetMill = workbook.getSheet("Mill");
 
 		} catch (IOException | InvalidFormatException e) {
 			e.printStackTrace();
@@ -74,7 +76,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			workbook.getSheetAt(0).showInPane((short)0, (short)0);
 			workbook.write(out);
 			out.close();
-			Desktop.getDesktop().open(output);
+//			Desktop.getDesktop().open(output);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -83,7 +85,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	@Override
 	protected String doInBackground() {
 		try{
-			
+
 			boolean allCustSelected = customerData.size()==0 ? true : false;
 			boolean allProjSelected = projectData.size()==0 ? true : false;
 			boolean allStatSelected = statusData.size()==0 ? true : false;
@@ -97,7 +99,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			int rowCount = dataSet.getRowCount();
 			int processed = 0;
-			
+
 			CellStyle decimalStyle = workbook.createCellStyle();
 			CellStyle sixDigitStyle = workbook.createCellStyle();
 			DataFormat format = workbook.createDataFormat();
@@ -110,12 +112,15 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				yellow.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
 				yellow.setFillPattern(CellStyle.SOLID_FOREGROUND);
 				Set<String> currencySet = new HashSet<String>();
+				Set<String> customerSet = new HashSet<String>();
 				while(dataSet.next()){
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
 
-					// TODO: What about 0 date fields?
-					
+					// TODO: What about 0 date fields? IS set set 1. January 1900.
+					/*
+					 * Extracts data from the database and inserts into the "Table"-sheet.
+					 */
 					sheetTable.createRow(dataSet.getRow());
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
 						Cell cell = sheetTable.getRow(dataSet.getRow()).createCell(column);
@@ -127,6 +132,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
 							currencySet.add(dataSet.getString(column));
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Client"))){
+							customerSet.add(dataSet.getString(column));
 						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Total Price"))){
 							cell.setCellStyle(yellow);
@@ -145,43 +153,71 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 					}
 				}
-				
+
 				CellStyle aqua = workbook.createCellStyle();
 				aqua.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
 				aqua.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				
+
 				setProgress(0);
 				processed = 0;
 				int last = sheetTable.getLastRowNum() + 1;
-				
+
+				/*
+				 *  Creates the delay part of the "Table"-sheet.
+				 */
 				for(int row = 1; row < last; row++){
 					int index = row + 1;
 					int lastColumn = sheetTable.getRow(row).getLastCellNum();
 					progressField.setText("Processing row: " + processed);
 					setProgress(100 * processed++ / rowCount);
-					
+
 					Cell delay = sheetTable.getRow(row).createCell(lastColumn++);
 					delay.setCellFormula("(" + "$Q$" + index + "-$O$" + index + ")/7"); 
 					delay.setCellStyle(aqua);
-					
+
 					Cell roundDelay = sheetTable.getRow(row).createCell(lastColumn++);
 					roundDelay.setCellFormula("ROUND($V$"+ index + ",0)");
 					roundDelay.setCellStyle(aqua);
-					
+
 					Cell changeName = sheetTable.getRow(row).createCell(lastColumn++);
 					changeName.setCellFormula("ROUND((($Q$"+ index + "-$E$" + index + ")/7),0)");
 					changeName.setCellStyle(aqua);
-					
+
 					Cell changeThis = sheetTable.getRow(row).createCell(lastColumn++);
 					changeThis.setCellFormula("ROUND((($O$"+ index + "-$E$" + index + ")/7),0)");
 					changeThis.setCellStyle(aqua);
 				}
-				
+
+				/*
+				 * Inserts the formulae into the "Project"-sheet.
+				 */
 				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$N$2:$N$" + last + ",Table!$U$2:$U$" + last + ")");
 				sheetProject.getRow(5).getCell(2).setCellFormula("SUM(Table!$K$2:$K$" + last + ")");
-				
-				publishedOutput.setText("Opening Excel Document");
 
+
+				sheetMill.createRow(3).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
+				sheetMill.createRow(4).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
+				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
+				sheetMill.createRow(6).createCell(0).setCellValue("No of Units:");
+				sheetMill.createRow(7).createCell(0).setCellValue("No of Items:");
+				sheetMill.createRow(8).createCell(0).setCellValue("Value:");
+
+				setProgress(0);
+				processed = 0;
+				int columnCount = customerSet.size() + 1;
+
+				int column = 2;
+				for(String customer : customerSet){
+
+					progressField.setText("Graphing Mill: " + processed);
+					setProgress(100 * processed++ / columnCount);
+
+					sheetMill.getRow(3).createCell(column).setCellValue(customer); // create rows above, get rows here
+					column++;
+
+				}
+
+				publishedOutput.setText("Opening Excel Document");
 				saveWorkbook();
 				dataSet.close();
 				cancel(true);
@@ -195,7 +231,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private StringBuilder generateQuery(boolean allCustSelected,
 			boolean allProjSelected, boolean allStatSelected,
 			List<List> temp_cust, List<List> temp_proj, List<List> temp_stat) {
-		
+
 		/*
 		 * The base statement is used no matter the user selection
 		 */
@@ -241,7 +277,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " and clientItemList.suppl_id = supplierList.assoc_id" 
 				+ " and clientItemList.currency_id = Exchange.currency_id"
 				+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status";
-		
+
 		/*
 		 * If the user have NOT selected all items in the list the method will
 		 * specify the search to only include the selected items.
