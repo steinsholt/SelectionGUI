@@ -221,9 +221,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int column = 2;
 				for(String customer : customerSet){
 
-					progressField.setText("Creating Mill Graph: " + processed);
-					setProgress(100 * processed++ / columnCount);
-
 					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
 					sheetMill.getRow(2).getCell(column).setCellStyle(style);
 					sheetMill.getRow(3).createCell(column).setCellValue(customer);
@@ -234,13 +231,18 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
 					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
 					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
+					
 					column++;
-
+					
+					setProgress(100 * ++processed / columnCount);
+					progressField.setText("Creating Mill Graph: " + processed);
 				}
 				
+				ExcelHelper.autoSizeColumns(sheetMill);
+				
 				// TODO: Hard coded column names will break if changes are made
-				// TODO: Auto-adjust column width in helper class
 				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
+				// TODO: =HVIS($Q$44="";0; HVIS($O$44=""; 0;($Q$44-$O$44)/7))
 
 				publishedOutput.setText("Opening Excel Document");
 				saveWorkbook();
