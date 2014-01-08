@@ -3,6 +3,7 @@ package com.sff.report_performance;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import com.borland.dx.sql.dataset.Database;
 

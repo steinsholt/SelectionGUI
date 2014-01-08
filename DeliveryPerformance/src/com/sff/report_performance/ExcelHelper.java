@@ -46,17 +46,17 @@ public class ExcelHelper {
 
 		switch (type){
 		case AVERAGEIF: 
-			formula = "AVERAGEIF(" + sheetName + "!$" + range + "$2:$" + range + "$" + lastRow + ",\""+ condition + "\"," 
-					+ sheetName + "!$" + sumRange + "$2:$" + sumRange + "$" + lastRow + ")"; 
+			formula = "AVERAGEIF(" + sheetName + "!" + range + "2:" + range + lastRow + ",\""+ condition + "\"," 
+					+ sheetName + "!" + sumRange + "2:" + sumRange + lastRow + ")"; 
 			break;
 
 		case COUNTIF:
-			formula = "COUNTIF(" + sheetName + "!$" + range + "$2:$" + range + "$" + lastRow + ",\""+ condition + "\"" + ")";
+			formula = "COUNTIF(" + sheetName + "!" + range + "2:" + range + lastRow + ",\""+ condition + "\"" + ")";
 			break;
 
 		case SUMIF:
-			formula = "SUMIF(" + sheetName + "!$" + range + "$2:$" + range + "$" + lastRow + ",\""+ condition + "\"," 
-					+ sheetName + "!$" + sumRange + "$2:$" + sumRange + "$" + lastRow + ")";
+			formula = "SUMIF(" + sheetName + "!" + range + "2:" + range + lastRow + ",\""+ condition + "\"," 
+					+ sheetName + "!" + sumRange + "2:" + sumRange + lastRow + ")";
 			break;
 		}
 
@@ -66,21 +66,21 @@ public class ExcelHelper {
 	public static String excelSumIfs(XSSFSheet sheet, String sumRange, String criteriaRange1, String criteria1, String criteriaRange2, String criteria2){
 		int lastRow = sheet.getLastRowNum() + 1;
 		String sheetName = sheet.getSheetName();
-		return "SUMIFS(" + sheetName + "!$" + sumRange + "$2:$" + sumRange + "$" + lastRow + "," + sheetName + "!$" + criteriaRange1 + "$2:$" + criteriaRange1 + "$" + lastRow + ",\""+ criteria1 + "\"," +
-			sheetName + "!$" + criteriaRange2 + "$2:$" + criteriaRange2 + "$" + lastRow + ",\""+ criteria2 + "\""  + ")";
+		return "SUMIFS(" + sheetName + "!" + sumRange + "2:" + sumRange  + lastRow + "," + sheetName + "!" + criteriaRange1 + "2:" + criteriaRange1 + lastRow + ",\""+ criteria1 + "\"," +
+			sheetName + "!" + criteriaRange2 + "2:" + criteriaRange2 + lastRow + ",\""+ criteria2 + "\""  + ")";
 	}
 
 	// IF($Q$44="", 0, IF($O$44="", 0, ($Q$44-$O$44)/7))
 	public static String excelSubtractAndDivide(String column1, String column2, int row, int divide){
-		return "IF($" + column1 + "$" + row + "=\"\",0,IF($" + column2 + "$" + row + "=\"\",0,"  + "($" + column1 + "$" + row + "-$" + column2 + "$" + row + ")/" + divide + "))";
+		return "IF(" + column1 + row + "=\"\",0,IF(" + column2 + row + "=\"\",0,"  + "(" + column1 + row + "-" + column2 + row + ")/" + divide + "))";
 	}
 
 	public static String excelRound(String column, int row, int decimals){
-		return "ROUND($" + column + "$" + row + "," + decimals + ")";
+		return "ROUND(" + column + row + "," + decimals + ")";
 	}
 
 	public static String excelSubtractDivideAndRound(String column1, String column2, int row, int divide, int decimals){
-		return "IF($" + column1 + "$" + row + "=\"\",0,IF($" + column2 + "$" + row + "=\"\",0," + "(ROUND((($" + column1 + "$" + row + "-$" + column2 + "$" + row + ")/" + divide + ")," + decimals + "))))";
+		return "IF(" + column1 + row + "=\"\",0,IF(" + column2 + row + "=\"\",0," + "(ROUND(((" + column1 + row + "-" + column2 + row + ")/" + divide + ")," + decimals + "))))";
 	}
 
 	public static HashMap<String, String> createExcelReferenceList(XSSFSheet sheet){

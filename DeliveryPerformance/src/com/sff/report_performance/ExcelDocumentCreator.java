@@ -6,9 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JTextField;
@@ -29,7 +33,6 @@ import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
-import com.sff.report_performance.ExcelHelper.IfFormula;
 
 /*
  * This class creates the excel document in another thread, using a swing worker
@@ -160,6 +163,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 					}
 				}
+				dataSet.close();
 				
 				HashMap<String, String> referenceMap = ExcelHelper.createExcelReferenceList(sheetTable);
 
@@ -222,6 +226,29 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				yellowBordered.setBorderTop(CellStyle.BORDER_MEDIUM);
 				yellowBordered.setBorderRight(CellStyle.BORDER_MEDIUM);
 				yellowBordered.setBorderLeft(CellStyle.BORDER_MEDIUM);
+				
+				// TODO: NB! Uses sell rate only
+				Statement st = db.getJdbcConnection().createStatement();
+				st.setQueryTimeout(60);
+				ResultSet rs = st.executeQuery("SELECT vendor.dbo.Exchange.curr_name, vendor.dbo.Exchange_rate.sell_rate, "
+						+ "vendor.dbo.Exchange_rate.exch_type FROM vendor.dbo.Exchange INNER JOIN vendor.dbo.Exchange_rate "
+						+ "ON vendor.dbo.Exchange_rate.currency_id = vendor.dbo.Exchange.currency_id");	
+				HashMap<String, Double> exchangeMap = new HashMap<String, Double>();
+				while(rs.next()){
+					String currencyName = rs.getString("curr_name").trim();
+					double sellRate = rs.getDouble("sell_rate");
+					double exch_type = (double) rs.getInt("exch_type");
+					exchangeMap.put(currencyName, sellRate/exch_type);
+				}	
+				st.close();
+				rs.close();
+				
+//				Iterator it = exchangeMap.entrySet().iterator();
+//			    while (it.hasNext()) {
+//			        Map.Entry pairs = (Map.Entry)it.next();
+//			        System.out.println(pairs.getKey() + " = " + pairs.getValue());
+//			        it.remove();
+//			    }
 
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
@@ -243,10 +270,33 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					
 					// TODO: Only use values associated with the project
 					for(String currency : currencySet){
-						Row row = sheetProject.createRow(rowPointer++);
-						row.createCell(0).setCellValue("Total Value [" + currency + "]:");
-						row.createCell(1).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+						Row currencyRow = sheetProject.createRow(rowPointer++);
+						currencyRow.createCell(0).setCellValue("Total Value [" + currency + "]:");
+						currencyRow.createCell(1).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+						currencyRow.createCell(2).setCellValue(exchangeMap.get(currency) / exchangeMap.get("EUR"));
+						currencyRow.createCell(3).setCellFormula("B" + rowPointer + "*C" + rowPointer);
+						
 					}
+					int uniqueCurrencies = currencySet.size();
+					
+					Row totalRow = sheetProject.createRow(rowPointer++);
+					totalRow.createCell(0).setCellValue("Total:");
+					totalRow.createCell(3).setCellFormula("SUM(D" + (rowPointer - uniqueCurrencies) + ":D" + (rowPointer - 1) + ")");
+					
+					Row deliveredToFaRow = sheetProject.createRow(rowPointer++);
+					deliveredToFaRow.createCell(0).setCellValue("Delivered to FA:");
+					
+					Row improvedDeliveriesRow = sheetProject.createRow(rowPointer++);
+					improvedDeliveriesRow.createCell(0).setCellValue("Improved Deliveries:");
+					
+					Row valueDeliveriesFaRow = sheetProject.createRow(rowPointer++);
+					valueDeliveriesFaRow.createCell(0).setCellValue("Value of Improved Deliveries as FA:");
+					
+					Row accelerationCostRow = sheetProject.createRow(rowPointer++);
+					accelerationCostRow.createCell(0).setCellValue("Acceleration Cost:");
+					
+					Row itemsOutsideScopeRow = sheetProject.createRow(rowPointer++);
+					itemsOutsideScopeRow.createCell(0).setCellValue("Items Delivered Outside Scope:");
 				}
 				
 				/*
@@ -290,7 +340,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				publishedOutput.setText("Opening Excel Document");
 				saveWorkbook();
-				dataSet.close();
+				db.closeConnection();
 				cancel(true);
 			}
 		}catch(Exception e){
