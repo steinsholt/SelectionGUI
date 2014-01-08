@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,9 +18,10 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
@@ -27,6 +29,7 @@ import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
+import com.sff.report_performance.ExcelHelper.IfFormula;
 
 /*
  * This class creates the excel document in another thread, using a swing worker
@@ -114,11 +117,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				yellow.setFillPattern(CellStyle.SOLID_FOREGROUND);
 				Set<String> currencySet = new HashSet<String>();
 				Set<String> customerSet = new HashSet<String>();
+				Set<String> projectSet = new HashSet<String>();
 				while(dataSet.next()){
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
 
-					// TODO: What about 0 date fields? IS set set 1. January 1900.
 					/*
 					 * Extracts data from the database and inserts into the "Table"-sheet.
 					 */
@@ -137,6 +140,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Client"))){
 							customerSet.add(dataSet.getString(column));
 						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Project"))){
+							projectSet.add(dataSet.getString(column));
+						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Total Price"))){
 							cell.setCellStyle(yellow);
 						}
@@ -154,6 +160,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						}
 					}
 				}
+				
+				HashMap<String, String> referenceMap = ExcelHelper.createExcelReferenceList(sheetTable);
 
 				CellStyle aqua = workbook.createCellStyle();
 				aqua.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
@@ -174,75 +182,111 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					setProgress(100 * processed++ / rowCount);
 
 					Cell delay = sheetTable.getRow(row).createCell(lastColumn++);
-					delay.setCellFormula("(" + "$Q$" + index + "-$O$" + index + ")/7"); 
+					delay.setCellFormula(ExcelHelper.excelSubtractAndDivide(referenceMap.get("RFI"), referenceMap.get("CDD"), index, 7)); 
 					delay.setCellStyle(aqua);
 
 					Cell roundDelay = sheetTable.getRow(row).createCell(lastColumn++);
-					roundDelay.setCellFormula("ROUND($V$"+ index + ",0)");
+					roundDelay.setCellFormula(ExcelHelper.excelRound(referenceMap.get("EDD/RFI-CDD"), index, 0));
 					roundDelay.setCellStyle(aqua);
 
 					Cell changeName = sheetTable.getRow(row).createCell(lastColumn++);
-					changeName.setCellFormula("ROUND((($Q$"+ index + "-$E$" + index + ")/7),0)");
+					changeName.setCellFormula(ExcelHelper.excelSubtractDivideAndRound(referenceMap.get("RFI"), referenceMap.get("Order Reg Date"), index, 7, 0));
 					changeName.setCellStyle(aqua);
 
 					Cell changeThis = sheetTable.getRow(row).createCell(lastColumn++);
-					changeThis.setCellFormula("ROUND((($O$"+ index + "-$E$" + index + ")/7),0)");
+					changeThis.setCellFormula(ExcelHelper.excelSubtractDivideAndRound(referenceMap.get("CDD"), referenceMap.get("Order Reg Date"), index, 7, 0));
 					changeThis.setCellStyle(aqua);
 				}
 
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
 				 */
-				sheetProject.getRow(5).getCell(1).setCellFormula("SUMPRODUCT(Table!$N$2:$N$" + lastRow + ",Table!$U$2:$U$" + lastRow + ")");
-				sheetProject.getRow(5).getCell(2).setCellFormula("SUM(Table!$K$2:$K$" + lastRow + ")");
+				CellStyle style = workbook.createCellStyle();
+				style.setBorderBottom(CellStyle.BORDER_THIN);
+				style.setBorderTop(CellStyle.BORDER_THIN);
+				style.setBorderRight(CellStyle.BORDER_THIN);
+				style.setBorderLeft(CellStyle.BORDER_THIN);
 
+				int rowPointer = 0;
+				setProgress(0);
+				processed = 0;
+
+				String currencyExcelReference = referenceMap.get("Currency");
+				String totalValueExcelReference = referenceMap.get("Total Value");
+				String projectExcelReference = referenceMap.get("Project");
+				
+				CellStyle yellowBordered = workbook.createCellStyle();
+				yellowBordered.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+				yellowBordered.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				yellowBordered.setBorderBottom(CellStyle.BORDER_MEDIUM);
+				yellowBordered.setBorderTop(CellStyle.BORDER_MEDIUM);
+				yellowBordered.setBorderRight(CellStyle.BORDER_MEDIUM);
+				yellowBordered.setBorderLeft(CellStyle.BORDER_MEDIUM);
+
+				for(String project : projectSet){
+					progressField.setText("Processing project: " + processed);
+					setProgress(100 * processed++ / projectSet.size());
+					// TODO: Create a method that takes a row and sets the style in all cells in the row
+					
+					rowPointer++;
+					int cellPointer = 0;
+					
+					XSSFRow header = sheetProject.createRow(rowPointer++);  //TODO: create a header creation method
+					header.createCell(cellPointer++).setCellValue(project);
+					header.createCell(cellPointer++).setCellValue("Total");
+					header.createCell(cellPointer++).setCellValue("Currency Exchange Rate");
+					header.createCell(cellPointer++).setCellValue("Total [EUR]");
+					header.createCell(cellPointer++).setCellValue("Total Items");
+					header.createCell(cellPointer++).setCellValue("Value [%]");
+					header.createCell(cellPointer++).setCellValue("Item [%]");
+					ExcelHelper.setRowStyle(header, yellowBordered, workbook);
+					
+					// TODO: Only use values associated with the project
+					for(String currency : currencySet){
+						Row row = sheetProject.createRow(rowPointer++);
+						row.createCell(0).setCellValue("Total Value [" + currency + "]:");
+						row.createCell(1).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+					}
+				}
+				
 				/*
 				 * Creates and populates the "Mill"-sheet
 				 */
-				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
-				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
-				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
-				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
-				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
-				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
-				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
-				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
+//				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
+//				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
+//				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
+//				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
+//				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
+//				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
+//				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
+//				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
+//
+//				setProgress(0);
+//				processed = 0;
+//				int columnCount = customerSet.size();
+//
+//				int column = 2;
+//				for(String customer : customerSet){
+//
+//					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
+//					sheetMill.getRow(3).createCell(column).setCellValue(customer);
+//					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
+//					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
+//					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
+//					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
+//					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
+//					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
+//
+//					column++;
+//
+//					setProgress(100 * ++processed / columnCount);
+//					progressField.setText("Creating Mill Graph: " + processed);
+//				}
+//
+//				ExcelHelper.autoSizeColumns(sheetMill);
 
-				setProgress(0);
-				processed = 0;
-				int columnCount = customerSet.size();
-//				int lastColumnId = sheetTable.getRow(0).getLastCellNum();
-//				String lastColumnName = CellReference.convertNumToColString(lastColumnId);
-
-				CellStyle style = workbook.createCellStyle();
-				Font font = workbook.createFont();
-				font.setFontHeightInPoints((short)8);
-				style.setFont(font);
-				int column = 2;
-				for(String customer : customerSet){
-
-					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
-					sheetMill.getRow(2).getCell(column).setCellStyle(style);
-					sheetMill.getRow(3).createCell(column).setCellValue(customer);
-					sheetMill.getRow(3).getCell(column).setCellStyle(style);
-					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
-					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
-					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
-					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
-					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
-					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
-					
-					column++;
-					
-					setProgress(100 * ++processed / columnCount);
-					progressField.setText("Creating Mill Graph: " + processed);
-				}
-				
-				ExcelHelper.autoSizeColumns(sheetMill);
-				
-				// TODO: Hard coded column names will break if changes are made
+				// TODO: select * from vendor.dbo.Exchange  &&  select * from vendor.dbo.Exchange_rate
 				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
-				// TODO: =HVIS($Q$44="";0; HVIS($O$44=""; 0;($Q$44-$O$44)/7))
 
 				publishedOutput.setText("Opening Excel Document");
 				saveWorkbook();
@@ -276,7 +320,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				+ " \"QTY\" = clientItemList.qnt,"
 				+ " \"Unit Price\" = clientItemList.price,"
 				+ " \"currency\" = Exchange.curr_name,"
-				+ " \"currency rate\" = Tr_hdr.currency_rate,"
 				+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 104),"
 				+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 104),"
 				+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 104)," 
