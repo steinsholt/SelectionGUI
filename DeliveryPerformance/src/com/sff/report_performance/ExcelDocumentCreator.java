@@ -10,9 +10,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JTextField;
@@ -205,11 +203,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
 				 */
-				CellStyle style = workbook.createCellStyle();
-				style.setBorderBottom(CellStyle.BORDER_THIN);
-				style.setBorderTop(CellStyle.BORDER_THIN);
-				style.setBorderRight(CellStyle.BORDER_THIN);
-				style.setBorderLeft(CellStyle.BORDER_THIN);
+				CellStyle thinBorderStyle = workbook.createCellStyle();
+				thinBorderStyle.setBorderBottom(CellStyle.BORDER_THIN);
+				thinBorderStyle.setBorderTop(CellStyle.BORDER_THIN);
+				thinBorderStyle.setBorderRight(CellStyle.BORDER_THIN);
+				thinBorderStyle.setBorderLeft(CellStyle.BORDER_THIN);
 
 				int rowPointer = 0;
 				setProgress(0);
@@ -218,14 +216,15 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String currencyExcelReference = referenceMap.get("Currency");
 				String totalValueExcelReference = referenceMap.get("Total Value");
 				String projectExcelReference = referenceMap.get("Project");
+				String quantityExcelReference = referenceMap.get("QTY");
 				
-				CellStyle yellowBordered = workbook.createCellStyle();
-				yellowBordered.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-				yellowBordered.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				yellowBordered.setBorderBottom(CellStyle.BORDER_MEDIUM);
-				yellowBordered.setBorderTop(CellStyle.BORDER_MEDIUM);
-				yellowBordered.setBorderRight(CellStyle.BORDER_MEDIUM);
-				yellowBordered.setBorderLeft(CellStyle.BORDER_MEDIUM);
+				CellStyle yellowBorderedStyle = workbook.createCellStyle();
+				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+				yellowBorderedStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_MEDIUM);
+				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_MEDIUM);
+				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_MEDIUM);
+				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_MEDIUM);
 				
 				// TODO: NB! Uses sell rate only
 				Statement st = db.getJdbcConnection().createStatement();
@@ -243,13 +242,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				st.close();
 				rs.close();
 				
-//				Iterator it = exchangeMap.entrySet().iterator();
-//			    while (it.hasNext()) {
-//			        Map.Entry pairs = (Map.Entry)it.next();
-//			        System.out.println(pairs.getKey() + " = " + pairs.getValue());
-//			        it.remove();
-//			    }
-
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
 					setProgress(100 * processed++ / projectSet.size());
@@ -266,22 +258,27 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					header.createCell(cellPointer++).setCellValue("Total Items");
 					header.createCell(cellPointer++).setCellValue("Value [%]");
 					header.createCell(cellPointer++).setCellValue("Item [%]");
-					ExcelHelper.setRowStyle(header, yellowBordered, workbook);
+					ExcelHelper.setRowStyle(header, yellowBorderedStyle, workbook);
 					
-					// TODO: Only use values associated with the project
+					int uniqueCurrencies = currencySet.size();
+					int totalRowIndex = rowPointer + uniqueCurrencies + 1;
+					
 					for(String currency : currencySet){
 						Row currencyRow = sheetProject.createRow(rowPointer++);
 						currencyRow.createCell(0).setCellValue("Total Value [" + currency + "]:");
 						currencyRow.createCell(1).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
 						currencyRow.createCell(2).setCellValue(exchangeMap.get(currency) / exchangeMap.get("EUR"));
 						currencyRow.createCell(3).setCellFormula("B" + rowPointer + "*C" + rowPointer);
-						
+						currencyRow.createCell(4).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, quantityExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+						currencyRow.createCell(5).setCellFormula("D" + rowPointer + "*100/D" + totalRowIndex); //TODO: If no value => #DIV/0!
+						currencyRow.createCell(6).setCellFormula("E" + rowPointer + "*100/E" + totalRowIndex);
 					}
-					int uniqueCurrencies = currencySet.size();
 					
 					Row totalRow = sheetProject.createRow(rowPointer++);
 					totalRow.createCell(0).setCellValue("Total:");
 					totalRow.createCell(3).setCellFormula("SUM(D" + (rowPointer - uniqueCurrencies) + ":D" + (rowPointer - 1) + ")");
+					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")");
+					
 					
 					Row deliveredToFaRow = sheetProject.createRow(rowPointer++);
 					deliveredToFaRow.createCell(0).setCellValue("Delivered to FA:");
