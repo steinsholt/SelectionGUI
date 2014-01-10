@@ -35,7 +35,7 @@ public class ExcelHelper {
 	public static void setRowStyle(XSSFRow row, CellStyle style, XSSFWorkbook workbook){
 		int lastCell = row.getLastCellNum();
 		for(int cell = 0; cell < lastCell; cell++){
-			row.getCell(cell).setCellStyle(style);
+			if(row.getCell(cell)!=null)row.getCell(cell).setCellStyle(style);
 		}
 	}
 

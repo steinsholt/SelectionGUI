@@ -62,7 +62,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			this.output = output;
 
 			//TODO: relative path
-			template = new FileInputStream("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/template/template.xlsx");
+			template = new FileInputStream("C:/vendorLogistics/template.xlsx");
 			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
 
 			sheetTable = workbook.getSheet("Table");
@@ -111,7 +111,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			decimalStyle.setDataFormat(format.getFormat("##00.00"));
 			sixDigitStyle.setDataFormat(format.getFormat("000000"));
 
-			publishedOutput.setText("Generating Excel Document");
+			publishedOutput.setText("Creating Table Sheet");
 			while(!isCancelled()){
 				CellStyle yellow = workbook.createCellStyle();
 				yellow.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
@@ -171,6 +171,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				setProgress(0);
 				processed = 0;
+				publishedOutput.setText("Creating Project Sheet");
 				int lastRow = sheetTable.getLastRowNum() + 1;
 
 				/*
@@ -180,7 +181,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				for(int row = 1; row < lastRow; row++){
 					int index = row + 1;
 					int lastColumn = sheetTable.getRow(row).getLastCellNum();
-					progressField.setText("Processing row: " + processed);
+					progressField.setText("Adding row: " + processed);
 					setProgress(100 * processed++ / rowCount);
 
 					Cell delay = sheetTable.getRow(row).createCell(lastColumn++);
@@ -221,10 +222,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				CellStyle yellowBorderedStyle = workbook.createCellStyle();
 				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
 				yellowBorderedStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_MEDIUM);
-				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_MEDIUM);
-				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_MEDIUM);
-				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_MEDIUM);
+				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_THIN);
+				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_THIN);
+				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_THIN);
+				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_THIN);
 				
 				// TODO: NB! Uses sell rate only
 				Statement st = db.getJdbcConnection().createStatement();
@@ -245,13 +246,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
 					setProgress(100 * processed++ / projectSet.size());
-					// TODO: Create a method that takes a row and sets the style in all cells in the row
 					
 					rowPointer++;
 					int cellPointer = 0;
 					
 					XSSFRow header = sheetProject.createRow(rowPointer++);  //TODO: create a header creation method
-					header.createCell(cellPointer++).setCellValue(project);
+					header.createCell(cellPointer++).setCellValue("Project");
+					header.createCell(cellPointer++).setCellValue("Properties");
 					header.createCell(cellPointer++).setCellValue("Total");
 					header.createCell(cellPointer++).setCellValue("Currency Exchange Rate");
 					header.createCell(cellPointer++).setCellValue("Total [EUR]");
@@ -264,36 +265,84 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					int totalRowIndex = rowPointer + uniqueCurrencies + 1;
 					
 					for(String currency : currencySet){
-						Row currencyRow = sheetProject.createRow(rowPointer++);
-						currencyRow.createCell(0).setCellValue("Total Value [" + currency + "]:");
-						currencyRow.createCell(1).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
-						currencyRow.createCell(2).setCellValue(exchangeMap.get(currency) / exchangeMap.get("EUR"));
-						currencyRow.createCell(3).setCellFormula("B" + rowPointer + "*C" + rowPointer);
-						currencyRow.createCell(4).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, quantityExcelReference, currencyExcelReference, currency, projectExcelReference, project));
-						currencyRow.createCell(5).setCellFormula("D" + rowPointer + "*100/D" + totalRowIndex); //TODO: If no value => #DIV/0!
-						currencyRow.createCell(6).setCellFormula("E" + rowPointer + "*100/E" + totalRowIndex);
+						XSSFRow currencyRow = sheetProject.createRow(rowPointer++);
+						currencyRow.createCell(0).setCellValue(project);
+						currencyRow.createCell(1).setCellValue("Total Value [" + currency + "]:");
+						currencyRow.createCell(2).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+						currencyRow.createCell(3).setCellValue(exchangeMap.get(currency) / exchangeMap.get("EUR"));
+						currencyRow.createCell(4).setCellFormula("C" + rowPointer + "*D" + rowPointer);
+						currencyRow.createCell(5).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, quantityExcelReference, currencyExcelReference, currency, projectExcelReference, project));
+						currencyRow.createCell(6).setCellFormula("E" + rowPointer + "*100/E" + totalRowIndex); //TODO: If no value => #DIV/0!
+						currencyRow.createCell(7).setCellFormula("F" + rowPointer + "*100/F" + totalRowIndex);
+						ExcelHelper.setRowStyle(currencyRow, thinBorderStyle, workbook);
 					}
 					
-					Row totalRow = sheetProject.createRow(rowPointer++);
-					totalRow.createCell(0).setCellValue("Total:");
-					totalRow.createCell(3).setCellFormula("SUM(D" + (rowPointer - uniqueCurrencies) + ":D" + (rowPointer - 1) + ")");
-					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")");
+					// TODO: Have the set row style create cells if getCell returns null
+					XSSFRow totalRow = sheetProject.createRow(rowPointer++);
+					totalRow.createCell(0).setCellValue(project);
+					totalRow.createCell(1).setCellValue("Total:");
+					totalRow.createCell(2);
+					totalRow.createCell(3);
+					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")"); //TODO : Use cell references, not hard coded values
+					totalRow.createCell(5).setCellFormula("SUM(F" + (rowPointer - uniqueCurrencies) + ":F" + (rowPointer - 1) + ")");
+					totalRow.createCell(6);
+					totalRow.createCell(7);
+					ExcelHelper.setRowStyle(totalRow, thinBorderStyle, workbook);
 					
+					XSSFRow deliveredToFaRow = sheetProject.createRow(rowPointer++);
+					deliveredToFaRow.createCell(0).setCellValue(project);
+					deliveredToFaRow.createCell(1).setCellValue("Delivered to FA:");
+					deliveredToFaRow.createCell(2);
+					deliveredToFaRow.createCell(3);
+					deliveredToFaRow.createCell(4);
+					deliveredToFaRow.createCell(5);
+					deliveredToFaRow.createCell(6);
+					deliveredToFaRow.createCell(7);
+					ExcelHelper.setRowStyle(deliveredToFaRow, thinBorderStyle, workbook);
 					
-					Row deliveredToFaRow = sheetProject.createRow(rowPointer++);
-					deliveredToFaRow.createCell(0).setCellValue("Delivered to FA:");
+					XSSFRow improvedDeliveriesRow = sheetProject.createRow(rowPointer++);
+					improvedDeliveriesRow.createCell(0).setCellValue(project);
+					improvedDeliveriesRow.createCell(1).setCellValue("Improved Deliveries:");
+					improvedDeliveriesRow.createCell(2);
+					improvedDeliveriesRow.createCell(3);
+					improvedDeliveriesRow.createCell(4);
+					improvedDeliveriesRow.createCell(5);
+					improvedDeliveriesRow.createCell(6);
+					improvedDeliveriesRow.createCell(7);
+					ExcelHelper.setRowStyle(improvedDeliveriesRow, thinBorderStyle, workbook);
 					
-					Row improvedDeliveriesRow = sheetProject.createRow(rowPointer++);
-					improvedDeliveriesRow.createCell(0).setCellValue("Improved Deliveries:");
+					XSSFRow valueDeliveriesFaRow = sheetProject.createRow(rowPointer++);
+					valueDeliveriesFaRow.createCell(0).setCellValue(project);
+					valueDeliveriesFaRow.createCell(1).setCellValue("Value of Improved Deliveries as FA:");
+					valueDeliveriesFaRow.createCell(2);
+					valueDeliveriesFaRow.createCell(3);
+					valueDeliveriesFaRow.createCell(4);
+					valueDeliveriesFaRow.createCell(5);
+					valueDeliveriesFaRow.createCell(6);
+					valueDeliveriesFaRow.createCell(7);
+					ExcelHelper.setRowStyle(valueDeliveriesFaRow, thinBorderStyle, workbook);
 					
-					Row valueDeliveriesFaRow = sheetProject.createRow(rowPointer++);
-					valueDeliveriesFaRow.createCell(0).setCellValue("Value of Improved Deliveries as FA:");
+					XSSFRow accelerationCostRow = sheetProject.createRow(rowPointer++);
+					accelerationCostRow.createCell(0).setCellValue(project);
+					accelerationCostRow.createCell(1).setCellValue("Acceleration Cost:");
+					accelerationCostRow.createCell(2);
+					accelerationCostRow.createCell(3);
+					accelerationCostRow.createCell(4);
+					accelerationCostRow.createCell(5);
+					accelerationCostRow.createCell(6);
+					accelerationCostRow.createCell(7);
+					ExcelHelper.setRowStyle(accelerationCostRow, thinBorderStyle, workbook);
 					
-					Row accelerationCostRow = sheetProject.createRow(rowPointer++);
-					accelerationCostRow.createCell(0).setCellValue("Acceleration Cost:");
-					
-					Row itemsOutsideScopeRow = sheetProject.createRow(rowPointer++);
-					itemsOutsideScopeRow.createCell(0).setCellValue("Items Delivered Outside Scope:");
+					XSSFRow itemsOutsideScopeRow = sheetProject.createRow(rowPointer++);
+					itemsOutsideScopeRow.createCell(0).setCellValue(project);
+					itemsOutsideScopeRow.createCell(1).setCellValue("Items Delivered Outside Scope:");
+					itemsOutsideScopeRow.createCell(2);
+					itemsOutsideScopeRow.createCell(3);
+					itemsOutsideScopeRow.createCell(4);
+					itemsOutsideScopeRow.createCell(5);
+					itemsOutsideScopeRow.createCell(6);
+					itemsOutsideScopeRow.createCell(7);
+					ExcelHelper.setRowStyle(itemsOutsideScopeRow, thinBorderStyle, workbook);
 				}
 				
 				/*
@@ -332,10 +381,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 //
 //				ExcelHelper.autoSizeColumns(sheetMill);
 
-				// TODO: select * from vendor.dbo.Exchange  &&  select * from vendor.dbo.Exchange_rate
 				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
 
 				publishedOutput.setText("Opening Excel Document");
+				progressField.setText("");
 				saveWorkbook();
 				db.closeConnection();
 				cancel(true);

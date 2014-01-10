@@ -21,7 +21,7 @@ public class MyTableModel extends AbstractTableModel {
 
 	public MyTableModel(List<String> columnNames){
 		this.columnNames = columnNames;
-		this.deleteIcon = new ImageIcon("C:/Users/hbs/workspace/SelectionGUI/DeliveryPerformance/img/delete_16.png");
+		this.deleteIcon = new ImageIcon("C:/vendorLogistics/delete_16.png");
 	}
 
 	public void addRow(List rowData){
