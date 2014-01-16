@@ -90,6 +90,17 @@ public class ExcelHelper {
 		}
 		return excelReferencesMap;
 	}
+	
+	public static int getColumnIndex(String columnName, XSSFSheet sheet){
+		int index = -1;
+		XSSFRow row = sheet.getRow(0);
+		for(Cell c : row){
+			if(c.getStringCellValue().equals(columnName)){
+				index = c.getColumnIndex();
+			}
+		}
+		return index;
+	}
 
 	public enum IfFormula{
 		SUMIF, AVERAGEIF, COUNTIF;

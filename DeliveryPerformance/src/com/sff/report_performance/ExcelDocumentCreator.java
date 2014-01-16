@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -21,8 +22,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.DataFormat;
 import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.apache.poi.ss.util.CellReference;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -31,6 +32,7 @@ import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
+import com.sff.report_performance.ExcelHelper.IfFormula;
 
 /*
  * This class creates the excel document in another thread, using a swing worker
@@ -44,6 +46,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private XSSFSheet sheetTable;
 	private XSSFSheet sheetProject;
 	private XSSFSheet sheetMill;
+	private XSSFSheet sheetDelay;
 	private List<List> customerData;
 	private List<List> projectData;
 	private List<List> statusData;
@@ -67,8 +70,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 			sheetTable = workbook.getSheet("Table");
 			sheetTable.setZoom(70);
-			sheetProject = workbook.getSheet("Project");
-			sheetMill = workbook.getSheet("Mill");
+			sheetProject = workbook.createSheet("Project");
+			sheetMill = workbook.createSheet("Mill");
+			sheetDelay = workbook.getSheet("Delay");
+			workbook.setSheetOrder("Delay", 3);
 
 		} catch (IOException | InvalidFormatException e) {
 			e.printStackTrace();
@@ -164,6 +169,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				dataSet.close();
 				
 				HashMap<String, String> referenceMap = ExcelHelper.createExcelReferenceList(sheetTable);
+				ArrayList<CellReference> totalValueCell = new ArrayList<CellReference>();
 
 				CellStyle aqua = workbook.createCellStyle();
 				aqua.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
@@ -177,6 +183,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 *  Creates the delay part of the "Table"-sheet.
 				 */
+				
 				// TODO: If empty cell, do not insert formula
 				for(int row = 1; row < lastRow; row++){
 					int index = row + 1;
@@ -218,6 +225,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String totalValueExcelReference = referenceMap.get("Total Value");
 				String projectExcelReference = referenceMap.get("Project");
 				String quantityExcelReference = referenceMap.get("QTY");
+				String delayExcelReference = referenceMap.get("Delay (RFI-CDD)");
+				String RfiExcelReference = referenceMap.get("RFI");
+				String CddExcelReference = referenceMap.get("CDD");
 				
 				CellStyle yellowBorderedStyle = workbook.createCellStyle();
 				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
@@ -253,7 +263,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					XSSFRow header = sheetProject.createRow(rowPointer++);  //TODO: create a header creation method
 					header.createCell(cellPointer++).setCellValue("Project");
 					header.createCell(cellPointer++).setCellValue("Properties");
-					header.createCell(cellPointer++).setCellValue("Total");
+					header.createCell(cellPointer++).setCellValue("Total Value");
 					header.createCell(cellPointer++).setCellValue("Currency Exchange Rate");
 					header.createCell(cellPointer++).setCellValue("Total [EUR]");
 					header.createCell(cellPointer++).setCellValue("Total Items");
@@ -277,17 +287,19 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						ExcelHelper.setRowStyle(currencyRow, thinBorderStyle, workbook);
 					}
 					
+					// TODO : Use cell references, not hard coded values
 					// TODO: Have the set row style create cells if getCell returns null
 					XSSFRow totalRow = sheetProject.createRow(rowPointer++);
 					totalRow.createCell(0).setCellValue(project);
 					totalRow.createCell(1).setCellValue("Total:");
 					totalRow.createCell(2);
 					totalRow.createCell(3);
-					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")"); //TODO : Use cell references, not hard coded values
+					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")"); 
 					totalRow.createCell(5).setCellFormula("SUM(F" + (rowPointer - uniqueCurrencies) + ":F" + (rowPointer - 1) + ")");
 					totalRow.createCell(6);
 					totalRow.createCell(7);
 					ExcelHelper.setRowStyle(totalRow, thinBorderStyle, workbook);
+					totalValueCell.add(new CellReference(totalRow.getCell(4)));
 					
 					XSSFRow deliveredToFaRow = sheetProject.createRow(rowPointer++);
 					deliveredToFaRow.createCell(0).setCellValue(project);
@@ -346,6 +358,89 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				}
 				
 				/*
+				 * Populates the "Delay"-sheet
+				 */
+				
+				rowPointer = 1;
+				XSSFRow headerRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow delayRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow unitRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow itemRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow valueRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow accUnitRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow accItemRow = sheetDelay.createRow(rowPointer++);
+				XSSFRow accValueRow = sheetDelay.createRow(rowPointer++);
+				
+				int cellPointer = 0;
+				
+				unitRow.createCell(cellPointer).setCellValue("No of Units");
+				itemRow.createCell(cellPointer).setCellValue("No of Items");
+				valueRow.createCell(cellPointer).setCellValue("Value [EUR]");
+				accUnitRow.createCell(cellPointer).setCellValue("Accumulated No of Units [%]");
+				accItemRow.createCell(cellPointer).setCellValue("Accumulated No of Items [%]");
+				accValueRow.createCell(cellPointer++).setCellValue("Accumulated Value [%]");
+				
+				headerRow.createCell(cellPointer).setCellValue("Total Value");
+				unitRow.createCell(cellPointer).setCellFormula("SUM(Table!" + quantityExcelReference + "2:" + quantityExcelReference + lastRow +  ")"); //TODO move to helper
+				itemRow.createCell(cellPointer).setCellFormula("COUNT(Table!" + quantityExcelReference + "2:" + quantityExcelReference + lastRow +  ")");	
+				// Iterates over all the cells used to total the project values and calculates the sum
+				String formula = "SUM(";
+				for(CellReference c : totalValueCell){
+					formula += "Project!" + c.formatAsString() + ",";
+				}
+				String finalFormula = formula.substring(0, formula.length()-1); // Removes the excess comma at the end
+				finalFormula += ")";											// Adds the closing parenthesis
+				Cell dummyCell = delayRow.createCell(cellPointer);
+				dummyCell.setCellValue(0);
+				valueRow.createCell(cellPointer++).setCellFormula(finalFormula);
+				
+
+				CellReference currentUnitCellReference;
+				CellReference currentItemCellReference;
+				CellReference currentValueCellReference;
+				CellReference previousAccUnitCellReference = new CellReference(dummyCell);
+				CellReference previousAccItemCellReference = new CellReference(dummyCell);
+				CellReference previousAccValueCellReference = new CellReference(dummyCell);
+				
+				// Need current unit/total + previous
+				
+				for(int row = -36; row <= 36; row++){ 
+					headerRow.createCell(cellPointer).setCellValue("Delay (RFI-CDD)");
+					delayRow.createCell(cellPointer).setCellValue(Integer.toString(row));
+					
+					Cell unitCell = unitRow.createCell(cellPointer);
+					unitCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), quantityExcelReference, IfFormula.SUMIF));
+					currentUnitCellReference = new CellReference(unitCell);
+					
+					Cell itemCell = itemRow.createCell(cellPointer);
+					itemCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), null, IfFormula.COUNTIF));
+					currentItemCellReference = new CellReference(itemCell);
+					
+					Cell valueCell = valueRow.createCell(cellPointer);
+//					valueCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), totalValueExcelReference, IfFormula.SUMIF));
+//					currentValueCellReference = new CellReference(valueCell);
+					
+					Cell accUnitCell = accUnitRow.createCell(cellPointer);
+					accUnitCell.setCellFormula("(" + currentUnitCellReference.formatAsString() + "/B4)+" + previousAccUnitCellReference.formatAsString());
+					previousAccUnitCellReference = new CellReference(accUnitCell);
+					
+					Cell accItemCell = accItemRow.createCell(cellPointer);
+					accItemCell.setCellFormula("(" + currentItemCellReference.formatAsString() + "/B5)+" + previousAccItemCellReference.formatAsString());
+					previousAccItemCellReference = new CellReference(accItemCell);
+					
+					Cell accValueCell = accValueRow.createCell(cellPointer);
+//					accValueCell.setCellFormula("(" + currentValueCellReference.formatAsString() + "/B6)+" + previousAccValueCellReference.formatAsString());
+//					previousAccValueCellReference = new CellReference(accValueCell);
+					
+					cellPointer++;
+				}
+				
+				
+				
+				// Create a column for each unique rounded delay value
+				
+				
+				/*
 				 * Creates and populates the "Mill"-sheet
 				 */
 //				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
@@ -383,6 +478,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
 
+				ExcelHelper.autoSizeColumns(sheetDelay);
+				ExcelHelper.autoSizeColumns(sheetProject);
+				
 				publishedOutput.setText("Opening Excel Document");
 				progressField.setText("");
 				saveWorkbook();
