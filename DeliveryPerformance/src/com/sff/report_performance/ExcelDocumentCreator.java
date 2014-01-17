@@ -417,6 +417,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					currentItemCellReference = new CellReference(itemCell);
 					
 					Cell valueCell = valueRow.createCell(cellPointer);
+					// TODO: Add sheet containing exchange rates!
 //					valueCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), totalValueExcelReference, IfFormula.SUMIF));
 //					currentValueCellReference = new CellReference(valueCell);
 					
