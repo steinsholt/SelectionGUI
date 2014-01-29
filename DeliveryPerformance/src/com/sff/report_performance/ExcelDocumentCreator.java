@@ -1,38 +1,35 @@
 package com.sff.report_performance;
 
-import java.awt.Desktop;
+import java.awt.Color;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
-import com.sff.report_performance.ExcelHelper.IfFormula;
+import com.moyosoft.connector.com.ComponentObjectModelException;
+import com.moyosoft.connector.exception.LibraryNotFoundException;
+import com.moyosoft.connector.ms.excel.Chart;
+import com.moyosoft.connector.ms.excel.ChartLocation;
+import com.moyosoft.connector.ms.excel.ChartObject;
+import com.moyosoft.connector.ms.excel.ChartType;
+import com.moyosoft.connector.ms.excel.Direction;
+import com.moyosoft.connector.ms.excel.Excel;
+import com.moyosoft.connector.ms.excel.LineStyle;
+import com.moyosoft.connector.ms.excel.Range;
+import com.moyosoft.connector.ms.excel.Workbook;
+import com.moyosoft.connector.ms.excel.Worksheet;
 
 /*
  * This class creates the excel document in another thread, using a swing worker
@@ -40,56 +37,52 @@ import com.sff.report_performance.ExcelHelper.IfFormula;
  */
 @SuppressWarnings("rawtypes")
 public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
-	private XSSFWorkbook workbook;
+	private Excel excel;
+	private Workbook workbook;
 	private File output;
-	private InputStream template;
-	private XSSFSheet sheetTable;
-	private XSSFSheet sheetProject;
-	private XSSFSheet sheetMill;
-	private XSSFSheet sheetDelay;
+	private Worksheet sheetExchangeRate;
+	private Worksheet sheetTable;
+	private Worksheet sheetProject;
+	private Worksheet sheetDelay;
 	private List<List> customerData;
 	private List<List> projectData;
 	private List<List> statusData;
 	private JTextField publishedOutput;
 	private JTextField progressField;
-	private FileOutputStream out;
 
-	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, List<List> statusData, JTextField publishedOutput, JTextField progressField, FileOutputStream out, File output){
+	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, List<List> statusData, JTextField publishedOutput, JTextField progressField, File output){
+		this.customerData = customerData;
+		this.projectData = projectData;
+		this.statusData = statusData;
+		this.publishedOutput = publishedOutput;
+		this.progressField = progressField;
+		this.output = output;
+
 		try {
-			this.customerData = customerData;
-			this.projectData = projectData;
-			this.statusData = statusData;
-			this.publishedOutput = publishedOutput;
-			this.progressField = progressField;
-			this.out = out;
-			this.output = output;
+			excel = new Excel();
+			workbook = excel.getWorkbooks().add();
 
-			//TODO: relative path
-			template = new FileInputStream("C:/vendorLogistics/template.xlsx");
-			workbook = (XSSFWorkbook) WorkbookFactory.create(template);
+			sheetExchangeRate = new Worksheet(workbook);
+			sheetExchangeRate.setName("Exchange");
+			sheetProject = new Worksheet(workbook);
+			sheetProject.setName("Project");
+			sheetDelay = new Worksheet(workbook);
+			sheetDelay.setName("Delay");
+			sheetTable = new Worksheet(workbook);
+			sheetTable.setName("Table");
 
-			sheetTable = workbook.getSheet("Table");
-			sheetTable.setZoom(70);
-			sheetProject = workbook.createSheet("Project");
-			sheetMill = workbook.createSheet("Mill");
-			sheetDelay = workbook.getSheet("Delay");
-			workbook.setSheetOrder("Delay", 3);
-
-		} catch (IOException | InvalidFormatException e) {
+		} catch (ComponentObjectModelException | LibraryNotFoundException e) {
 			e.printStackTrace();
 		}
 	}
 
 	private void saveWorkbook() {
-		try {
-			workbook.setActiveSheet(0);
-			workbook.getSheetAt(0).showInPane((short)0, (short)0);
-			workbook.write(out);
-			out.close();
-			Desktop.getDesktop().open(output);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sheetTable.getColumns().autoFit();
+		sheetProject.getColumns().autoFit();
+		sheetDelay.getColumns().autoFit();
+		sheetExchangeRate.getColumns().autoFit();
+
+		excel.setVisible(true);
 	}
 
 	@Override
@@ -110,133 +103,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			int rowCount = dataSet.getRowCount();
 			int processed = 0;
 
-			CellStyle decimalStyle = workbook.createCellStyle();
-			CellStyle sixDigitStyle = workbook.createCellStyle();
-			DataFormat format = workbook.createDataFormat();
-			decimalStyle.setDataFormat(format.getFormat("##00.00"));
-			sixDigitStyle.setDataFormat(format.getFormat("000000"));
-
 			publishedOutput.setText("Creating Table Sheet");
 			while(!isCancelled()){
-				CellStyle yellow = workbook.createCellStyle();
-				yellow.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-				yellow.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				Set<String> currencySet = new HashSet<String>();
-				Set<String> customerSet = new HashSet<String>();
-				Set<String> projectSet = new HashSet<String>();
-				while(dataSet.next()){
-					setProgress(100 * processed++ / rowCount);
-					progressField.setText("Adding row: " + processed);
-
-					/*
-					 * Extracts data from the database and inserts into the "Table"-sheet.
-					 */
-					sheetTable.createRow(dataSet.getRow());
-					for(int column = 0; column < dataSet.getColumnCount(); column++){
-						Cell cell = sheetTable.getRow(dataSet.getRow()).createCell(column);
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Unit Price"))){
-							cell.setCellStyle(decimalStyle);
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Vendor nr."))){
-							cell.setCellStyle(sixDigitStyle);
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
-							currencySet.add(dataSet.getString(column));
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Client"))){
-							customerSet.add(dataSet.getString(column));
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Project"))){
-							projectSet.add(dataSet.getString(column));
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Total Price"))){
-							cell.setCellStyle(yellow);
-						}
-						try{
-							String s = dataSet.getString(column);
-							if(s.length()>0)cell.setCellValue(s);
-						}catch(VariantException e){
-							try{
-								Double d = dataSet.getDouble(column);
-								cell.setCellValue(d);
-							}catch(VariantException v){
-								int i = dataSet.getInt(column);
-								cell.setCellValue(i);
-							}
-						}
-					}
-				}
-				dataSet.close();
-				
-				HashMap<String, String> referenceMap = ExcelHelper.createExcelReferenceList(sheetTable);
-				ArrayList<CellReference> totalValueCell = new ArrayList<CellReference>();
-
-				CellStyle aqua = workbook.createCellStyle();
-				aqua.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
-				aqua.setFillPattern(CellStyle.SOLID_FOREGROUND);
-
-				setProgress(0);
-				processed = 0;
-				publishedOutput.setText("Creating Project Sheet");
-				int lastRow = sheetTable.getLastRowNum() + 1;
 
 				/*
-				 *  Creates the delay part of the "Table"-sheet.
+				 *  Inserts exchange rates into the "Exchange Rate"-sheet.
 				 */
-				
-				// TODO: If empty cell, do not insert formula
-				for(int row = 1; row < lastRow; row++){
-					int index = row + 1;
-					int lastColumn = sheetTable.getRow(row).getLastCellNum();
-					progressField.setText("Adding row: " + processed);
-					setProgress(100 * processed++ / rowCount);
 
-					Cell delay = sheetTable.getRow(row).createCell(lastColumn++);
-					delay.setCellFormula(ExcelHelper.excelSubtractAndDivide(referenceMap.get("RFI"), referenceMap.get("CDD"), index, 7)); 
-					delay.setCellStyle(aqua);
-
-					Cell roundDelay = sheetTable.getRow(row).createCell(lastColumn++);
-					roundDelay.setCellFormula(ExcelHelper.excelRound(referenceMap.get("EDD/RFI-CDD"), index, 0));
-					roundDelay.setCellStyle(aqua);
-
-					Cell changeName = sheetTable.getRow(row).createCell(lastColumn++);
-					changeName.setCellFormula(ExcelHelper.excelSubtractDivideAndRound(referenceMap.get("RFI"), referenceMap.get("Order Reg Date"), index, 7, 0));
-					changeName.setCellStyle(aqua);
-
-					Cell changeThis = sheetTable.getRow(row).createCell(lastColumn++);
-					changeThis.setCellFormula(ExcelHelper.excelSubtractDivideAndRound(referenceMap.get("CDD"), referenceMap.get("Order Reg Date"), index, 7, 0));
-					changeThis.setCellStyle(aqua);
-				}
-
-				/*
-				 * Inserts the formulae into the "Project"-sheet.
-				 */
-				CellStyle thinBorderStyle = workbook.createCellStyle();
-				thinBorderStyle.setBorderBottom(CellStyle.BORDER_THIN);
-				thinBorderStyle.setBorderTop(CellStyle.BORDER_THIN);
-				thinBorderStyle.setBorderRight(CellStyle.BORDER_THIN);
-				thinBorderStyle.setBorderLeft(CellStyle.BORDER_THIN);
-
-				int rowPointer = 0;
-				setProgress(0);
-				processed = 0;
-
-				String currencyExcelReference = referenceMap.get("Currency");
-				String totalValueExcelReference = referenceMap.get("Total Value");
-				String projectExcelReference = referenceMap.get("Project");
-				String quantityExcelReference = referenceMap.get("QTY");
-				String delayExcelReference = referenceMap.get("Delay (RFI-CDD)");
-				String RfiExcelReference = referenceMap.get("RFI");
-				String CddExcelReference = referenceMap.get("CDD");
-				
-				CellStyle yellowBorderedStyle = workbook.createCellStyle();
-				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-				yellowBorderedStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_THIN);
-				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_THIN);
-				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_THIN);
-				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_THIN);
-				
 				// TODO: NB! Uses sell rate only
 				Statement st = db.getJdbcConnection().createStatement();
 				st.setQueryTimeout(60);
@@ -252,240 +125,421 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				}	
 				st.close();
 				rs.close();
+
+				sheetExchangeRate.getRange("A1").setValue("Currency Type");
+				sheetExchangeRate.getRange("B1").setValue("Exchange Value to NOK");
+
+				Iterator iter = exchangeMap.entrySet().iterator();
+				int rowIndex = 1;
+				while(iter.hasNext()){
+					int columnIndex = 0;
+					Map.Entry pairs = (Map.Entry) iter.next();
+					sheetExchangeRate.getRange(rowIndex, columnIndex++).setValue((String) pairs.getKey());
+					Range value = sheetExchangeRate.getRange(rowIndex++, columnIndex);
+					value.setValue((Double) pairs.getValue());
+					value.setName((String) pairs.getKey());
+				}
+
+				/*
+				 * Extracts data from the database and inserts into the "Table"-sheet.
+				 */
+				Set<String> currencySet = new HashSet<String>();
+				Set<String> customerSet = new HashSet<String>();
+				Set<String> projectSet = new HashSet<String>();
+				while(dataSet.next()){
+					setProgress(100 * processed++ / rowCount);
+					progressField.setText("Adding row: " + processed);
+
+					//TODO: Apache POI for loading data faster? Use query tables? sheet.getQueryTables.Add()
+					for(int column = 0; column < dataSet.getColumnCount(); column++){
+						Range cell = sheetTable.getCell(dataSet.getRow(), column);
+
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
+							currencySet.add(dataSet.getString(column));
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Client"))){
+							customerSet.add(dataSet.getString(column));
+						}
+						if(dataSet.getColumn(column).equals(dataSet.getColumn("Project"))){
+							projectSet.add(dataSet.getString(column));
+						}
+						try{
+							String s = dataSet.getString(column);
+							if(s.length()>0)cell.setValue(s);
+							else cell.setValue("EMPTY");
+						}catch(VariantException e){
+							try{
+								Double d = dataSet.getDouble(column);
+								cell.setValue(d);
+							}catch(VariantException v){
+								int i = dataSet.getInt(column);
+								cell.setValue(i);
+							}
+						}
+					}
+				}
+				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
+				dataSet.close();
+
+				// TODO: probably some better way to get next column
+				char index = 'A';
+				int cellNumber = 1;
+				String topIndex = Character.toString(index) + Integer.toString(cellNumber);
+
+				/*
+				 * Creates header row in the "Table"-sheet
+				 */
+
+				for(String column : columnNames){
+					sheetTable.getRange(topIndex).setValue(column);
+					String end = sheetTable.getRange(topIndex).getEntireColumn().getEnd(Direction.DOWN).getAddress(false, false);
+					sheetTable.getRange(topIndex, end).setName(column);
+					topIndex = Character.toString(++index) + Integer.toString(cellNumber);
+				}
+
+				String lastRow = sheetTable.getRange("Project").getEntireColumn().getEnd(Direction.DOWN).getAddress(false, false).substring(1);
+				String endIndex = Character.toString(index) + lastRow;
+
+				/*
+				 * Converts total value into value[eur]
+				 */
+
+				// TODO: Language preference
+				// TODO: Progress bar update!
+
+				topIndex = Character.toString(index) + Integer.toString(cellNumber);
+				sheetTable.getRange(topIndex, endIndex).setName("Total_EUR");
+				String startIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				sheetTable.getRange(topIndex).setValue("Total [EUR]");
+				topIndex = Character.toString(index) + Integer.toString(cellNumber);
+				sheetTable.getRange(topIndex).setFormula("=AVRUND(FINN.RAD(M2; Exchange!$A$2:$B$16;2; USANN) / FINN.RAD(\"EUR\"; Exchange!$A$2:$B$16;2; USANN) * T2;0)");
+				// Why does this fill down? Need only 1 fill down?
+
+				/*
+				 *  Creates the delay part of the "Table"-sheet.
+				 */
+
+				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
+				sheetTable.getRange(topIndex).setValue("RFI-CDD");
+				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				sheetTable.getRange(topIndex).setFormula("=HVIS(N2=\"EMPTY\"; 0; HVIS(P2=\"EMPTY\"; 0; ((N2-P2)/7)))"); //TODO: get address from columns instead of hardcoded values
+				sheetTable.getRange(topIndex).setNumberFormat("Standard");
+				sheetTable.getRange(topIndex, endIndex).setName("RFICDD");
+				
+				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
+				sheetTable.getRange(topIndex).setValue("Delay(RFI-CDD)");
+				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				endIndex = Character.toString(index) + lastRow;
+				sheetTable.getRange(topIndex).setFormula("=AVRUND(V2;0)");
+				sheetTable.getRange(topIndex, endIndex).setName("DelayRFICDD");
+				
+				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
+				sheetTable.getRange(topIndex).setValue("RFI-Order Date");
+				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				endIndex = Character.toString(index) + lastRow;
+				sheetTable.getRange(topIndex).setFormula("=HVIS(P2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((P2-E2)/7);0)))");
+				sheetTable.getRange(topIndex, endIndex).setName("RFIOrderDate");
+
+				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
+				sheetTable.getRange(topIndex).setValue("CDD-Order date");
+				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				endIndex = Character.toString(index) + lastRow;
+				sheetTable.getRange(topIndex).setFormula("=HVIS(N2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((N2-E2)/7);0)))");
+				sheetTable.getRange(topIndex, endIndex).setName("CDDOrderdate");
+				Range yellow = sheetTable.getRange(startIndex, endIndex);
+				yellow.fillDown(); 
+				yellow.getBorders().setLineStyle(LineStyle.CONTINUOUS);
+				yellow.getInterior().setColor(Color.yellow);
+
+				sheetTable.getRange("Total_Price").getInterior().setColor(Color.yellow);
+				sheetTable.getRange("Total_Price").getBorders().setLineStyle(LineStyle.CONTINUOUS);
+				String endRow = sheetTable.getRange("A1").getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
+				sheetTable.getRange("A1", endRow).getInterior().setColor(Color.yellow);
+				sheetTable.getRange("Total_Price").setNumberFormat("0");
+				sheetTable.getRange("Unit_Price").setNumberFormat("0");
+				sheetTable.getRange("Vendor_nr.").setNumberFormat("000000");
+				sheetTable.getRows().autoFilter(1); // why 1 or 2?
+
+				/*
+				 * Inserts the formulae into the "Project"-sheet.
+				 */
+
+				int rowPointer = 0;
+				setProgress(0);
+				processed = 0;
+				//
+				////				String currencyExcelReference = referenceMap.get("Currency");
+				////				String totalValueExcelReference = referenceMap.get("Total Value");
+				////				String projectExcelReference = referenceMap.get("Project");
+				////				String quantityExcelReference = referenceMap.get("QTY");
+				////				String delayExcelReference = referenceMap.get("Delay (RFI-CDD)");
+				////				String RfiExcelReference = referenceMap.get("RFI");
+				////				String CddExcelReference = referenceMap.get("CDD");
+				////				
+				////				CellStyle yellowBorderedStyle = workbook.createCellStyle();
+				////				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
+				////				yellowBorderedStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
+				////				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_THIN);
+				////				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_THIN);
+				////				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_THIN);
+				////				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_THIN);
+				//				
+				//		
+				
+				String totalValueAddress = sheetTable.getRange("Total_Price").getAddress(false, false);
+				String currencyAddress = sheetTable.getRange("currency").getAddress(false, false);
+				String projectAddress = sheetTable.getRange("Project").getAddress(false, false);
+				String totalValueEurAddress = sheetTable.getRange("Total_EUR").getAddress(false, false);
+				String totalValueEurAddressAbsolute = sheetTable.getRange("Total_EUR").getAddress(true, true);
+				String quantityAddress = sheetTable.getRange("QTY").getAddress(false, false);
+				String quantityAddressAbsolute = sheetTable.getRange("QTY").getAddress(true, true);
+				String delayAddressAbsolute = sheetTable.getRange("RFICDD").getAddress(true, true);
+				String roundedDelayAddressAbsolute = sheetTable.getRange("DelayRFICDD").getAddress(true, true);
+				String rfiMinusOrderAddressAbsolute = sheetTable.getRange("RFIOrderDate").getAddress(true, true);
+				String cddMinusOrderAddressAbsolute = sheetTable.getRange("CDDOrderdate").getAddress(true, true);
 				
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
 					setProgress(100 * processed++ / projectSet.size());
-					
-					rowPointer++;
-					int cellPointer = 0;
-					
-					XSSFRow header = sheetProject.createRow(rowPointer++);  //TODO: create a header creation method
-					header.createCell(cellPointer++).setCellValue("Project");
-					header.createCell(cellPointer++).setCellValue("Properties");
-					header.createCell(cellPointer++).setCellValue("Total Value");
-					header.createCell(cellPointer++).setCellValue("Currency Exchange Rate");
-					header.createCell(cellPointer++).setCellValue("Total [EUR]");
-					header.createCell(cellPointer++).setCellValue("Total Items");
-					header.createCell(cellPointer++).setCellValue("Value [%]");
-					header.createCell(cellPointer++).setCellValue("Item [%]");
-					ExcelHelper.setRowStyle(header, yellowBorderedStyle, workbook);
-					
-					int uniqueCurrencies = currencySet.size();
+
+					rowPointer+=2;
+					int columnPointer = 0;
+
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Project");
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Properties");
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Total Value");
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Total [EUR]");
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Total Items");
+					sheetProject.getCell(rowPointer,columnPointer++).setValue("Value [%]");
+					sheetProject.getCell(rowPointer,columnPointer).setValue("Item [%]");
+					String leftHeaderEnd = sheetProject.getCell(rowPointer, columnPointer).getEntireRow().getEnd(Direction.TO_LEFT).getAddress(false, false);
+					String rightHeaderEnd = sheetProject.getCell(rowPointer, columnPointer).getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
+					sheetProject.getRange(leftHeaderEnd, rightHeaderEnd).getInterior().setColor(Color.yellow);
+
+					// TODO: Name start and end ranges and use proper names
+					int uniqueCurrencies = Integer.parseInt(sheetExchangeRate.getRange("A1").getEntireColumn().getEnd(Direction.DOWN).getAddress(false, false).substring(1));
 					int totalRowIndex = rowPointer + uniqueCurrencies + 1;
-					
-					for(String currency : currencySet){
-						XSSFRow currencyRow = sheetProject.createRow(rowPointer++);
-						currencyRow.createCell(0).setCellValue(project);
-						currencyRow.createCell(1).setCellValue("Total Value [" + currency + "]:");
-						currencyRow.createCell(2).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, totalValueExcelReference, currencyExcelReference, currency, projectExcelReference, project));
-						currencyRow.createCell(3).setCellValue(exchangeMap.get(currency) / exchangeMap.get("EUR"));
-						currencyRow.createCell(4).setCellFormula("C" + rowPointer + "*D" + rowPointer);
-						currencyRow.createCell(5).setCellFormula(ExcelHelper.excelSumIfs(sheetTable, quantityExcelReference, currencyExcelReference, currency, projectExcelReference, project));
-						currencyRow.createCell(6).setCellFormula("E" + rowPointer + "*100/E" + totalRowIndex); //TODO: If no value => #DIV/0!
-						currencyRow.createCell(7).setCellFormula("F" + rowPointer + "*100/F" + totalRowIndex);
-						ExcelHelper.setRowStyle(currencyRow, thinBorderStyle, workbook);
+					for(int currencyIndex = 1; currencyIndex < uniqueCurrencies; currencyIndex++){
+						rowPointer++;
+						columnPointer = 0;
+						sheetProject.getCell(rowPointer, columnPointer++).setValue(project);
+						String currency = sheetExchangeRate.getCell(currencyIndex, 0).getValue();
+						sheetProject.getCell(rowPointer, columnPointer++).setValue("Total Value [" + currency + "]:");
+						String totalValueFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueAddress + ";Table!" + currencyAddress + ";\"" + currency + "\";Table!" + projectAddress + ";\"" + project + "\")";
+						sheetProject.getCell(rowPointer, columnPointer++).setFormula(totalValueFormula);
+						String totalValueEurFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueEurAddress + ";Table!" + currencyAddress + ";\"" + currency + "\";Table!" + projectAddress + ";\"" + project + "\")";
+						sheetProject.getCell(rowPointer, columnPointer++).setFormula(totalValueEurFormula);
+						String quantityFormula = "=SUMMER.HVIS.SETT(Table!" + quantityAddress + ";Table!" + currencyAddress + ";\"" + currency + "\";Table!" + projectAddress + ";\"" + project + "\")";
+						sheetProject.getCell(rowPointer, columnPointer++).setFormula(quantityFormula);
+						String valuePercentFormula = "=D" + (rowPointer + 1) + "*100/D" + totalRowIndex;
+						sheetProject.getCell(rowPointer, columnPointer++).setFormula(valuePercentFormula);
+						String itemPercentFormula = "=E" + (rowPointer + 1) + "*100/E" + totalRowIndex;
+						sheetProject.getCell(rowPointer, columnPointer++).setFormula(itemPercentFormula);
 					}
-					
-					// TODO : Use cell references, not hard coded values
-					// TODO: Have the set row style create cells if getCell returns null
-					XSSFRow totalRow = sheetProject.createRow(rowPointer++);
-					totalRow.createCell(0).setCellValue(project);
-					totalRow.createCell(1).setCellValue("Total:");
-					totalRow.createCell(2);
-					totalRow.createCell(3);
-					totalRow.createCell(4).setCellFormula("SUM(E" + (rowPointer - uniqueCurrencies) + ":E" + (rowPointer - 1) + ")"); 
-					totalRow.createCell(5).setCellFormula("SUM(F" + (rowPointer - uniqueCurrencies) + ":F" + (rowPointer - 1) + ")");
-					totalRow.createCell(6);
-					totalRow.createCell(7);
-					ExcelHelper.setRowStyle(totalRow, thinBorderStyle, workbook);
-					totalValueCell.add(new CellReference(totalRow.getCell(4)));
-					
-					XSSFRow deliveredToFaRow = sheetProject.createRow(rowPointer++);
-					deliveredToFaRow.createCell(0).setCellValue(project);
-					deliveredToFaRow.createCell(1).setCellValue("Delivered to FA:");
-					deliveredToFaRow.createCell(2);
-					deliveredToFaRow.createCell(3);
-					deliveredToFaRow.createCell(4);
-					deliveredToFaRow.createCell(5);
-					deliveredToFaRow.createCell(6);
-					deliveredToFaRow.createCell(7);
-					ExcelHelper.setRowStyle(deliveredToFaRow, thinBorderStyle, workbook);
-					
-					XSSFRow improvedDeliveriesRow = sheetProject.createRow(rowPointer++);
-					improvedDeliveriesRow.createCell(0).setCellValue(project);
-					improvedDeliveriesRow.createCell(1).setCellValue("Improved Deliveries:");
-					improvedDeliveriesRow.createCell(2);
-					improvedDeliveriesRow.createCell(3);
-					improvedDeliveriesRow.createCell(4);
-					improvedDeliveriesRow.createCell(5);
-					improvedDeliveriesRow.createCell(6);
-					improvedDeliveriesRow.createCell(7);
-					ExcelHelper.setRowStyle(improvedDeliveriesRow, thinBorderStyle, workbook);
-					
-					XSSFRow valueDeliveriesFaRow = sheetProject.createRow(rowPointer++);
-					valueDeliveriesFaRow.createCell(0).setCellValue(project);
-					valueDeliveriesFaRow.createCell(1).setCellValue("Value of Improved Deliveries as FA:");
-					valueDeliveriesFaRow.createCell(2);
-					valueDeliveriesFaRow.createCell(3);
-					valueDeliveriesFaRow.createCell(4);
-					valueDeliveriesFaRow.createCell(5);
-					valueDeliveriesFaRow.createCell(6);
-					valueDeliveriesFaRow.createCell(7);
-					ExcelHelper.setRowStyle(valueDeliveriesFaRow, thinBorderStyle, workbook);
-					
-					XSSFRow accelerationCostRow = sheetProject.createRow(rowPointer++);
-					accelerationCostRow.createCell(0).setCellValue(project);
-					accelerationCostRow.createCell(1).setCellValue("Acceleration Cost:");
-					accelerationCostRow.createCell(2);
-					accelerationCostRow.createCell(3);
-					accelerationCostRow.createCell(4);
-					accelerationCostRow.createCell(5);
-					accelerationCostRow.createCell(6);
-					accelerationCostRow.createCell(7);
-					ExcelHelper.setRowStyle(accelerationCostRow, thinBorderStyle, workbook);
-					
-					XSSFRow itemsOutsideScopeRow = sheetProject.createRow(rowPointer++);
-					itemsOutsideScopeRow.createCell(0).setCellValue(project);
-					itemsOutsideScopeRow.createCell(1).setCellValue("Items Delivered Outside Scope:");
-					itemsOutsideScopeRow.createCell(2);
-					itemsOutsideScopeRow.createCell(3);
-					itemsOutsideScopeRow.createCell(4);
-					itemsOutsideScopeRow.createCell(5);
-					itemsOutsideScopeRow.createCell(6);
-					itemsOutsideScopeRow.createCell(7);
-					ExcelHelper.setRowStyle(itemsOutsideScopeRow, thinBorderStyle, workbook);
+					rowPointer++;
+					columnPointer = 0;
+					sheetProject.getCell(rowPointer, columnPointer++).setValue(project);
+					sheetProject.getCell(rowPointer, columnPointer++).setValue("Total:");
+					sheetProject.getCell(rowPointer, columnPointer++).setFormula("=SUMMER(C" + (totalRowIndex - uniqueCurrencies + 1) + ":C" + (totalRowIndex - 1) + ")");
+					sheetProject.getCell(rowPointer, columnPointer++).setFormula("=SUMMER(D" + (totalRowIndex - uniqueCurrencies + 1) + ":D" + (totalRowIndex - 1) + ")");
+					sheetProject.getCell(rowPointer, columnPointer++).setFormula("=SUMMER(E" + (totalRowIndex - uniqueCurrencies + 1) + ":E" + (totalRowIndex - 1) + ")");
+
+					rowPointer++;
+					sheetProject.getCell(rowPointer, 0).setValue(project);
+					sheetProject.getCell(rowPointer, 1).setValue("Delivered to FA:");
+
+					rowPointer++;
+					sheetProject.getCell(rowPointer, 0).setValue(project);
+					sheetProject.getCell(rowPointer, 1).setValue("Improved Deliveries:");
+
+					rowPointer++;
+					sheetProject.getCell(rowPointer, 0).setValue(project);
+					sheetProject.getCell(rowPointer, 1).setValue("Value of Improved Deliveries as FA:");
+
+					rowPointer++;
+					sheetProject.getCell(rowPointer, 0).setValue(project);
+					sheetProject.getCell(rowPointer, 1).setValue("Acceleration Cost:");
+
+					rowPointer++;
+					sheetProject.getCell(rowPointer, 0).setValue(project);
+					sheetProject.getCell(rowPointer, 1).setValue("Items Delivered Outside Scope:");
 				}
-				
+				String lastCellAddress = sheetProject.getCell(rowPointer, 6).getAddress(false, false);
+				sheetProject.getRange("A3", lastCellAddress).getBorders().setLineStyle(LineStyle.CONTINUOUS);
+
 				/*
 				 * Populates the "Delay"-sheet
 				 */
-				
+
 				rowPointer = 1;
-				XSSFRow headerRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow delayRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow unitRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow itemRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow valueRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow accUnitRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow accItemRow = sheetDelay.createRow(rowPointer++);
-				XSSFRow accValueRow = sheetDelay.createRow(rowPointer++);
-				
+				int headerRow = rowPointer++;
+				int delayRow = rowPointer++;
+				int unitRow = rowPointer++;
+				int itemRow = rowPointer++;
+				int valueRow = rowPointer++;
+				int accUnitRow = rowPointer++;
+				int accItemRow = rowPointer++;
+				int accValueRow = rowPointer++;
+
 				int cellPointer = 0;
-				
-				unitRow.createCell(cellPointer).setCellValue("No of Units");
-				itemRow.createCell(cellPointer).setCellValue("No of Items");
-				valueRow.createCell(cellPointer).setCellValue("Value [EUR]");
-				accUnitRow.createCell(cellPointer).setCellValue("Accumulated No of Units [%]");
-				accItemRow.createCell(cellPointer).setCellValue("Accumulated No of Items [%]");
-				accValueRow.createCell(cellPointer++).setCellValue("Accumulated Value [%]");
-				
-				headerRow.createCell(cellPointer).setCellValue("Total Value");
-				unitRow.createCell(cellPointer).setCellFormula("SUM(Table!" + quantityExcelReference + "2:" + quantityExcelReference + lastRow +  ")"); //TODO move to helper
-				itemRow.createCell(cellPointer).setCellFormula("COUNT(Table!" + quantityExcelReference + "2:" + quantityExcelReference + lastRow +  ")");	
-				// Iterates over all the cells used to total the project values and calculates the sum
-				String formula = "SUM(";
-				for(CellReference c : totalValueCell){
-					formula += "Project!" + c.formatAsString() + ",";
-				}
-				String finalFormula = formula.substring(0, formula.length()-1); // Removes the excess comma at the end
-				finalFormula += ")";											// Adds the closing parenthesis
-				Cell dummyCell = delayRow.createCell(cellPointer);
-				dummyCell.setCellValue(0);
-				valueRow.createCell(cellPointer++).setCellFormula(finalFormula);
-				
 
-				CellReference currentUnitCellReference;
-				CellReference currentItemCellReference;
-				CellReference currentValueCellReference;
-				CellReference previousAccUnitCellReference = new CellReference(dummyCell);
-				CellReference previousAccItemCellReference = new CellReference(dummyCell);
-				CellReference previousAccValueCellReference = new CellReference(dummyCell);
+				//TODO: Add a percentage outside scope column
 				
-				// Need current unit/total + previous
+				sheetDelay.getCell(unitRow, cellPointer).setValue("No of Units");
+				sheetDelay.getCell(itemRow, cellPointer).setValue("No of Items");
+				sheetDelay.getCell(valueRow, cellPointer).setValue("Value [EUR]");
+				sheetDelay.getCell(accUnitRow, cellPointer).setValue("Accumulated No of Units [%]");
+				sheetDelay.getCell(accItemRow, cellPointer).setValue("Accumulated No of Items [%]");
+				sheetDelay.getCell(accValueRow, cellPointer++).setValue("Accumulated Value [%]");
+				sheetDelay.getCell(headerRow, cellPointer).setValue("Total Value");
 				
-				for(int row = -36; row <= 36; row++){ 
-					headerRow.createCell(cellPointer).setCellValue("Delay (RFI-CDD)");
-					delayRow.createCell(cellPointer).setCellValue(Integer.toString(row));
-					
-					Cell unitCell = unitRow.createCell(cellPointer);
-					unitCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), quantityExcelReference, IfFormula.SUMIF));
-					currentUnitCellReference = new CellReference(unitCell);
-					
-					Cell itemCell = itemRow.createCell(cellPointer);
-					itemCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), null, IfFormula.COUNTIF));
-					currentItemCellReference = new CellReference(itemCell);
-					
-					Cell valueCell = valueRow.createCell(cellPointer);
-					// TODO: Add sheet containing exchange rates!
-//					valueCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), totalValueExcelReference, IfFormula.SUMIF));
-//					currentValueCellReference = new CellReference(valueCell);
-					
-					Cell accUnitCell = accUnitRow.createCell(cellPointer);
-					accUnitCell.setCellFormula("(" + currentUnitCellReference.formatAsString() + "/B4)+" + previousAccUnitCellReference.formatAsString());
-					previousAccUnitCellReference = new CellReference(accUnitCell);
-					
-					Cell accItemCell = accItemRow.createCell(cellPointer);
-					accItemCell.setCellFormula("(" + currentItemCellReference.formatAsString() + "/B5)+" + previousAccItemCellReference.formatAsString());
-					previousAccItemCellReference = new CellReference(accItemCell);
-					
-					Cell accValueCell = accValueRow.createCell(cellPointer);
-//					accValueCell.setCellFormula("(" + currentValueCellReference.formatAsString() + "/B6)+" + previousAccValueCellReference.formatAsString());
-//					previousAccValueCellReference = new CellReference(accValueCell);
-					
-					cellPointer++;
-				}
+				String unitFormula = "=SUMMER(Table!" + quantityAddress + ")";
+				String itemFormula = "=ANTALL(Table!" + quantityAddress + ")";
+				String totalValueFormula = "=SUMMER(Table!" + totalValueEurAddress + ")";
+				
+				sheetDelay.getCell(unitRow, cellPointer).setFormula(unitFormula);
+				sheetDelay.getCell(itemRow, cellPointer).setFormula(itemFormula);
+				sheetDelay.getCell(valueRow, cellPointer).setFormula(totalValueFormula);
+				
+				rowPointer = 2;
+				String endCell = "AQ" + Integer.toString(rowPointer++);
+				sheetDelay.getCell(headerRow, 2).setValue("Delay");
+				sheetDelay.getRange("C2", endCell).fillRight();
+				sheetDelay.getRange("B2", endCell).getInterior().setColor(Color.yellow);
+				
+				endCell = "AQ" + Integer.toString(rowPointer++); 
+				sheetDelay.getCell(delayRow, 2).setValue(-20);
+				sheetDelay.getCell(delayRow, 3).setFormula("=C3 + 1");
+				sheetDelay.getRange("D3", endCell).fillRight(); 
+				
+				endCell = "AQ" + Integer.toString(rowPointer++); 
+				sheetDelay.getCell(unitRow, 2).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C3;Table!" + quantityAddressAbsolute +")" );
+				sheetDelay.getRange("C4", endCell).fillRight();
+				
+				endCell = "AQ" + Integer.toString(rowPointer++); 
+				sheetDelay.getCell(itemRow, 2).setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C3" +")" );
+				sheetDelay.getRange("C5", endCell).fillRight();
+				
+				endCell = "AQ" + Integer.toString(rowPointer++); 
+				sheetDelay.getCell(valueRow, 2).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C3;Table!" + totalValueEurAddressAbsolute +")" );
+				sheetDelay.getRange("C6", endCell).fillRight();
+				
+				endCell = "AQ" + Integer.toString(rowPointer++);
+				sheetDelay.getCell(accUnitRow, 2).setFormula("=C4/B4");
+				sheetDelay.getCell(accUnitRow, 3).setFormula("=(D4/$B$4)+C7");
+				sheetDelay.getRange("D7", endCell).fillRight();
+				
+				endCell = "AQ" + Integer.toString(rowPointer++);
+				sheetDelay.getCell(accItemRow, 2).setFormula("=C5/B5");
+				sheetDelay.getCell(accItemRow, 3).setFormula("=(D5/$B$5)+C8");
+				sheetDelay.getRange("D8", endCell).fillRight();
+				
+				endCell = "AQ" + Integer.toString(rowPointer++);
+				sheetDelay.getCell(accValueRow, 2).setFormula("=C6/B6");
+				sheetDelay.getCell(accValueRow, 3).setFormula("=(D6/$B$6)+C9");
+				sheetDelay.getRange("D9", endCell).fillRight();
+				
+				sheetDelay.getRange("B7", endCell).setNumberFormat("0,00 %");
+				sheetDelay.getRange("A2", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
+				
+				
+				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250);
+				Chart delayChart = delayChartObject.getChart();
+				
+//				delayChart.getChartArea().setHeight(250);
+//				delayChart.getChartArea().setWidth(1000);
+//				delayChart.getChartArea().setTop(100);
+//				delayChart.getChartArea().setLeft(100);
+				delayChart.setChartType(ChartType.LINE);
+				delayChart.setSourceData(sheetDelay.getRange("C7", endCell));
+				delayChart.location(ChartLocation.LOCATION_AS_OBJECT, "Delay"); // How? Why? What?
 				
 				
 				
-				// Create a column for each unique rounded delay value
-				
-				
-				/*
-				 * Creates and populates the "Mill"-sheet
-				 */
-//				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
-//				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
-//				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
-//				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
-//				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
-//				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
-//				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
-//				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
-//
-//				setProgress(0);
-//				processed = 0;
-//				int columnCount = customerSet.size();
-//
-//				int column = 2;
-//				for(String customer : customerSet){
-//
-//					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
-//					sheetMill.getRow(3).createCell(column).setCellValue(customer);
-//					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
-//					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
-//					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
-//					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
-//					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
-//					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
-//
-//					column++;
-//
-//					setProgress(100 * ++processed / columnCount);
-//					progressField.setText("Creating Mill Graph: " + processed);
-//				}
-//
-//				ExcelHelper.autoSizeColumns(sheetMill);
+				//				
+				//				for(int row = -36; row <= 36; row++){ 
+				//					sheetDelay.getCell(headerRow, cellPointer).setValue("Delay (RFI-CDD)");
+				//					sheetDelay.getCell(delayRow, cellPointer).setValue(row);
+				//					
+				////					Cell unitCell = unitRow.createCell(cellPointer);
+				////					unitCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), quantityExcelReference, IfFormula.SUMIF));
+				////					currentUnitCellReference = new CellReference(unitCell);
+				////					
+				////					Cell itemCell = itemRow.createCell(cellPointer);
+				////					itemCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), null, IfFormula.COUNTIF));
+				////					currentItemCellReference = new CellReference(itemCell);
+				////					
+				////					Cell valueCell = valueRow.createCell(cellPointer);
+				////					// TODO: Add sheet containing exchange rates!
+				//////					valueCell.setCellFormula(ExcelHelper.formulaBuilder(sheetTable, delayExcelReference, Integer.toString(row), totalValueExcelReference, IfFormula.SUMIF));
+				//////					currentValueCellReference = new CellReference(valueCell);
+				////					
+				////					Cell accUnitCell = accUnitRow.createCell(cellPointer);
+				////					accUnitCell.setCellFormula("(" + currentUnitCellReference.formatAsString() + "/B4)+" + previousAccUnitCellReference.formatAsString());
+				////					previousAccUnitCellReference = new CellReference(accUnitCell);
+				////					
+				////					Cell accItemCell = accItemRow.createCell(cellPointer);
+				////					accItemCell.setCellFormula("(" + currentItemCellReference.formatAsString() + "/B5)+" + previousAccItemCellReference.formatAsString());
+				////					previousAccItemCellReference = new CellReference(accItemCell);
+				////					
+				////					Cell accValueCell = accValueRow.createCell(cellPointer);
+				////					accValueCell.setCellFormula("(" + currentValueCellReference.formatAsString() + "/B6)+" + previousAccValueCellReference.formatAsString());
+				////					previousAccValueCellReference = new CellReference(accValueCell);
+				//					
+				//					cellPointer++;
+				//				}
+				//				
+				//				
+				//				
+				//				// Create a column for each unique rounded delay value
+				//				
+				//				
+				//				/*
+				//				 * Creates and populates the "Mill"-sheet
+				//				 */
+				////				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
+				////				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
+				////				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
+				////				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
+				////				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
+				////				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
+				////				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
+				////				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
+				////
+				////				setProgress(0);
+				////				processed = 0;
+				////				int columnCount = customerSet.size();
+				////
+				////				int column = 2;
+				////				for(String customer : customerSet){
+				////
+				////					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
+				////					sheetMill.getRow(3).createCell(column).setCellValue(customer);
+				////					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
+				////					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
+				////					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
+				////					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
+				////					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
+				////					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
+				////
+				////					column++;
+				////
+				////					setProgress(100 * ++processed / columnCount);
+				////					progressField.setText("Creating Mill Graph: " + processed);
+				////				}
+				////
+				////				ExcelHelper.autoSizeColumns(sheetMill);
+				//
+				//				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
+				//
+				////				ExcelHelper.autoSizeColumns(sheetDelay);
+				////				ExcelHelper.autoSizeColumns(sheetProject);
 
-				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
-
-				ExcelHelper.autoSizeColumns(sheetDelay);
-				ExcelHelper.autoSizeColumns(sheetProject);
-				
 				publishedOutput.setText("Opening Excel Document");
 				progressField.setText("");
 				saveWorkbook();
 				db.closeConnection();
+				excel.dispose();
 				cancel(true);
 			}
 		}catch(Exception e){
@@ -504,24 +558,24 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		StringBuilder query = new StringBuilder(5000);
 		String basicStatement = "select \"Project\" = Project.pr_name,"
 				+ " \"Client\" = customerList.assoc_name,"
-				+ " \"Client Ref.\" = Tr_hdr.assoc_ref,"
-				+ " \"Order Nr.\" = Tr_hdr.tr_no, "
-				+ " \"Order Registration Date\" = convert(varchar(20), Tr_hdr.reg_date, 104),"		   
-				+ " \"Item nr.\" = clientItemList.item_no,"
-				+ " \"Client Art. code\" = clientItemList.local_id,"
-				+ " \"Vendor nr.\" = clientItemList.vnd_no, "
+				+ " \"Client_Ref.\" = Tr_hdr.assoc_ref,"
+				+ " \"Order_Nr.\" = Tr_hdr.tr_no, "
+				+ " \"Order_Registration_Date\" = convert(varchar(20), Tr_hdr.reg_date, 104),"		   
+				+ " \"Item_nr.\" = clientItemList.item_no,"
+				+ " \"Client_Art_code\" = clientItemList.local_id,"
+				+ " \"Vendor_nr.\" = clientItemList.vnd_no, "
 				+ " \"Description\" = clientItemList.description,"
 				+ " \"Supplier\" = supplierList.assoc_name ,"
 				+ " \"QTY\" = clientItemList.qnt,"
-				+ " \"Unit Price\" = clientItemList.price,"
+				+ " \"Unit_Price\" = clientItemList.price,"
 				+ " \"currency\" = Exchange.curr_name,"
 				+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 104),"
 				+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 104),"
 				+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 104)," 
 				+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 104),"
 				+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 104),"
-				+ " \"Item Status\" = Tr_dtl_status.tr_dtl_stname,"
-				+ " \"Total Price\" = clientItemList.qnt*clientItemList.price"                     //TODO: This should be an excel formula in case of manual changes
+				+ " \"Item_Status\" = Tr_dtl_status.tr_dtl_stname,"
+				+ " \"Total_Price\" = clientItemList.qnt*clientItemList.price"                     //TODO: This should be an excel formula in case of manual changes
 				+ " from vendor.dbo.Tr_hdr," 
 				+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
 				+ " on (clientItemList.vnd_no = supplierItemList.vnd_no"           

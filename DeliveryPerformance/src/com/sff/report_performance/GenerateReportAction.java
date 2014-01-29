@@ -28,19 +28,13 @@ public class GenerateReportAction extends AbstractAction{
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		boolean isFileUnlocked = false;
-		FileOutputStream out = null;
 		File output = null;
 		String directory = "C:/vendorLogistics/Logistics/vendorUser/";
 		String fileName = "report.xlsx";
-		try{
-			output = new File(directory + fileName);
-			out = new FileOutputStream(output, false);
-			isFileUnlocked = true;
-		}catch(IOException e){
-			isFileUnlocked = false;
-		}
+		output = new File(directory + fileName);
+		isFileUnlocked = true;
 		if(isFileUnlocked){
-			ProgressDialog.runReport(customerData, projectData, statusData, out, output, frame);
+			ProgressDialog.runReport(customerData, projectData, statusData, output, frame);
 		}
 		else{
 			JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");
