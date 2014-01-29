@@ -20,14 +20,20 @@ import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
 import com.moyosoft.connector.com.ComponentObjectModelException;
 import com.moyosoft.connector.exception.LibraryNotFoundException;
+import com.moyosoft.connector.ms.excel.AxisCrosses;
+import com.moyosoft.connector.ms.excel.AxisType;
+import com.moyosoft.connector.ms.excel.BorderWeight;
+import com.moyosoft.connector.ms.excel.CategoryType;
 import com.moyosoft.connector.ms.excel.Chart;
 import com.moyosoft.connector.ms.excel.ChartLocation;
 import com.moyosoft.connector.ms.excel.ChartObject;
 import com.moyosoft.connector.ms.excel.ChartType;
 import com.moyosoft.connector.ms.excel.Direction;
+import com.moyosoft.connector.ms.excel.DisplayUnit;
 import com.moyosoft.connector.ms.excel.Excel;
 import com.moyosoft.connector.ms.excel.LineStyle;
 import com.moyosoft.connector.ms.excel.Range;
+import com.moyosoft.connector.ms.excel.ScaleType;
 import com.moyosoft.connector.ms.excel.Workbook;
 import com.moyosoft.connector.ms.excel.Worksheet;
 
@@ -85,7 +91,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		excel.setVisible(true);
 	}
 
-	@Override
+	@Override //TODO: Does this not override something?
 	protected String doInBackground() {
 		try{
 
@@ -442,19 +448,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelay.getRange("B7", endCell).setNumberFormat("0,00 %");
 				sheetDelay.getRange("A2", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
 				
-				
-				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250);
+				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 2000, 250);
 				Chart delayChart = delayChartObject.getChart();
-				
-//				delayChart.getChartArea().setHeight(250);
-//				delayChart.getChartArea().setWidth(1000);
-//				delayChart.getChartArea().setTop(100);
-//				delayChart.getChartArea().setLeft(100);
 				delayChart.setChartType(ChartType.LINE);
 				delayChart.setSourceData(sheetDelay.getRange("C7", endCell));
-				delayChart.location(ChartLocation.LOCATION_AS_OBJECT, "Delay"); // How? Why? What?
-				
-				
+				delayChart.getAxis(AxisType.CATEGORY).setHasMajorGridlines(true); // X-axis = Category, Y-axis = Value
+				delayChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelay.getRange("C3:AQ3"));
+				delayChart.getAxis(AxisType.CATEGORY).setAxisBetweenCategories(false);
+				delayChart.getSeries(0).setName("Accumulated No of Units");
+				delayChart.getSeries(1).setName("Accumulated No of Items");
+				delayChart.getSeries(2).setName("Accumulated Value");
 				
 				//				
 				//				for(int row = -36; row <= 36; row++){ 
