@@ -86,11 +86,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		sheetDelay.getColumns().autoFit();
 		sheetExchangeRate.getColumns().autoFit();
 		sheetDelPerformance.getColumns().autoFit();
+		sheetDelMill.getColumns().autoFit();
 
 		excel.setVisible(true);
 	}
 
-	@Override //TODO: Does this not override something?
+	@Override
 	protected String doInBackground() {
 		try{
 
@@ -145,11 +146,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					value.setName((String) pairs.getKey());
 				}
 
+				sheetExchangeRate.getRange("A1:B16").getBorders().setLineStyle(LineStyle.CONTINUOUS);
+				
 				/*
 				 * Extracts data from the database and inserts into the "Table"-sheet.
 				 */
-//				Set<String> currencySet = new HashSet<String>();
-//				Set<String> customerSet = new HashSet<String>();
 				Set<String> projectSet = new HashSet<String>();
 				Set<String> millSet = new HashSet<String>();
 				while(dataSet.next()){
@@ -222,7 +223,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange(topIndex).setValue("Total [EUR]");
 				topIndex = Character.toString(index) + Integer.toString(cellNumber);
 				sheetTable.getRange(topIndex).setFormula("=AVRUND(FINN.RAD(M2; Exchange!$A$2:$B$16;2; USANN) / FINN.RAD(\"EUR\"; Exchange!$A$2:$B$16;2; USANN) * T2;0)");
-				// Why does this fill down? Need only 1 fill down?
 
 				/*
 				 *  Creates the delay part of the "Table"-sheet.
@@ -276,24 +276,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int rowPointer = 0;
 				setProgress(0);
 				processed = 0;
-				//
-				////				String currencyExcelReference = referenceMap.get("Currency");
-				////				String totalValueExcelReference = referenceMap.get("Total Value");
-				////				String projectExcelReference = referenceMap.get("Project");
-				////				String quantityExcelReference = referenceMap.get("QTY");
-				////				String delayExcelReference = referenceMap.get("Delay (RFI-CDD)");
-				////				String RfiExcelReference = referenceMap.get("RFI");
-				////				String CddExcelReference = referenceMap.get("CDD");
-				////				
-				////				CellStyle yellowBorderedStyle = workbook.createCellStyle();
-				////				yellowBorderedStyle.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
-				////				yellowBorderedStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-				////				yellowBorderedStyle.setBorderBottom(CellStyle.BORDER_THIN);
-				////				yellowBorderedStyle.setBorderTop(CellStyle.BORDER_THIN);
-				////				yellowBorderedStyle.setBorderRight(CellStyle.BORDER_THIN);
-				////				yellowBorderedStyle.setBorderLeft(CellStyle.BORDER_THIN);
-				//				
-				//		
 				
 				String totalValueAddress = sheetTable.getRange("Total_Price").getAddress(false, false);
 				String currencyAddress = sheetTable.getRange("currency").getAddress(false, false);
@@ -546,9 +528,101 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Populates the DelMill sheet
 				 */
+				rowPointer = 1;
 				
 				for(String mill : millSet){
 					
+					headerRow = rowPointer++;
+					delayRow = rowPointer++;
+					unitRow = rowPointer++;
+					itemRow = rowPointer++;
+					valueRow = rowPointer++;
+					accUnitRow = rowPointer++;
+					accItemRow = rowPointer++;
+					accValueRow = rowPointer++;
+
+					columnPointer = 0;
+
+					//TODO: Add a percentage outside scope column
+					
+					if(mill.length()==0) mill = "EMPTY";
+					sheetDelMill.getCell(headerRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(delayRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(unitRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(itemRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(valueRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accUnitRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accItemRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow, columnPointer++).setValue(mill);
+					
+					sheetDelMill.getCell(unitRow, columnPointer).setValue("No of Units");
+					sheetDelMill.getCell(itemRow, columnPointer).setValue("No of Items");
+					sheetDelMill.getCell(valueRow, columnPointer).setValue("Value [EUR]");
+					sheetDelMill.getCell(accUnitRow, columnPointer).setValue("Accumulated No of Units [%]");
+					sheetDelMill.getCell(accItemRow, columnPointer).setValue("Accumulated No of Items [%]");
+					sheetDelMill.getCell(accValueRow, columnPointer++).setValue("Accumulated Value [%]");
+					sheetDelMill.getCell(headerRow, columnPointer).setValue("Total Value");
+					
+					sheetDelMill.getCell(unitRow, columnPointer).setFormula(unitFormula);
+					sheetDelMill.getCell(itemRow, columnPointer).setFormula(itemFormula);
+					sheetDelMill.getCell(valueRow, columnPointer).setFormula(totalValueFormula);
+					
+					// TODO: MONDAY! Columns incremented "getCell(headerRow, 3)" the value to the right. Now switch all cases for "D3" to "D"+row and be prepared to fix errors
+					
+					endCell = "AQ" + Integer.toString(headerRow);
+					sheetDelMill.getCell(headerRow, 3).setValue("Delay");
+					sheetDelMill.getRange("D" + Integer.toString(headerRow), endCell).fillRight();
+					sheetDelMill.getRange("C" + Integer.toString(headerRow), endCell).getInterior().setColor(Color.yellow);
+					
+					endCell = "AQ" + Integer.toString(delayRow); 
+					sheetDelMill.getCell(delayRow, 3).setValue(-20);
+					sheetDelMill.getCell(delayRow, 4).setFormula("=C" + Integer.toString(delayRow) + "1");
+					sheetDelMill.getRange("D3", endCell).fillRight(); 
+					
+					endCell = "AQ" + Integer.toString(unitRow); 
+					sheetDelMill.getCell(unitRow, 3).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) + ";Table!" + quantityAddressAbsolute +")" );
+					sheetDelMill.getRange("C4", endCell).fillRight();
+					
+					endCell = "AQ" + Integer.toString(itemRow); 
+					sheetDelMill.getCell(itemRow, 3).setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) +")" );
+					sheetDelMill.getRange("C5", endCell).fillRight();
+					
+					endCell = "AQ" + Integer.toString(valueRow); 
+					sheetDelMill.getCell(valueRow, 3).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) + ";Table!" + totalValueEurAddressAbsolute +")" );
+					sheetDelMill.getRange("C6", endCell).fillRight();
+					
+					endCell = "AQ" + Integer.toString(accUnitRow);
+					sheetDelMill.getCell(accUnitRow, 3).setFormula("=C4/B4");
+					sheetDelMill.getCell(accUnitRow, 4).setFormula("=(D4/$B$4)+C7");
+					sheetDelMill.getRange("D7", endCell).fillRight();
+					
+					endCell = "AQ" + Integer.toString(accItemRow);
+					sheetDelMill.getCell(accItemRow, 3).setFormula("=C5/B5");
+					sheetDelMill.getCell(accItemRow, 4).setFormula("=(D5/$B$5)+C8");
+					sheetDelMill.getRange("D8", endCell).fillRight();
+					
+					endCell = "AQ" + Integer.toString(accValueRow);
+					sheetDelMill.getCell(accValueRow, 3).setFormula("=C6/B6");
+					sheetDelMill.getCell(accValueRow, 4).setFormula("=(D6/$B$6)+C9");
+					sheetDelMill.getRange("D9", endCell).fillRight();
+					
+					sheetDelMill.getRange("B7", endCell).setNumberFormat("0,00 %");
+					sheetDelMill.getRange("A2", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
+					
+					//TODO: Name x-axis "[Weeks]"
+					
+//					ChartObject delMillChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250); // Charts exists within chart objects, which in turn sets the size and location
+//					Chart delMillChart = delMillChartObject.getChart();
+//					delMillChart.setChartType(ChartType.LINE);
+//					delMillChart.setSourceData(sheetDelay.getRange("C7", endCell));
+//					delMillChart.getAxis(AxisType.CATEGORY).setHasMajorGridlines(true); // X-axis = Category, Y-axis = Value
+//					delMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelay.getRange("C3:AQ3"));
+//					delMillChart.getAxis(AxisType.CATEGORY).setAxisBetweenCategories(false);
+//					delMillChart.getAxis(AxisType.CATEGORY).setTickLabelSpacing(2);
+//					delMillChart.getSeries(0).setName("Accumulated No of Units");
+//					delMillChart.getSeries(1).setName("Accumulated No of Items");
+//					delMillChart.getSeries(2).setName("Accumulated Value");
+					rowPointer+=10;
 				}
 				
 				//				
