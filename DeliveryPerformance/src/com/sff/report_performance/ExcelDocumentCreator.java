@@ -14,6 +14,8 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.omg.CORBA.portable.ValueFactory;
+
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
@@ -161,12 +163,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
 						Range cell = sheetTable.getCell(dataSet.getRow(), column);
 
-//						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
-//							currencySet.add(dataSet.getString(column));
-//						}
-//						if(dataSet.getColumn(column).equals(dataSet.getColumn("Client"))){
-//							customerSet.add(dataSet.getString(column));
-//						}
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Supplier"))){
 							millSet.add(dataSet.getString(column));
 						}
@@ -192,9 +188,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				dataSet.close();
 
 				// TODO: probably some better way to get next column
-				char index = 'A';
-				int cellNumber = 1;
-				String topIndex = Character.toString(index) + Integer.toString(cellNumber);
+				char col = 'A';
+				int row = 1;
+				String topIndex = Character.toString(col) + Integer.toString(row);
 
 				/*
 				 * Creates header row in the "Table"-sheet
@@ -204,11 +200,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetTable.getRange(topIndex).setValue(column);
 					String end = sheetTable.getRange(topIndex).getEntireColumn().getEnd(Direction.DOWN).getAddress(false, false);
 					sheetTable.getRange(topIndex, end).setName(column);
-					topIndex = Character.toString(++index) + Integer.toString(cellNumber);
+					topIndex = Character.toString(++col) + Integer.toString(row);
 				}
 
 				String lastRow = sheetTable.getRange("Project").getEntireColumn().getEnd(Direction.DOWN).getAddress(false, false).substring(1);
-				String endIndex = Character.toString(index) + lastRow;
+				String endIndex = Character.toString(col) + lastRow;
 
 				/*
 				 * Converts total value into value[eur]
@@ -217,44 +213,47 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				// TODO: Language preference
 				// TODO: Progress bar update!
 
-				topIndex = Character.toString(index) + Integer.toString(cellNumber);
+				topIndex = Character.toString(col) + Integer.toString(row);
 				sheetTable.getRange(topIndex, endIndex).setName("Total_EUR");
-				String startIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				String startIndex = Character.toString(col) + Integer.toString(++row);
 				sheetTable.getRange(topIndex).setValue("Total [EUR]");
-				topIndex = Character.toString(index) + Integer.toString(cellNumber);
+				topIndex = Character.toString(col) + Integer.toString(row);
 				sheetTable.getRange(topIndex).setFormula("=AVRUND(FINN.RAD(M2; Exchange!$A$2:$B$16;2; USANN) / FINN.RAD(\"EUR\"; Exchange!$A$2:$B$16;2; USANN) * T2;0)");
 
 				/*
 				 *  Creates the delay part of the "Table"-sheet.
 				 */
 
-				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
+				topIndex = Character.toString(++col) + Integer.toString(--row);
+				sheetTable.getRange(topIndex, endIndex).setName("RFICDD");
 				sheetTable.getRange(topIndex).setValue("RFI-CDD");
-				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
+				topIndex = Character.toString(col) + Integer.toString(++row);
 				sheetTable.getRange(topIndex).setFormula("=HVIS(N2=\"EMPTY\"; 0; HVIS(P2=\"EMPTY\"; 0; ((N2-P2)/7)))"); //TODO: get address from columns instead of hardcoded values
 				sheetTable.getRange(topIndex).setNumberFormat("Standard");
-				sheetTable.getRange(topIndex, endIndex).setName("RFICDD");
 				
-				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
-				sheetTable.getRange(topIndex).setValue("Delay(RFI-CDD)");
-				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
-				endIndex = Character.toString(index) + lastRow;
-				sheetTable.getRange(topIndex).setFormula("=AVRUND(V2;0)");
+				
+				topIndex = Character.toString(++col) + Integer.toString(--row);
+				endIndex = Character.toString(col) + lastRow;
 				sheetTable.getRange(topIndex, endIndex).setName("DelayRFICDD");
+				sheetTable.getRange(topIndex).setValue("Delay(RFI-CDD)");
+				topIndex = Character.toString(col) + Integer.toString(++row);
+				sheetTable.getRange(topIndex).setFormula("=AVRUND(V2;0)");
 				
-				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
-				sheetTable.getRange(topIndex).setValue("RFI-Order Date");
-				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
-				endIndex = Character.toString(index) + lastRow;
-				sheetTable.getRange(topIndex).setFormula("=HVIS(P2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((P2-E2)/7);0)))");
+				
+				topIndex = Character.toString(++col) + Integer.toString(--row);
+				endIndex = Character.toString(col) + lastRow;
 				sheetTable.getRange(topIndex, endIndex).setName("RFIOrderDate");
+				sheetTable.getRange(topIndex).setValue("RFI-Order Date");
+				topIndex = Character.toString(col) + Integer.toString(++row);
+				sheetTable.getRange(topIndex).setFormula("=HVIS(P2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((P2-E2)/7);0)))");
+				
 
-				topIndex = Character.toString(++index) + Integer.toString(--cellNumber);
-				sheetTable.getRange(topIndex).setValue("CDD-Order date");
-				topIndex = Character.toString(index) + Integer.toString(++cellNumber);
-				endIndex = Character.toString(index) + lastRow;
-				sheetTable.getRange(topIndex).setFormula("=HVIS(N2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((N2-E2)/7);0)))");
+				topIndex = Character.toString(++col) + Integer.toString(--row);
+				endIndex = Character.toString(col) + lastRow;
 				sheetTable.getRange(topIndex, endIndex).setName("CDDOrderdate");
+				sheetTable.getRange(topIndex).setValue("CDD-Order date");
+				topIndex = Character.toString(col) + Integer.toString(++row);
+				sheetTable.getRange(topIndex).setFormula("=HVIS(N2=\"EMPTY\"; 0; HVIS(E2=\"EMPTY\"; 0; AVRUND(((N2-E2)/7);0)))");
 				Range yellow = sheetTable.getRange(startIndex, endIndex);
 				yellow.fillDown(); 
 				yellow.getBorders().setLineStyle(LineStyle.CONTINUOUS);
@@ -288,6 +287,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String roundedDelayAddressAbsolute = sheetTable.getRange("DelayRFICDD").getAddress(true, true);
 				String rfiMinusOrderAddressAbsolute = sheetTable.getRange("RFIOrderDate").getAddress(true, true);
 				String cddMinusOrderAddressAbsolute = sheetTable.getRange("CDDOrderdate").getAddress(true, true);
+				String supplierAddressAbsolute = sheetTable.getRange("Supplier").getAddress(true, true);
 				
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
@@ -357,7 +357,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				}
 				String lastCellAddress = sheetProject.getCell(rowPointer, 6).getAddress(false, false);
 				sheetProject.getRange("A3", lastCellAddress).getBorders().setLineStyle(LineStyle.CONTINUOUS);
-
+				String lastFilterAddress = sheetProject.getCell(rowPointer, 0).getAddress(false, false);
+				sheetProject.getRange("A3", lastFilterAddress).autoFilter(1);
+				
 				/*
 				 * Populates the "Delay"-sheet
 				 */
@@ -529,6 +531,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Populates the DelMill sheet
 				 */
 				rowPointer = 1;
+				int chartX = 0;
+				int chartY = 15;
 				
 				for(String mill : millSet){
 					
@@ -541,7 +545,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					accItemRow = rowPointer++;
 					accValueRow = rowPointer++;
 
-					columnPointer = 0;
+					columnPointer = 7;
 
 					//TODO: Add a percentage outside scope column
 					
@@ -553,7 +557,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetDelMill.getCell(valueRow, columnPointer).setValue(mill);
 					sheetDelMill.getCell(accUnitRow, columnPointer).setValue(mill);
 					sheetDelMill.getCell(accItemRow, columnPointer).setValue(mill);
-					sheetDelMill.getCell(accValueRow, columnPointer++).setValue(mill);
+					sheetDelMill.getCell(accValueRow, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+1, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+2, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+3, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+4, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+5, columnPointer).setValue(mill);
+					sheetDelMill.getCell(accValueRow+6, columnPointer++).setValue(mill);
 					
 					sheetDelMill.getCell(unitRow, columnPointer).setValue("No of Units");
 					sheetDelMill.getCell(itemRow, columnPointer).setValue("No of Items");
@@ -563,67 +573,82 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetDelMill.getCell(accValueRow, columnPointer++).setValue("Accumulated Value [%]");
 					sheetDelMill.getCell(headerRow, columnPointer).setValue("Total Value");
 					
+					unitFormula = "=SUMMERHVIS(Table!" + supplierAddressAbsolute + ";\"" +  mill + "\";Table!" + quantityAddressAbsolute + ")";
+					itemFormula = "=ANTALL.HVIS(Table!" + supplierAddressAbsolute + ";\"" +  mill + "\")";
+					totalValueFormula = "=SUMMERHVIS(Table!" + supplierAddressAbsolute + ";\"" +  mill + "\";Table!" + totalValueEurAddressAbsolute + ")";
+					
 					sheetDelMill.getCell(unitRow, columnPointer).setFormula(unitFormula);
 					sheetDelMill.getCell(itemRow, columnPointer).setFormula(itemFormula);
 					sheetDelMill.getCell(valueRow, columnPointer).setFormula(totalValueFormula);
 					
-					// TODO: MONDAY! Columns incremented "getCell(headerRow, 3)" the value to the right. Now switch all cases for "D3" to "D"+row and be prepared to fix errors
+					String endCol = "AY";
+					endCell = endCol + Integer.toString(headerRow+1);
+					sheetDelMill.getCell(headerRow, 10).setValue("Delay");
+					sheetDelMill.getRange("K" + Integer.toString(headerRow+1), endCell).fillRight();
+					sheetDelMill.getRange("J" + Integer.toString(headerRow+1), endCell).getInterior().setColor(Color.yellow);
 					
-					endCell = "AQ" + Integer.toString(headerRow);
-					sheetDelMill.getCell(headerRow, 3).setValue("Delay");
-					sheetDelMill.getRange("D" + Integer.toString(headerRow), endCell).fillRight();
-					sheetDelMill.getRange("C" + Integer.toString(headerRow), endCell).getInterior().setColor(Color.yellow);
+					endCell = endCol + Integer.toString(delayRow+1); 
+					sheetDelMill.getCell(delayRow, 10).setValue(-20);
+					sheetDelMill.getCell(delayRow, 11).setFormula("=K" + Integer.toString(delayRow+1) + "+1");
+					sheetDelMill.getRange("L" + Integer.toString(delayRow+1), endCell).fillRight(); 
 					
-					endCell = "AQ" + Integer.toString(delayRow); 
-					sheetDelMill.getCell(delayRow, 3).setValue(-20);
-					sheetDelMill.getCell(delayRow, 4).setFormula("=C" + Integer.toString(delayRow) + "1");
-					sheetDelMill.getRange("D3", endCell).fillRight(); 
+					endCell = endCol + Integer.toString(unitRow+1); 
+					unitFormula = "=SUMMER.HVIS.SETT(Table!" + quantityAddressAbsolute + ";Table!" + supplierAddressAbsolute + ";\"" + mill + "\";Table!" + roundedDelayAddressAbsolute + ";K" + Integer.toString(delayRow+1) + ")";
+					sheetDelMill.getCell(unitRow, 10).setFormula(unitFormula);
+					sheetDelMill.getRange("K" + Integer.toString(unitRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(unitRow); 
-					sheetDelMill.getCell(unitRow, 3).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) + ";Table!" + quantityAddressAbsolute +")" );
-					sheetDelMill.getRange("C4", endCell).fillRight();
+					endCell = endCol + Integer.toString(itemRow+1);
+					itemFormula = "=ANTALL.HVIS.SETT(Table!" + roundedDelayAddressAbsolute + ";K" + Integer.toString(delayRow+1) + ";Table!" + supplierAddressAbsolute + ";\"" + mill +"\")";
+					sheetDelMill.getCell(itemRow, 10).setFormula(itemFormula);
+					sheetDelMill.getRange("K" + Integer.toString(itemRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(itemRow); 
-					sheetDelMill.getCell(itemRow, 3).setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) +")" );
-					sheetDelMill.getRange("C5", endCell).fillRight();
+					endCell = endCol + Integer.toString(valueRow+1); 
+					totalValueFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueEurAddressAbsolute + ";Table!" + supplierAddressAbsolute + ";\"" + mill + "\";Table!" + roundedDelayAddressAbsolute + ";K" + Integer.toString(delayRow+1) + ")";
+					sheetDelMill.getCell(valueRow, 10).setFormula(totalValueFormula);
+					sheetDelMill.getRange("K" + Integer.toString(valueRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(valueRow); 
-					sheetDelMill.getCell(valueRow, 3).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C" + Integer.toString(delayRow) + ";Table!" + totalValueEurAddressAbsolute +")" );
-					sheetDelMill.getRange("C6", endCell).fillRight();
+					endCell = endCol + Integer.toString(accUnitRow+1);
+					sheetDelMill.getCell(accUnitRow, 10).setFormula("=K" + Integer.toString(unitRow+1) + "/J" + Integer.toString(unitRow+1));
+					sheetDelMill.getCell(accUnitRow, 11).setFormula("=(L" + Integer.toString(unitRow+1) + "/$J$" + Integer.toString(unitRow+1) +")+K" + Integer.toString(accUnitRow+1));
+					sheetDelMill.getRange("L" + Integer.toString(accUnitRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(accUnitRow);
-					sheetDelMill.getCell(accUnitRow, 3).setFormula("=C4/B4");
-					sheetDelMill.getCell(accUnitRow, 4).setFormula("=(D4/$B$4)+C7");
-					sheetDelMill.getRange("D7", endCell).fillRight();
+					endCell = endCol + Integer.toString(accItemRow+1);
+					sheetDelMill.getCell(accItemRow, 10).setFormula("=K" + Integer.toString(itemRow+1) + "/J" + Integer.toString(itemRow+1));
+					sheetDelMill.getCell(accItemRow, 11).setFormula("=(L" + Integer.toString(itemRow+1) + "/$J$" + Integer.toString(itemRow+1) + ")+K" + Integer.toString(accItemRow+1));
+					sheetDelMill.getRange("L" + Integer.toString(accItemRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(accItemRow);
-					sheetDelMill.getCell(accItemRow, 3).setFormula("=C5/B5");
-					sheetDelMill.getCell(accItemRow, 4).setFormula("=(D5/$B$5)+C8");
-					sheetDelMill.getRange("D8", endCell).fillRight();
+					endCell = endCol + Integer.toString(accValueRow+1);
+					sheetDelMill.getCell(accValueRow, 10).setFormula("=K" + Integer.toString(valueRow+1) + "/J" + Integer.toString(valueRow+1));
+					sheetDelMill.getCell(accValueRow, 11).setFormula("=(L" + Integer.toString(valueRow+1) + "/$J$" + Integer.toString(valueRow+1) + ")+K" + Integer.toString(accValueRow+1));
+					sheetDelMill.getRange("L" + Integer.toString(accValueRow+1), endCell).fillRight();
 					
-					endCell = "AQ" + Integer.toString(accValueRow);
-					sheetDelMill.getCell(accValueRow, 3).setFormula("=C6/B6");
-					sheetDelMill.getCell(accValueRow, 4).setFormula("=(D6/$B$6)+C9");
-					sheetDelMill.getRange("D9", endCell).fillRight();
-					
-					sheetDelMill.getRange("B7", endCell).setNumberFormat("0,00 %");
-					sheetDelMill.getRange("A2", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
+					sheetDelMill.getRange("J" + Integer.toString(accUnitRow+1), endCell).setNumberFormat("0,00 %");
+					sheetDelMill.getRange("H" + Integer.toString(headerRow+1), endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
 					
 					//TODO: Name x-axis "[Weeks]"
 					
-//					ChartObject delMillChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250); // Charts exists within chart objects, which in turn sets the size and location
-//					Chart delMillChart = delMillChartObject.getChart();
-//					delMillChart.setChartType(ChartType.LINE);
-//					delMillChart.setSourceData(sheetDelay.getRange("C7", endCell));
-//					delMillChart.getAxis(AxisType.CATEGORY).setHasMajorGridlines(true); // X-axis = Category, Y-axis = Value
-//					delMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelay.getRange("C3:AQ3"));
-//					delMillChart.getAxis(AxisType.CATEGORY).setAxisBetweenCategories(false);
-//					delMillChart.getAxis(AxisType.CATEGORY).setTickLabelSpacing(2);
-//					delMillChart.getSeries(0).setName("Accumulated No of Units");
-//					delMillChart.getSeries(1).setName("Accumulated No of Items");
-//					delMillChart.getSeries(2).setName("Accumulated Value");
+					ChartObject delMillChartObject = sheetDelMill.getChartObjects().add(chartX, chartY, 480, 210); // Charts exists within chart objects, which in turn sets the size and location
+					Chart delMillChart = delMillChartObject.getChart();
+					delMillChart.setChartType(ChartType.LINE);
+					delMillChart.setSourceData(sheetDelMill.getRange("K" + Integer.toString(accUnitRow+1), endCell));
+					delMillChart.getAxis(AxisType.CATEGORY).setHasMajorGridlines(true); // X-axis = Category, Y-axis = Value
+					delMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelMill.getRange("K" + Integer.toString(delayRow+1) + ":" + endCol + Integer.toString(delayRow+1)));
+					delMillChart.getAxis(AxisType.CATEGORY).setAxisBetweenCategories(false);
+					delMillChart.getAxis(AxisType.CATEGORY).setTickLabelSpacing(2);
+					delMillChart.getAxis(AxisType.CATEGORY).setHasTitle(true);
+					delMillChart.getAxis(AxisType.CATEGORY).getAxisTitle().setText("Weeks");
+					delMillChart.getSeries(0).setName("Accumulated No of Units");
+					delMillChart.getSeries(1).setName("Accumulated No of Items");
+					delMillChart.getSeries(2).setName("Accumulated Value");
+					delMillChart.setHasTitle(true);
+					delMillChart.getChartTitle().setText(mill);
 					rowPointer+=10;
+					chartY+=270;
 				}
+				
+				sheetDelMill.getRange("H1").setValue("Filter");
+				sheetDelMill.getRange("H1").getInterior().setColor(Color.green);
+				sheetDelMill.getRange("H1", "H"+rowPointer).autoFilter(1);
 				
 				//				
 				//				
