@@ -38,6 +38,7 @@ public class DatabaseSearch {
 				ResultSet rs = st.executeQuery("select assoc_id, assoc_name"
 						+ " from Assoc customerList"
 						+ " where assoc_id like '" + ID + "%'"
+						+ " and assoc_id<20000"
 						+ " and assoc_name like '" + name + "%'");
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getInt(1), rs.getString(2).trim()));
