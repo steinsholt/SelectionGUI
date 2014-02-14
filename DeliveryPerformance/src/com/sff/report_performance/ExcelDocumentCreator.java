@@ -39,6 +39,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private Workbook workbook;
 	private Worksheet sheetTable;
 	private Worksheet sheetProject;
+	private Worksheet sheetMill;
 	private Worksheet sheetDelay;
 	private Worksheet sheetDelPerformance;
 	private Worksheet sheetDelMill;
@@ -60,9 +61,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			workbook = excel.getWorkbooks().add();
 
 			// TODO: Iterate over the worksheets and remove Ark1, Ark2 and Ark3
-			//			for(Object worksheet : workbook.getWorksheets()){
-			//				if(!(((Worksheet) worksheet)).getName().equals("Exchange")) (((Worksheet) worksheet)).delete();
-			//			}
 
 			sheetDelMill = new Worksheet(workbook);
 			sheetDelMill.setName("DelMill");
@@ -70,6 +68,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetDelPerformance.setName("DelPerformance");
 			sheetDelay = new Worksheet(workbook);
 			sheetDelay.setName("Delay");
+			sheetMill = new Worksheet(workbook);
+			sheetMill.setName("Mill");
 			sheetProject = new Worksheet(workbook);
 			sheetProject.setName("Project");
 			sheetTable = new Worksheet(workbook);
@@ -86,6 +86,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		sheetDelay.getColumns().autoFit();
 		sheetDelPerformance.getColumns().autoFit();
 		sheetDelMill.getColumns().autoFit();
+		sheetMill.getColumns().autoFit();
 
 		excel.setVisible(true);
 	}
@@ -124,7 +125,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
-						cell = sheetTable.getCell(dataSet.getRow(), column);
+						cell = sheetTable.getCell(dataSet.getRow()+1, column);
 						if(dataSet.getColumn(column).equals(dataSet.getColumn("Supplier"))){
 							millSet.add(dataSet.getString(column).trim());
 						}
@@ -157,22 +158,22 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					}
 					dataSet.next();
 				}
-				
+
 				//TODO: Solution to the slow load times
-//				double[][] m = new double[10][1];
-//
-//				for(int k=0; k<10; k++) {
-//					for(int j=0; j<1; j++) {
-//						m[k][j] = k*j;
-//					}
-//				}
-//				long startTime = System.nanoTime();
-//				sheetDelPerformance.getRange("A40:J50").setValues(m);
-//
-//				long endTime = System.nanoTime();
-//				long duration = endTime - startTime;
-//				System.out.println(duration);
-				
+				//				double[][] m = new double[10][1];
+				//
+				//				for(int k=0; k<10; k++) {
+				//					for(int j=0; j<1; j++) {
+				//						m[k][j] = k*j;
+				//					}
+				//				}
+				//				long startTime = System.nanoTime();
+				//				sheetDelPerformance.getRange("A40:J50").setValues(m);
+				//
+				//				long endTime = System.nanoTime();
+				//				long duration = endTime - startTime;
+				//				System.out.println(duration);
+
 				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
 				dataSet.close();
 
@@ -692,51 +693,98 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelMill.getRange("H1").getInterior().setColor(Color.green);
 				sheetDelMill.getRange("H1", "H"+rowPointer).autoFilter(1);
 
-				//				
-				//				
-				//				// Create a column for each unique rounded delay value
-				//				
-				//				
-				//				/*
-				//				 * Creates and populates the "Mill"-sheet
-				//				 */
-				////				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
-				////				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
-				////				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
-				////				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
-				////				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
-				////				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
-				////				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
-				////				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
-				////
-				////				setProgress(0);
-				////				processed = 0;
-				////				int columnCount = customerSet.size();
-				////
-				////				int column = 2;
-				////				for(String customer : customerSet){
-				////
-				////					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
-				////					sheetMill.getRow(3).createCell(column).setCellValue(customer);
-				////					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
-				////					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
-				////					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
-				////					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
-				////					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
-				////					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
-				////
-				////					column++;
-				////
-				////					setProgress(100 * ++processed / columnCount);
-				////					progressField.setText("Creating Mill Graph: " + processed);
-				////				}
-				////
-				////				ExcelHelper.autoSizeColumns(sheetMill);
+
+				/*
+				 * Creates and populates the "Mill"-sheet
+				 */
+				
+				String firstCellMill = "A1";
+				excel.getWorksheets().getItem("Mill").activate();
+				sheetMill.getRange(firstCellMill).activate();
+				
+				Range currentCellMill = excel.getActiveCell();
+				currentCellMill.setValue("Mill");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("Average Required Delivery");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("Average Actual Delivery > CDD"); // ?????????
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("Average Actual Delivery");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("No of Units");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("No of Items");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setValue("Value");
+				
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellMill = excel.getActiveCell();
+				currentCellMill.setValue("Total");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=AVRUND(GJENNOMSNITT(Table!" + cddMinusOrderAddressAbsolute + ");1)");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=AVRUND(GJENNOMSNITT(Table!" + delayAddressAbsolute + ");1)");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=AVRUND(GJENNOMSNITT(Table!" + rfiMinusOrderAddressAbsolute + ");1)");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=SUMMER(Table!" + quantityRangeAddressAbsolute + ")");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=ANTALL(Table!" + quantityRangeAddressAbsolute + ")");
+				currentCellMill = currentCellMill.getNext();
+				currentCellMill.setFormula("=SUMMER(Table!" + totalValueEurAddressAbsolute + ")");
+				
+				for(String mill : millSet){
+					excel.getActiveCell().getOffset(1).activate();
+					currentCellMill = excel.getActiveCell();
+					currentCellMill.setValue(mill);
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=AVRUND(GJENNOMSNITTHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + cddMinusOrderAddressAbsolute + ");1)");
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=AVRUND(GJENNOMSNITTHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + delayAddressAbsolute + ");1)");
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=AVRUND(GJENNOMSNITTHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + rfiMinusOrderAddressAbsolute + ");1)");
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + quantityRangeAddressAbsolute + ")");
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=ANTALL.HVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\"" + ")");
+					currentCellMill = currentCellMill.getNext();
+					currentCellMill.setFormula("=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + totalValueEurAddressAbsolute + ")");
+				}
+				
+				sheetMill.getListObjects().add();
+				
+				// "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + totalValueEurAddressAbsolute + ")";
+				//				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
+				//				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
+				//				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
+				//				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
+				//				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
+				//				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
+				//				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
+				//				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
 				//
-				//				// TODO: Create a helper class that takes in a sheet and sets font size in all cells
+				//				setProgress(0);
+				//				processed = 0;
+				//				int columnCount = customerSet.size();
 				//
-				////				ExcelHelper.autoSizeColumns(sheetDelay);
-				////				ExcelHelper.autoSizeColumns(sheetProject);
+				//				int column = 2;
+				//				for(String customer : customerSet){
+				//
+				//					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
+				//					sheetMill.getRow(3).createCell(column).setCellValue(customer);
+				//					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
+				//					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
+				//					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
+				//					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
+				//					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
+				//					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
+				//
+				//					column++;
+				//
+				//					setProgress(100 * ++processed / columnCount);
+				//					progressField.setText("Creating Mill Graph: " + processed);
+				//				}
+				//
 
 				publishedOutput.setText("Opening Excel Document");
 				progressField.setText("");
