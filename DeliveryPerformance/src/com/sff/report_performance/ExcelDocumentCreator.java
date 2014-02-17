@@ -3,7 +3,6 @@ package com.sff.report_performance;
 import java.awt.Color;
 import java.io.File;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +23,6 @@ import com.moyosoft.connector.ms.excel.ChartType;
 import com.moyosoft.connector.ms.excel.Direction;
 import com.moyosoft.connector.ms.excel.Excel;
 import com.moyosoft.connector.ms.excel.LineStyle;
-import com.moyosoft.connector.ms.excel.ListObject;
 import com.moyosoft.connector.ms.excel.Range;
 import com.moyosoft.connector.ms.excel.Workbook;
 import com.moyosoft.connector.ms.excel.Worksheet;
@@ -43,6 +41,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private Worksheet sheetDelay;
 	private Worksheet sheetDelPerformance;
 	private Worksheet sheetDelMill;
+	private Worksheet sheetItemMill;
+	private Worksheet sheetValueMill;
+	private Worksheet sheetNoUnits;
 	private List<List> customerData;
 	private List<List> projectData;
 	private List<List> statusData;
@@ -61,7 +62,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			workbook = excel.getWorkbooks().add();
 
 			// TODO: Iterate over the worksheets and remove Ark1, Ark2 and Ark3
-
+			sheetNoUnits = new Worksheet(workbook);
+			sheetNoUnits.setName("NoUnits");
+			sheetValueMill = new Worksheet(workbook);
+			sheetValueMill.setName("ValueMill");
+			sheetItemMill = new Worksheet(workbook);
+			sheetItemMill.setName("ItemMill");
 			sheetDelMill = new Worksheet(workbook);
 			sheetDelMill.setName("DelMill");
 			sheetDelPerformance = new Worksheet(workbook);
@@ -87,7 +93,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		sheetDelPerformance.getColumns().autoFit();
 		sheetDelMill.getColumns().autoFit();
 		sheetMill.getColumns().autoFit();
-
+		excel.getWorksheets().getItem("Table").activate();
+		
 		excel.setVisible(true);
 	}
 
@@ -751,41 +758,85 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					currentCellMill.setFormula("=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + totalValueEurAddressAbsolute + ")");
 				}
 				
+				String millRangeEnd = sheetMill.getRange("A1").getEnd(Direction.DOWN).getAddress(false, false);
+				String millRange = "A3:" + millRangeEnd;
+				
+				String unitRangeEnd = sheetMill.getRange("E1").getEnd(Direction.DOWN).getAddress(false, false);
+				String unitRange = "E3:" + unitRangeEnd;
+				
+				String itemRangeEnd = sheetMill.getRange("F1").getEnd(Direction.DOWN).getAddress(false, false);
+				String itemRange = "F3:" + itemRangeEnd;
+				
+				String valueRangeEnd = sheetMill.getRange("G1").getEnd(Direction.DOWN).getAddress(false, false);
+				String valueRange = "G3:" + valueRangeEnd;
+				
+				
 				sheetMill.getListObjects().add();
 				
-				// "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + totalValueEurAddressAbsolute + ")";
-				//				sheetMill.createRow(2).createCell(0).setCellValue("Mill");
-				//				sheetMill.createRow(3).createCell(0).setCellValue("Name:");
-				//				sheetMill.createRow(4).createCell(0).setCellValue("Average Required Delivery [Weeks]:");
-				//				sheetMill.createRow(5).createCell(0).setCellValue("Average Actual Delivery > CDD [Weeks]:");
-				//				sheetMill.createRow(6).createCell(0).setCellValue("Average Actual Delivery [Weeks]:");
-				//				sheetMill.createRow(7).createCell(0).setCellValue("No of Units:");
-				//				sheetMill.createRow(8).createCell(0).setCellValue("No of Items:");
-				//				sheetMill.createRow(9).createCell(0).setCellValue("Value:");
-				//
-				//				setProgress(0);
-				//				processed = 0;
-				//				int columnCount = customerSet.size();
-				//
-				//				int column = 2;
-				//				for(String customer : customerSet){
-				//
-				//					sheetMill.getRow(2).createCell(column).setCellValue("Mill");
-				//					sheetMill.getRow(3).createCell(column).setCellValue(customer);
-				//					sheetMill.getRow(4).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$Y$2:$Y$" + lastRow + ")");
-				//					sheetMill.getRow(5).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$W$2:$W$" + lastRow + ")");
-				//					sheetMill.getRow(6).createCell(column).setCellFormula("AVERAGEIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$X$2:$X$" + lastRow + ")");
-				//					sheetMill.getRow(7).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$K$2:$K$" + lastRow + ")");
-				//					sheetMill.getRow(8).createCell(column).setCellFormula("COUNTIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\""  + ")");
-				//					sheetMill.getRow(9).createCell(column).setCellFormula("SUMIF(Table!$B$2:$B$" + lastRow + ",\"" + customer + "\","  + "Table!$U$2:$U$" + lastRow + ")");
-				//
-				//					column++;
-				//
-				//					setProgress(100 * ++processed / columnCount);
-				//					progressField.setText("Creating Mill Graph: " + processed);
-				//				}
-				//
-
+				/*
+				 * Item Mill Chart Sheet
+				 */
+				
+				ChartObject itemMillChartObject = sheetItemMill.getChartObjects().add(20, 20, 1000, 600);
+				Chart itemMillChart = itemMillChartObject.getChart();
+				itemMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
+				itemMillChart.setSourceData(sheetMill.getRange(itemRange));
+				itemMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
+				itemMillChart.getSeries(0).setHasDataLabels(true);
+				itemMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
+				itemMillChart.getSeries(0).getDataLabels().setShowValue(false);
+				itemMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
+				itemMillChart.getSeries(0).setHasLeaderLines(true);
+				itemMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
+				itemMillChart.getPie3DGroup().setHas3DShading(true);
+				itemMillChart.setElevation(60);
+				itemMillChart.setRotation(60);
+				itemMillChart.setHasLegend(false);
+				
+				/*
+				 * Unit Mill Chart Sheet
+				 */
+				
+				ChartObject unitMillChartObject = sheetNoUnits.getChartObjects().add(20, 20, 1000, 600);
+				Chart unitMillChart = unitMillChartObject.getChart();
+				unitMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
+				unitMillChart.setSourceData(sheetMill.getRange(unitRange));
+				unitMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
+				unitMillChart.getSeries(0).setHasDataLabels(true);
+				unitMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
+				unitMillChart.getSeries(0).getDataLabels().setShowValue(false);
+				unitMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
+				unitMillChart.getSeries(0).setHasLeaderLines(true);
+				unitMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
+				unitMillChart.getPie3DGroup().setHas3DShading(true);
+				unitMillChart.setElevation(60);
+				unitMillChart.setRotation(60);
+				unitMillChart.setHasLegend(false);
+				
+				/*
+				 * Value mill Chart sheet
+				 */
+				
+				ChartObject valueMillChartObject = sheetValueMill.getChartObjects().add(20, 20, 1000, 600);
+				Chart valueMillChart = valueMillChartObject.getChart();
+				valueMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
+				valueMillChart.setSourceData(sheetMill.getRange(valueRange));
+				valueMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
+				valueMillChart.getSeries(0).setHasDataLabels(true);
+				valueMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
+				valueMillChart.getSeries(0).getDataLabels().setShowValue(false);
+				valueMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
+				valueMillChart.getSeries(0).setHasLeaderLines(true);
+				valueMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
+				valueMillChart.getPie3DGroup().setHas3DShading(true);
+				valueMillChart.setElevation(60);
+				valueMillChart.setRotation(60);
+				valueMillChart.setHasLegend(false);
+				
+				/*
+				 * Open excel and close DB connection
+				 */
+				
 				publishedOutput.setText("Opening Excel Document");
 				progressField.setText("");
 				saveWorkbook();
@@ -806,53 +857,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		 * The base statement is used no matter the user selection
 		 */
 		StringBuilder query = new StringBuilder(5000);
-		String basicStatement = "select \"Project\" = Project.pr_name,"
-				+ " \"Client\" = customerList.assoc_name,"
-				+ " \"Client_Ref.\" = Tr_hdr.assoc_ref,"
-				+ " \"Order_Nr.\" = Tr_hdr.tr_no, "
-				+ " \"Order_Registration_Date\" = convert(varchar(20), Tr_hdr.reg_date, 104),"		   
-				+ " \"Item_nr.\" = clientItemList.item_no,"
-				+ " \"Client_Art_code\" = clientItemList.local_id,"
-				+ " \"Vendor_nr.\" = clientItemList.vnd_no, "
-				+ " \"Description\" = clientItemList.description,"
-				+ " \"Supplier\" = supplierList.assoc_name ,"
-				+ " \"QTY\" = clientItemList.qnt,"
-				+ " \"Unit_Price\" = clientItemList.price,"
-				+ " \"currency\" = Exchange.curr_name,"
-				+ " \"CDD\" = convert(varchar(20), clientItemList.contract_date, 104),"
-				+ " \"EDD\" = convert(varchar(20), clientItemList.estimate_date, 104),"
-				+ " \"RFI\" = convert(varchar(20), clientItemList.rfi_date, 104)," 
-				+ " \"CCD\" = convert(varchar(20), supplierItemList.contract_date, 104),"
-				+ " \"ECD\" = convert(varchar(20), supplierItemList.estimate_date, 104),"
-				+ " \"Item_Status\" = Tr_dtl_status.tr_dtl_stname,"
-				+ " \"Total_Price\" = clientItemList.qnt*clientItemList.price"                     //TODO: This should be an excel formula in case of manual changes
-				+ " from vendor.dbo.Tr_hdr," 
-				+ " vendor.dbo.Tr_dtl clientItemList left join vendor.dbo.Tr_dtl supplierItemList" 
-				+ " on (clientItemList.vnd_no = supplierItemList.vnd_no"           
-				+ " and clientItemList.item_no = supplierItemList.item_no"           
-				+ " and clientItemList.suppl_tr_id = supplierItemList.tr_no" 
-				+ " and supplierItemList.tr_dtl_status>0" 
-				+ " and supplierItemList.vnd_no > 1"
-				+ " )," 
-				+ " vendor.dbo.Assoc customerList," 
-				+ " vendor.dbo.Assoc supplierList," 
-				+ " vendor.dbo.Project," 
-				+ " vendor.dbo.Exchange," 
-				+ " vendor.dbo.Tr_dtl_status"
-				+ " where Tr_hdr.tr_status = 2"
-				+ " and Tr_hdr.tr_no = clientItemList.tr_no" 
-				+ " and Tr_hdr.assoc_id = customerList.assoc_id"
-				+ " and Tr_hdr.active_id = Project.project_id"
-				+ " and clientItemList.suppl_id = supplierList.assoc_id" 
-				+ " and clientItemList.currency_id = Exchange.currency_id"
-				+ " and clientItemList.tr_dtl_status = Tr_dtl_status.tr_dtl_status";
-
-		/*
-		 * If the user have NOT selected all items in the list the method will
-		 * specify the search to only include the selected items.
-		 */
-		//	query.append(basicStatement);
-
 
 		if(!allCustSelected){
 			query.append(" and customerList.assoc_id in (");
