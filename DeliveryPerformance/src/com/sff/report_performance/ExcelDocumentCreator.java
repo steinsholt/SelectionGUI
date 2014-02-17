@@ -770,68 +770,25 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String valueRangeEnd = sheetMill.getRange("G1").getEnd(Direction.DOWN).getAddress(false, false);
 				String valueRange = "G3:" + valueRangeEnd;
 				
-				
 				sheetMill.getListObjects().add();
 				
 				/*
 				 * Item Mill Chart Sheet
 				 */
 				
-				ChartObject itemMillChartObject = sheetItemMill.getChartObjects().add(20, 20, 1000, 600);
-				Chart itemMillChart = itemMillChartObject.getChart();
-				itemMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
-				itemMillChart.setSourceData(sheetMill.getRange(itemRange));
-				itemMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
-				itemMillChart.getSeries(0).setHasDataLabels(true);
-				itemMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
-				itemMillChart.getSeries(0).getDataLabels().setShowValue(false);
-				itemMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
-				itemMillChart.getSeries(0).setHasLeaderLines(true);
-				itemMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
-				itemMillChart.getPie3DGroup().setHas3DShading(true);
-				itemMillChart.setElevation(60);
-				itemMillChart.setRotation(60);
-				itemMillChart.setHasLegend(false);
+				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Unit Mill Chart Sheet
 				 */
 				
-				ChartObject unitMillChartObject = sheetNoUnits.getChartObjects().add(20, 20, 1000, 600);
-				Chart unitMillChart = unitMillChartObject.getChart();
-				unitMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
-				unitMillChart.setSourceData(sheetMill.getRange(unitRange));
-				unitMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
-				unitMillChart.getSeries(0).setHasDataLabels(true);
-				unitMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
-				unitMillChart.getSeries(0).getDataLabels().setShowValue(false);
-				unitMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
-				unitMillChart.getSeries(0).setHasLeaderLines(true);
-				unitMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
-				unitMillChart.getPie3DGroup().setHas3DShading(true);
-				unitMillChart.setElevation(60);
-				unitMillChart.setRotation(60);
-				unitMillChart.setHasLegend(false);
+				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Value mill Chart sheet
 				 */
 				
-				ChartObject valueMillChartObject = sheetValueMill.getChartObjects().add(20, 20, 1000, 600);
-				Chart valueMillChart = valueMillChartObject.getChart();
-				valueMillChart.setChartType(ChartType.PIE_EXPLODED_3D);
-				valueMillChart.setSourceData(sheetMill.getRange(valueRange));
-				valueMillChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetMill.getRange(millRange));
-				valueMillChart.getSeries(0).setHasDataLabels(true);
-				valueMillChart.getSeries(0).getDataLabels().setShowPercentage(true);
-				valueMillChart.getSeries(0).getDataLabels().setShowValue(false);
-				valueMillChart.getSeries(0).getDataLabels().setShowCategoryName(true);
-				valueMillChart.getSeries(0).setHasLeaderLines(true);
-				valueMillChart.getSeries(0).getLeaderLines().getBorder().setColor(Color.black);
-				valueMillChart.getPie3DGroup().setHas3DShading(true);
-				valueMillChart.setElevation(60);
-				valueMillChart.setRotation(60);
-				valueMillChart.setHasLegend(false);
+				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Open excel and close DB connection
