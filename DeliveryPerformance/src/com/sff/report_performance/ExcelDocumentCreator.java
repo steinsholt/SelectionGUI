@@ -297,7 +297,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String rfiMinusOrderAddressAbsolute = sheetTable.getRange("RFIOrderDate").getAddress(true, true);
 				String cddMinusOrderAddressAbsolute = sheetTable.getRange("CDDOrderdate").getAddress(true, true);
 
-				// TODO: Do this properly with range names, getNext() etc
 				excel.getWorksheets().getItem("Project").activate();
 				String firstCell = "A1";
 				sheetProject.getRange(firstCell).activate();
@@ -327,7 +326,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					String rightHeaderEnd = excel.getActiveCell().getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
 					sheetProject.getRange(leftHeaderEnd, rightHeaderEnd).getInterior().setColor(Color.yellow);
 
-					// TODO: Name start and end ranges and use proper names
 					for(String currency : currencySet){
 						excel.getActiveCell().getOffset(1).activate();
 						Range currentCell = excel.getActiveCell();
@@ -367,36 +365,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					currentCell.setFormula("=SUMMER(" + currentCell.getOffset(-currencySet.size()).getAddress() + ":" + currentCell.getOffset(-1).getAddress() + ")");
 					excel.getActiveCell().getOffset(1).activate();
 
-					currentCell = excel.getActiveCell();
-					currentCell.setValue(project);
-					currentCell = currentCell.getNext();
-					currentCell.setValue("Delivered to FA:");
-					excel.getActiveCell().getOffset(1).activate();
-
-					currentCell = excel.getActiveCell();
-					currentCell.setValue(project);
-					currentCell = currentCell.getNext();
-					currentCell.setValue("Improved Deliveries:");
-					excel.getActiveCell().getOffset(1).activate();
-
-					currentCell = excel.getActiveCell();
-					currentCell.setValue(project);
-					currentCell = currentCell.getNext();
-					currentCell.setValue("Value of Improved Deliveries as FA:");
-					excel.getActiveCell().getOffset(1).activate();
-
-					currentCell = excel.getActiveCell();
-					currentCell.setValue(project);
-					currentCell = currentCell.getNext();
-					currentCell.setValue("Acceleration Cost:");
-					excel.getActiveCell().getOffset(1).activate();
-
-					currentCell = excel.getActiveCell();
-					currentCell.setValue(project);
-					currentCell = currentCell.getNext();
-					currentCell.setValue("Items Delivered Outside Scope:");
-					excel.getActiveCell().getOffset(1).activate();
-
 				}
 				sheetProject.getRange(firstCell, excel.getActiveCell().getAddress()).autoFilter(1);
 				excel.getActiveCell().getOffset(-1, 6).activate();
@@ -406,6 +374,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Populates the "Delay"-sheet
 				 */
 
+				excel.getWorksheets().getItem("Delay").activate();
+				sheetDelay.getRange(firstCell).activate();
+				
 				rowPointer = 1;
 				int headerRow = rowPointer++;
 				int delayRow = rowPointer++;
@@ -594,8 +565,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					accValueRow = rowPointer++;
 
 					columnPointer = 7;
-
-					//TODO: Add a percentage outside scope column
 
 					if(mill.length()==0) mill = " ";
 					sheetDelMill.getCell(headerRow, columnPointer).setValue(mill);
