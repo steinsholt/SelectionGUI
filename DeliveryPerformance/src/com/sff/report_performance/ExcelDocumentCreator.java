@@ -10,6 +10,7 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import com.borland.dx.dataset.DataRow;
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
@@ -143,7 +144,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 							currencySet.add(dataSet.getString(column).trim());
 						}
 						try{ 
-							//TODO: Inserting into range takes a long time, try to use arrays
+							//TODO: Inserting into range takes a long time, try to use arrays. Convert all formats to String, insert with 2d array, set column formats?
 							s = dataSet.getString(column);
 
 							if(s.length()>0)cell.setValue(s.trim());
@@ -376,91 +377,128 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				excel.getWorksheets().getItem("Delay").activate();
 				sheetDelay.getRange(firstCell).activate();
+				Range currentCellDelay = excel.getActiveCell();
+				String previousCellAddress = "";
+				String endCellAddress = "";
 				
-				rowPointer = 1;
-				int headerRow = rowPointer++;
-				int delayRow = rowPointer++;
-				int unitRow = rowPointer++;
-				int itemRow = rowPointer++;
-				int valueRow = rowPointer++;
-				int accUnitRow = rowPointer++;
-				int accItemRow = rowPointer++;
-				int accValueRow = rowPointer++;
-
-				int columnPointer = 0;
-
-				sheetDelay.getCell(unitRow, columnPointer).setValue("No of Units");
-				sheetDelay.getCell(itemRow, columnPointer).setValue("No of Items");
-				sheetDelay.getCell(valueRow, columnPointer).setValue("Value [EUR]");
-				sheetDelay.getCell(accUnitRow, columnPointer).setValue("Accumulated No of Units [%]");
-				sheetDelay.getCell(accItemRow, columnPointer).setValue("Accumulated No of Items [%]");
-				sheetDelay.getCell(accValueRow, columnPointer++).setValue("Accumulated Value [%]");
-				sheetDelay.getCell(headerRow, columnPointer).setValue("Total Value");
-
-				String unitFormula = "=SUMMER(Table!" + quantityRangeAddress + ")";
-				String itemFormula = "=ANTALL(Table!" + quantityRangeAddress + ")";
-				String totalValueFormula = "=SUMMER(Table!" + totalValueEurAddress + ")";
-
-				sheetDelay.getCell(unitRow, columnPointer).setFormula(unitFormula);
-				sheetDelay.getCell(itemRow, columnPointer).setFormula(itemFormula);
-				sheetDelay.getCell(valueRow, columnPointer).setFormula(totalValueFormula);
-
-				rowPointer = 2;
-				String endCell = "AQ" + Integer.toString(rowPointer++);
-				sheetDelay.getCell(headerRow, 2).setValue("Delay");
-				sheetDelay.getRange("C2", endCell).fillRight();
-				sheetDelay.getRange("B2", endCell).getInterior().setColor(Color.yellow);
-
-				endCell = "AQ" + Integer.toString(rowPointer++); 
-				sheetDelay.getCell(delayRow, 2).setValue(-20);
-				sheetDelay.getCell(delayRow, 3).setFormula("=C3 + 1");
-				sheetDelay.getRange("D3", endCell).fillRight(); 
-
-				endCell = "AQ" + Integer.toString(rowPointer++); 
-				sheetDelay.getCell(unitRow, 2).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C3;Table!" + quantityRangeAddressAbsolute +")" );
-				sheetDelay.getRange("C4", endCell).fillRight();
-
-				endCell = "AQ" + Integer.toString(rowPointer++); 
-				sheetDelay.getCell(itemRow, 2).setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C3" +")" );
-				sheetDelay.getRange("C5", endCell).fillRight();
-
-				endCell = "AQ" + Integer.toString(rowPointer++); 
-				sheetDelay.getCell(valueRow, 2).setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C3;Table!" + totalValueEurAddressAbsolute +")" );
-				sheetDelay.getRange("C6", endCell).fillRight();
-
-				endCell = "AQ" + Integer.toString(rowPointer++);
-				sheetDelay.getCell(accUnitRow, 1).setFormula("=" + endCell);
-				sheetDelay.getCell(accUnitRow, 2).setFormula("=C4/B4");
-				sheetDelay.getCell(accUnitRow, 3).setFormula("=(D4/$B$4)+C7");
-				sheetDelay.getRange("D7", endCell).fillRight();
-
-				endCell = "AQ" + Integer.toString(rowPointer++);
-				sheetDelay.getCell(accItemRow, 1).setFormula("=" + endCell);
-				sheetDelay.getCell(accItemRow, 2).setFormula("=C5/B5");
-				sheetDelay.getCell(accItemRow, 3).setFormula("=(D5/$B$5)+C8");
-				sheetDelay.getRange("D8", endCell).fillRight();
-
-				endCell = "AQ" + Integer.toString(rowPointer++);
-				sheetDelay.getCell(accValueRow, 1).setFormula("=" + endCell);
-				sheetDelay.getCell(accValueRow, 2).setFormula("=C6/B6");
-				sheetDelay.getCell(accValueRow, 3).setFormula("=(D6/$B$6)+C9");
-				sheetDelay.getRange("D9", endCell).fillRight();
-
-				sheetDelay.getRange("B7", endCell).setNumberFormat("0,00 %");
-				sheetDelay.getRange("A2", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
-
+				int scopeRange = 40; // Creates a range of negative 20 to positive 20
+				
+				currentCellDelay.setValue(" ");
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setValue("Total");
+				currentCellDelay = currentCellDelay.getNext();
+				
+				// Creates a row of ascending integers
+				currentCellDelay.setValue(-scopeRange/2);
+				previousCellAddress = currentCellDelay.getAddress(false, false);
+				String categoryRangeAddress = currentCellDelay.resize(1, scopeRange+1).getAddress(false, false);
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=" + previousCellAddress + "+1");
+				currentCellDelay.resize(1, scopeRange).fillRight();
+				
+				// Creates the units row
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("No of Units");
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=SUMMER(Table!" + quantityRangeAddress + ")");
+				String totalNoUnitsAddress = currentCellDelay.getAddress();
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C1;Table!" + quantityRangeAddressAbsolute +")"); // TODO: Change from C2 to .offset()
+				currentCellDelay.resize(1, scopeRange+1).fillRight();
+				
+				// Creates the items row
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("No of Items");
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=ANTALL(Table!" + quantityRangeAddress + ")");
+				String totalNoItemsAddress = currentCellDelay.getAddress();
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C1" +")");
+				currentCellDelay.resize(1, scopeRange+1).fillRight();
+				
+				// Creates the value row
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("Value[EUR]");
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=SUMMER(Table!" + totalValueEurAddress + ")");
+				String totalValueAddress = currentCellDelay.getAddress();
+				currentCellDelay = currentCellDelay.getNext();
+				currentCellDelay.setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C1;Table!" + totalValueEurAddressAbsolute +")");
+				currentCellDelay.resize(1, scopeRange+1).fillRight();
+				
+				// Creates the row that calculates the accumulated number of units
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("Accumulated No of Units [%]");
+				currentCellDelay = currentCellDelay.getNext();
+				endCellAddress = currentCellDelay.getOffset(0, scopeRange).getAddress();
+				currentCellDelay.setFormula("=" + endCellAddress);
+				currentCellDelay.setNumberFormat("0,00 %");
+				currentCellDelay = currentCellDelay.getNext();
+				String noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress();				
+				currentCellDelay.setFormula("=" + noUnitsPerWeekAddress + "/" + totalNoUnitsAddress);		// Number of units per week divided by the total amount of units
+				previousCellAddress = currentCellDelay.getAddress(false, false);
+				currentCellDelay = currentCellDelay.getNext();
+				String chartStartAddress = currentCellDelay.getAddress(false, false);
+				noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress(false, false);
+				currentCellDelay.setFormula("=(" + noUnitsPerWeekAddress + "/" + totalNoUnitsAddress +")+" + previousCellAddress); // Accumulated no units
+				currentCellDelay.resize(1, scopeRange).fillRight();
+				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
+				
+				// Creates the row that calculates the accumulated number of items
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("Accumulated No of Items [%]");
+				currentCellDelay = currentCellDelay.getNext();
+				endCellAddress = currentCellDelay.getOffset(0, scopeRange).getAddress();
+				currentCellDelay.setFormula("=" + endCellAddress);
+				currentCellDelay.setNumberFormat("0,00 %");
+				currentCellDelay = currentCellDelay.getNext();
+				noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress();				
+				currentCellDelay.setFormula("=" + noUnitsPerWeekAddress + "/" + totalNoItemsAddress);		
+				previousCellAddress = currentCellDelay.getAddress(false, false);
+				currentCellDelay = currentCellDelay.getNext();
+				noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress(false, false);
+				currentCellDelay.setFormula("=(" + noUnitsPerWeekAddress + "/" + totalNoItemsAddress +")+" + previousCellAddress); 
+				currentCellDelay.resize(1, scopeRange).fillRight();
+				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
+				
+				// Creates the row that calculates the accumulated value
+				excel.getActiveCell().getOffset(1).activate();
+				currentCellDelay = excel.getActiveCell();
+				currentCellDelay.setValue("Accumulated Value [%]");
+				currentCellDelay = currentCellDelay.getNext();
+				endCellAddress = currentCellDelay.getOffset(0, scopeRange).getAddress();
+				currentCellDelay.setFormula("=" + endCellAddress);
+				currentCellDelay.setNumberFormat("0,00 %");
+				currentCellDelay = currentCellDelay.getNext();
+				noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress();				
+				currentCellDelay.setFormula("=" + noUnitsPerWeekAddress + "/" + totalValueAddress);		
+				previousCellAddress = currentCellDelay.getAddress(false, false);
+				currentCellDelay = currentCellDelay.getNext();
+				noUnitsPerWeekAddress = currentCellDelay.getOffset(-3).getAddress(false, false);
+				currentCellDelay.setFormula("=(" + noUnitsPerWeekAddress + "/" + totalValueAddress +")+" + previousCellAddress); 
+				currentCellDelay.resize(1, scopeRange).fillRight();
+				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
+				String chartEndAddress = currentCellDelay.getEnd(Direction.TO_RIGHT).getAddress(false, false);
+				
 				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250); // Charts exists within chart objects, which in turn sets the size and location
 				Chart delayChart = delayChartObject.getChart();
 				delayChart.setChartType(ChartType.LINE);
-				delayChart.setSourceData(sheetDelay.getRange("C7", endCell));
+				delayChart.setSourceData(sheetDelay.getRange(chartStartAddress, chartEndAddress));
 				delayChart.getAxis(AxisType.CATEGORY).setHasMajorGridlines(true); // X-axis = Category, Y-axis = Value
-				delayChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelay.getRange("C3:AQ3"));
+				delayChart.getAxis(AxisType.CATEGORY).setCategoryNames(sheetDelay.getRange(categoryRangeAddress));
 				delayChart.getAxis(AxisType.CATEGORY).setAxisBetweenCategories(false);
 				delayChart.getAxis(AxisType.CATEGORY).setTickLabelSpacing(2);
 				delayChart.getSeries(0).setName("Accumulated No of Units");
 				delayChart.getSeries(1).setName("Accumulated No of Items");
 				delayChart.getSeries(2).setName("Accumulated Value");
-
+				
+				sheetDelay.getListObjects().add().setShowAutoFilter(false);
+				
 				/*
 				 * Populates the DelPerformance sheet
 				 */
@@ -478,7 +516,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				rowPointer = 2;
 				sheetDelPerformance.getCell(cddHeaderRow, 2).setValue("CDD-Order Date");
-				endCell = "BC" + Integer.toString(rowPointer++);
+				String endCell = "BC" + Integer.toString(rowPointer++);
 				sheetDelPerformance.getRange("C2", endCell).fillRight();
 
 				sheetDelPerformance.getCell(cddWeekRow, 1).setValue("Total");
@@ -486,7 +524,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelPerformance.getCell(cddWeekRow, 3).setFormula("=C3+1");
 				endCell = "BC" + Integer.toString(rowPointer++);
 				sheetDelPerformance.getRange("D3", endCell).fillRight();
-				sheetDelPerformance.getRange("C2", endCell).getInterior().setColor(Color.yellow);
+				Color blue = new Color(0,128,255);
+				sheetDelPerformance.getRange("C2", endCell).getInterior().setColor(blue);
 
 				sheetDelPerformance.getCell(cddItemRow, 0).setValue("No of Contractual Items to Deliver");
 				sheetDelPerformance.getCell(cddItemRow, 1).setFormula("=ANTALL(Table!" + quantityRangeAddress + ")");
@@ -512,7 +551,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelPerformance.getCell(rfiWeekRow, 3).setFormula("=C9+1");
 				endCell = "BC" + Integer.toString(++rowPointer);
 				sheetDelPerformance.getRange("D9", endCell).fillRight();
-				sheetDelPerformance.getRange("C8", endCell).getInterior().setColor(Color.yellow);
+				sheetDelPerformance.getRange("C8", endCell).getInterior().setColor(Color.red);
 
 				sheetDelPerformance.getCell(rfiItemRow, 0).setValue("No of Actual Items Delivered");
 				sheetDelPerformance.getCell(rfiItemRow, 1).setFormula("=ANTALL(Table!" + quantityRangeAddress + ")");
@@ -555,16 +594,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				for(String mill : millSet){
 
-					headerRow = rowPointer++;
-					delayRow = rowPointer++;
-					unitRow = rowPointer++;
-					itemRow = rowPointer++;
-					valueRow = rowPointer++;
-					accUnitRow = rowPointer++;
-					accItemRow = rowPointer++;
-					accValueRow = rowPointer++;
+					int headerRow = rowPointer++;
+					int delayRow = rowPointer++;
+					int unitRow = rowPointer++;
+					int itemRow = rowPointer++;
+					int valueRow = rowPointer++;
+					int accUnitRow = rowPointer++;
+					int accItemRow = rowPointer++;
+					int accValueRow = rowPointer++;
 
-					columnPointer = 7;
+					int columnPointer = 7;
 
 					if(mill.length()==0) mill = " ";
 					sheetDelMill.getCell(headerRow, columnPointer).setValue(mill);
@@ -590,9 +629,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					sheetDelMill.getCell(accValueRow, columnPointer++).setValue("Accumulated Value [%]");
 					sheetDelMill.getCell(headerRow, columnPointer).setValue("Total Value");
 
-					unitFormula = "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + quantityRangeAddressAbsolute + ")";
-					itemFormula = "=ANTALL.HVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\")";
-					totalValueFormula = "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + totalValueEurAddressAbsolute + ")";
+					String unitFormula = "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + quantityRangeAddressAbsolute + ")";
+					String itemFormula = "=ANTALL.HVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\")";
+					String totalValueFormula = "=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" +  mill + "\";Table!" + totalValueEurAddressAbsolute + ")";
 
 					sheetDelMill.getCell(unitRow, columnPointer).setFormula(unitFormula);
 					sheetDelMill.getCell(itemRow, columnPointer).setFormula(itemFormula);
@@ -739,7 +778,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String valueRangeEnd = sheetMill.getRange("G1").getEnd(Direction.DOWN).getAddress(false, false);
 				String valueRange = "G3:" + valueRangeEnd;
 				
-				sheetMill.getListObjects().add();
+				sheetMill.getListObjects().add().setShowAutoFilter(false);
 				
 				/*
 				 * Item Mill Chart Sheet
