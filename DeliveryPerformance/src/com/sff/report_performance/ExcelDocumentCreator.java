@@ -10,7 +10,6 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import com.borland.dx.dataset.Variant;
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
@@ -62,7 +61,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			excel = new Excel();
 			workbook = excel.getWorkbooks().add();
 
-			// TODO: Iterate over the worksheets and remove Ark1, Ark2 and Ark3
 			sheetNoUnits = new Worksheet(workbook);
 			sheetNoUnits.setName("NoUnits");
 			sheetValueMill = new Worksheet(workbook);
@@ -81,6 +79,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetProject.setName("Project");
 			sheetTable = new Worksheet(workbook);
 			sheetTable.setName("Table");
+			
+			workbook.getWorksheets().getItem("Ark1").delete();
+			workbook.getWorksheets().getItem("Ark2").delete();
+			workbook.getWorksheets().getItem("Ark3").delete();
 
 		} catch (ComponentObjectModelException | LibraryNotFoundException e) {
 			e.printStackTrace();
@@ -214,7 +216,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 */
 
 				// TODO: Language preference
-				// TODO: Progress bar update!
 				// TODO: get address from columns instead of hard coded values
 
 				String startCell = formulaStartCell;
@@ -802,19 +803,19 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Item Mill Chart Sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange), "Item Mill");
 				
 				/*
 				 * Unit Mill Chart Sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange), "Unit Mill");
 				
 				/*
 				 * Value mill Chart sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange), "Value Mill");
 				
 				/*
 				 * Open excel and close DB connection

@@ -12,12 +12,14 @@ import com.moyosoft.connector.ms.excel.Worksheet;
 
 public class ExcelHelper {
 
-	public static void create3DPieChart(int left, int top, int width, int height, Worksheet sheet, Range source, Range names){
+	public static void create3DPieChart(int left, int top, int width, int height, Worksheet sheet, Range source, Range names, String title){
 		ChartObject chartObject = sheet.getChartObjects().add(left, top, width, height);
 		Chart chart = chartObject.getChart();
 		chart.setChartType(ChartType.PIE_EXPLODED_3D);
 		chart.setSourceData(source);
 		chart.getAxis(AxisType.CATEGORY).setCategoryNames(names);
+		chart.setHasTitle(true);
+		chart.getChartTitle().setText(title);
 		chart.getSeries(0).setHasDataLabels(true);
 		chart.getSeries(0).getDataLabels().setShowPercentage(true);
 		chart.getSeries(0).getDataLabels().setShowValue(false);
