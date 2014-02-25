@@ -10,7 +10,7 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import com.borland.dx.dataset.DataRow;
+import com.borland.dx.dataset.Variant;
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
@@ -129,7 +129,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				Set<String> millSet = new HashSet<String>();
 				Set<String> currencySet = new HashSet<String>();
 				while(dataSet.inBounds() && !isCancelled()){ //TODO: If canceled, do not open excel
-
 					setProgress(100 * processed++ / rowCount);
 					progressField.setText("Adding row: " + processed);
 					for(int column = 0; column < dataSet.getColumnCount(); column++){
@@ -144,9 +143,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 							currencySet.add(dataSet.getString(column).trim());
 						}
 						try{ 
-							//TODO: Inserting into range takes a long time, try to use arrays. Convert all formats to String, insert with 2d array, set column formats?
+							//TODO: Inserting into range takes a long time, try to use arrays. create one array for each column?
 							s = dataSet.getString(column);
-
 							if(s.length()>0)cell.setValue(s.trim());
 							else cell.setValue(" ");
 						}catch(VariantException e){
@@ -304,7 +302,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				for(String project : projectSet){
 					progressField.setText("Processing project: " + processed);
-					setProgress(100 * processed++ / projectSet.size());
+					setProgress(100 * ++processed / projectSet.size());
 
 					Range headerRange = excel.getActiveCell();
 					headerRange.setValue("Project");
@@ -374,6 +372,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Populates the "Delay"-sheet
 				 */
+				
+				progressField.setText("Creating the Delay sheet");
 
 				excel.getWorksheets().getItem("Delay").activate();
 				sheetDelay.getRange(firstCell).activate();
@@ -485,6 +485,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
 				String chartEndAddress = currentCellDelay.getEnd(Direction.TO_RIGHT).getAddress(false, false);
 				
+				progressField.setText("Creating the Delay chart");
+				
 				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250); // Charts exists within chart objects, which in turn sets the size and location
 				Chart delayChart = delayChartObject.getChart();
 				delayChart.setChartType(ChartType.LINE);
@@ -503,6 +505,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Populates the DelPerformance sheet
 				 */
 
+				progressField.setText("Creating the Performance sheet");
+				
 				rowPointer = 1;
 				int cddHeaderRow = rowPointer++;
 				int cddWeekRow = rowPointer++;
@@ -568,6 +572,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelPerformance.getRange("B11", endCell).setNumberFormat("0,00 %");
 				sheetDelPerformance.getRange("A8", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
 
+				progressField.setText("Creating the Performance Chart");
+				
 				Range performanceChartSourceData = excel.union(sheetDelPerformance.getRange("C5","BC5"), sheetDelPerformance.getRange("C11","BC11"));
 				ChartObject delPerformanceChartObject = sheetDelPerformance.getChartObjects().add(50, 250, 500, 250);
 				Chart delPerformanceChart = delPerformanceChartObject.getChart();
@@ -591,8 +597,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				rowPointer = 1;
 				int chartX = 0;
 				int chartY = 15;
+				processed = 0;
 
 				for(String mill : millSet){
+					
+					progressField.setText("Processing Delay Mill: " + processed);
+					setProgress(100 * ++processed / millSet.size());
 
 					int headerRow = rowPointer++;
 					int delayRow = rowPointer++;
@@ -748,7 +758,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellMill = currentCellMill.getNext();
 				currentCellMill.setFormula("=SUMMER(Table!" + totalValueEurAddressAbsolute + ")");
 				
+				processed = 0;
+				
 				for(String mill : millSet){
+					
+					progressField.setText("Processing Mill: " + processed);
+					setProgress(100 * ++processed / millSet.size());
+					
 					excel.getActiveCell().getOffset(1).activate();
 					currentCellMill = excel.getActiveCell();
 					currentCellMill.setValue(mill);
@@ -780,23 +796,25 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				
 				sheetMill.getListObjects().add().setShowAutoFilter(false);
 				
+				progressField.setText("Creating Pie Charts");
+				
 				/*
 				 * Item Mill Chart Sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Unit Mill Chart Sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Value mill Chart sheet
 				 */
 				
-				ExcelHelper.create3DPieChart(20, 20, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange));
+				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange));
 				
 				/*
 				 * Open excel and close DB connection
