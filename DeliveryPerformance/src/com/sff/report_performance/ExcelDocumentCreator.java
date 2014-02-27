@@ -23,6 +23,7 @@ import com.moyosoft.connector.ms.excel.ChartType;
 import com.moyosoft.connector.ms.excel.Direction;
 import com.moyosoft.connector.ms.excel.Excel;
 import com.moyosoft.connector.ms.excel.LineStyle;
+import com.moyosoft.connector.ms.excel.ListRows;
 import com.moyosoft.connector.ms.excel.Range;
 import com.moyosoft.connector.ms.excel.Workbook;
 import com.moyosoft.connector.ms.excel.Worksheet;
@@ -79,7 +80,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetProject.setName("Project");
 			sheetTable = new Worksheet(workbook);
 			sheetTable.setName("Table");
-			
+
 			workbook.getWorksheets().getItem("Ark1").delete();
 			workbook.getWorksheets().getItem("Ark2").delete();
 			workbook.getWorksheets().getItem("Ark3").delete();
@@ -97,7 +98,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		sheetDelMill.getColumns().autoFit();
 		sheetMill.getColumns().autoFit();
 		excel.getWorksheets().getItem("Table").activate();
-		
+
 		excel.setVisible(true);
 	}
 
@@ -145,6 +146,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 							currencySet.add(dataSet.getString(column).trim());
 						}
 						try{ 
+							// http://blogs.office.com/2008/10/03/what-is-the-fastest-way-to-scan-a-large-range-in-excel/
 							//TODO: Inserting into range takes a long time, try to use arrays. create one array for each column?
 							s = dataSet.getString(column);
 							if(s.length()>0)cell.setValue(s.trim());
@@ -215,7 +217,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Converts total value into value[eur]
 				 */
 
-				// TODO: Language preference
+				// TODO: Language preference?
 				// TODO: get address from columns instead of hard coded values
 
 				String startCell = formulaStartCell;
@@ -269,16 +271,42 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange("TotalPrice").setNumberFormat("0");
 				sheetTable.getRange("UnitPrice").setNumberFormat("0");
 				sheetTable.getRange("Vendornr.").setNumberFormat("000000");
-
-				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVISFEIL(HVIS(FINN.KOLONNE(\" \";A2:AC2;1;USANN)=\" \";\"** ERROR **\";\"\");\"\")");
-				Range red = sheetTable.getRange(formulaStartCell, currentEndCell);
-				red.fillDown();
-				red.getInterior().setColor(Color.red);
-				red.getBorders().setLineStyle(LineStyle.CONTINUOUS);
+				
+				/*
+				 * Pseudo: For each row in Table
+				 * If (Conditions) set
+				 * column ("AD") interior red and error text
+				 * 
+				 * Conditions:
+				 * If ItemStatus is Delivered or RFI Notified and missing RFI
+				 * If ItemStatus is «On Hold»
+                 * If ItemStatus is created
+                 * If missing CDD or EDD
+                 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical (?) date
+				 */
+				
+//				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
+//				sheetTable.getRange(formulaStartCell).setFormula("=HVISFEIL(HVIS(FINN.KOLONNE(\" \";A2:AC2;1;USANN)=\" \";\"** ERROR **\";\"\");\"\")"); // TODO: Test for each row in code
+//				Range red = sheetTable.getRange(formulaStartCell, currentEndCell);
+//				red.fillDown();
+//				red.getInterior().setColor(Color.red);
+//				red.getBorders().setLineStyle(LineStyle.CONTINUOUS);
 
 				sheetTable.getListObjects().add(); // Creates the excel table
-
+				
+				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
+				int count = rows.getCount();
+				int row = 0;
+				while(row++ < count){ //TODO: Fix index issue
+					String itemStatus = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
+					String cdd = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
+					String edd = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
+					String rfi = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
+					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) if(rfi.equalsIgnoreCase(" ")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
+					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
+					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
+				}
+				
 				//				String endRight = sheetTable.getRange("A1").getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
 				//				sheetTable.getRange("A1", endRight).getInterior().setColor(Color.yellow);
 
@@ -373,7 +401,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Populates the "Delay"-sheet
 				 */
-				
+
 				progressField.setText("Creating the Delay sheet");
 
 				excel.getWorksheets().getItem("Delay").activate();
@@ -381,14 +409,14 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				Range currentCellDelay = excel.getActiveCell();
 				String previousCellAddress = "";
 				String endCellAddress = "";
-				
+
 				int scopeRange = 40; // Creates a range of negative 20 to positive 20
-				
+
 				currentCellDelay.setValue(" ");
 				currentCellDelay = currentCellDelay.getNext();
 				currentCellDelay.setValue("Total");
 				currentCellDelay = currentCellDelay.getNext();
-				
+
 				// Creates a row of ascending integers
 				currentCellDelay.setValue(-scopeRange/2);
 				previousCellAddress = currentCellDelay.getAddress(false, false);
@@ -396,7 +424,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay = currentCellDelay.getNext();
 				currentCellDelay.setFormula("=" + previousCellAddress + "+1");
 				currentCellDelay.resize(1, scopeRange).fillRight();
-				
+
 				// Creates the units row
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -405,9 +433,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay.setFormula("=SUMMER(Table!" + quantityRangeAddress + ")");
 				String totalNoUnitsAddress = currentCellDelay.getAddress();
 				currentCellDelay = currentCellDelay.getNext();
-				currentCellDelay.setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C1;Table!" + quantityRangeAddressAbsolute +")"); // TODO: Change from C2 to .offset()
+				currentCellDelay.setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C1;Table!" + quantityRangeAddressAbsolute +")"); // TODO: Change from C1 to .offset()
 				currentCellDelay.resize(1, scopeRange+1).fillRight();
-				
+
 				// Creates the items row
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -418,7 +446,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay = currentCellDelay.getNext();
 				currentCellDelay.setFormula("=ANTALL.HVIS(Table!" + roundedDelayAddressAbsolute + ";C1" +")");
 				currentCellDelay.resize(1, scopeRange+1).fillRight();
-				
+
 				// Creates the value row
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -429,7 +457,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay = currentCellDelay.getNext();
 				currentCellDelay.setFormula("=SUMMERHVIS(Table!" + roundedDelayAddressAbsolute + ";C1;Table!" + totalValueEurAddressAbsolute +")");
 				currentCellDelay.resize(1, scopeRange+1).fillRight();
-				
+
 				// Creates the row that calculates the accumulated number of units
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -448,7 +476,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay.setFormula("=(" + noUnitsPerWeekAddress + "/" + totalNoUnitsAddress +")+" + previousCellAddress); // Accumulated no units
 				currentCellDelay.resize(1, scopeRange).fillRight();
 				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
-				
+
 				// Creates the row that calculates the accumulated number of items
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -466,7 +494,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay.setFormula("=(" + noUnitsPerWeekAddress + "/" + totalNoItemsAddress +")+" + previousCellAddress); 
 				currentCellDelay.resize(1, scopeRange).fillRight();
 				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
-				
+
 				// Creates the row that calculates the accumulated value
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellDelay = excel.getActiveCell();
@@ -485,9 +513,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellDelay.resize(1, scopeRange).fillRight();
 				currentCellDelay.resize(1, scopeRange).setNumberFormat("0,00 %");
 				String chartEndAddress = currentCellDelay.getEnd(Direction.TO_RIGHT).getAddress(false, false);
-				
+
 				progressField.setText("Creating the Delay chart");
-				
+
 				ChartObject delayChartObject = sheetDelay.getChartObjects().add(100, 200, 1000, 250); // Charts exists within chart objects, which in turn sets the size and location
 				Chart delayChart = delayChartObject.getChart();
 				delayChart.setChartType(ChartType.LINE);
@@ -499,15 +527,15 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				delayChart.getSeries(0).setName("Accumulated No of Units");
 				delayChart.getSeries(1).setName("Accumulated No of Items");
 				delayChart.getSeries(2).setName("Accumulated Value");
-				
+
 				sheetDelay.getListObjects().add().setShowAutoFilter(false);
-				
+
 				/*
 				 * Populates the DelPerformance sheet
 				 */
 
 				progressField.setText("Creating the Performance sheet");
-				
+
 				rowPointer = 1;
 				int cddHeaderRow = rowPointer++;
 				int cddWeekRow = rowPointer++;
@@ -574,7 +602,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetDelPerformance.getRange("A8", endCell).getBorders().setLineStyle(LineStyle.CONTINUOUS);
 
 				progressField.setText("Creating the Performance Chart");
-				
+
 				Range performanceChartSourceData = excel.union(sheetDelPerformance.getRange("C5","BC5"), sheetDelPerformance.getRange("C11","BC11"));
 				ChartObject delPerformanceChartObject = sheetDelPerformance.getChartObjects().add(50, 250, 500, 250);
 				Chart delPerformanceChart = delPerformanceChartObject.getChart();
@@ -601,7 +629,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				processed = 0;
 
 				for(String mill : millSet){
-					
+
 					progressField.setText("Processing Delay Mill: " + processed);
 					setProgress(100 * ++processed / millSet.size());
 
@@ -723,11 +751,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Creates and populates the "Mill"-sheet
 				 */
-				
+
 				String firstCellMill = "A1";
 				excel.getWorksheets().getItem("Mill").activate();
 				sheetMill.getRange(firstCellMill).activate();
-				
+
 				Range currentCellMill = excel.getActiveCell();
 				currentCellMill.setValue("Mill");
 				currentCellMill = currentCellMill.getNext();
@@ -742,7 +770,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellMill.setValue("No of Items");
 				currentCellMill = currentCellMill.getNext();
 				currentCellMill.setValue("Value");
-				
+
 				excel.getActiveCell().getOffset(1).activate();
 				currentCellMill = excel.getActiveCell();
 				currentCellMill.setValue("Total");
@@ -758,14 +786,14 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				currentCellMill.setFormula("=ANTALL(Table!" + quantityRangeAddressAbsolute + ")");
 				currentCellMill = currentCellMill.getNext();
 				currentCellMill.setFormula("=SUMMER(Table!" + totalValueEurAddressAbsolute + ")");
-				
+
 				processed = 0;
-				
+
 				for(String mill : millSet){
-					
+
 					progressField.setText("Processing Mill: " + processed);
 					setProgress(100 * ++processed / millSet.size());
-					
+
 					excel.getActiveCell().getOffset(1).activate();
 					currentCellMill = excel.getActiveCell();
 					currentCellMill.setValue(mill);
@@ -782,45 +810,45 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					currentCellMill = currentCellMill.getNext();
 					currentCellMill.setFormula("=SUMMERHVIS(Table!" + supplierRangeAddressAbsolute + ";\"" + mill + "\";Table!" + totalValueEurAddressAbsolute + ")");
 				}
-				
+
 				String millRangeEnd = sheetMill.getRange("A1").getEnd(Direction.DOWN).getAddress(false, false);
 				String millRange = "A3:" + millRangeEnd;
-				
+
 				String unitRangeEnd = sheetMill.getRange("E1").getEnd(Direction.DOWN).getAddress(false, false);
 				String unitRange = "E3:" + unitRangeEnd;
-				
+
 				String itemRangeEnd = sheetMill.getRange("F1").getEnd(Direction.DOWN).getAddress(false, false);
 				String itemRange = "F3:" + itemRangeEnd;
-				
+
 				String valueRangeEnd = sheetMill.getRange("G1").getEnd(Direction.DOWN).getAddress(false, false);
 				String valueRange = "G3:" + valueRangeEnd;
-				
+
 				sheetMill.getListObjects().add().setShowAutoFilter(false);
-				
+
 				progressField.setText("Creating Pie Charts");
-				
+
 				/*
 				 * Item Mill Chart Sheet
 				 */
-				
+
 				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetItemMill, sheetMill.getRange(itemRange), sheetMill.getRange(millRange), "Item Mill");
-				
+
 				/*
 				 * Unit Mill Chart Sheet
 				 */
-				
+
 				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetNoUnits, sheetMill.getRange(unitRange), sheetMill.getRange(millRange), "Unit Mill");
-				
+
 				/*
 				 * Value mill Chart sheet
 				 */
-				
+
 				ExcelHelper.create3DPieChart(0, 0, 1000, 600, sheetValueMill, sheetMill.getRange(valueRange), sheetMill.getRange(millRange), "Value Mill");
-				
+
 				/*
 				 * Open excel and close DB connection
 				 */
-				
+
 				publishedOutput.setText("Opening Excel Document");
 				progressField.setText("");
 				saveWorkbook();
