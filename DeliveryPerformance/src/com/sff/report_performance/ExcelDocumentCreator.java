@@ -282,7 +282,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * If ItemStatus is «On Hold»
                  * If ItemStatus is created
                  * If missing CDD or EDD
-                 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical (?) date
+                 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical (?) date. should a blank RFI overwrite a written EDD?
 				 */
 				
 //				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
@@ -296,15 +296,22 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				
 				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
 				int count = rows.getCount();
-				int row = 0;
-				while(row++ < count){ //TODO: Fix index issue
+				int row = 1;
+				setProgress(0);
+				processed = 0;
+				while(row++ < count){ 
+					progressField.setText("Marking erroneus rows");
+					setProgress(100 * ++processed / count);
+					
 					String itemStatus = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
 					String cdd = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
 					String edd = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
 					String rfi = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
-					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) if(rfi.equalsIgnoreCase(" ")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
-					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
-					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) rows.getItem(row).getRange().getInterior().setColor(Color.red);
+					
+					if(!itemStatus.equalsIgnoreCase("Delivered")) sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfi);
+					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) if(rfi.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
 				}
 				
 				//				String endRight = sheetTable.getRange("A1").getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);

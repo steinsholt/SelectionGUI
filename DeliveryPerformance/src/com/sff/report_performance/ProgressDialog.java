@@ -8,7 +8,6 @@ import java.awt.event.WindowEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.util.List;
 
 import javax.swing.BorderFactory;
