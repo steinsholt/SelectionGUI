@@ -10,6 +10,10 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
@@ -122,11 +126,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			publishedOutput.setText("Creating Table Sheet");
 
 			while(!isCancelled()){
-
-				String s;
-				Double d;
-				int i;
-				Timestamp time;
+				//TODO: set standard number format in Itemnr. column
 				Range cell = sheetTable.getRange("A1");
 				Set<String> projectSet = new HashSet<String>();
 				Set<String> millSet = new HashSet<String>();
@@ -148,19 +148,19 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						try{ 
 							// http://blogs.office.com/2008/10/03/what-is-the-fastest-way-to-scan-a-large-range-in-excel/
 							//TODO: Inserting into range takes a long time, try to use arrays. create one array for each column?
-							s = dataSet.getString(column);
+							String s = dataSet.getString(column);
 							if(s.length()>0)cell.setValue(s.trim());
 							else cell.setValue(" ");
 						}catch(VariantException e){
 							try{
-								d = dataSet.getDouble(column);
+								Double d = dataSet.getDouble(column);
 								cell.setValue(d);
 							}catch(VariantException v){
 								try{
-									i = dataSet.getInt(column);
+									int i = dataSet.getInt(column);
 									cell.setValue(i);
 								}catch(VariantException a){
-									time = dataSet.getTimestamp(column);
+									Timestamp time = dataSet.getTimestamp(column);
 									cell.setValue(time);
 								}
 							}
@@ -271,7 +271,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange("TotalPrice").setNumberFormat("0");
 				sheetTable.getRange("UnitPrice").setNumberFormat("0");
 				sheetTable.getRange("Vendornr.").setNumberFormat("000000");
-				
+
 				/*
 				 * Pseudo: For each row in Table
 				 * If (Conditions) set
@@ -280,40 +280,64 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Conditions:
 				 * If ItemStatus is Delivered or RFI Notified and missing RFI
 				 * If ItemStatus is «On Hold»
-                 * If ItemStatus is created
-                 * If missing CDD or EDD
-                 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical (?) date. should a blank RFI overwrite a written EDD?
+				 * If ItemStatus is created
+				 * If missing CDD or EDD
+				 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical date.
 				 */
-				
-//				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
-//				sheetTable.getRange(formulaStartCell).setFormula("=HVISFEIL(HVIS(FINN.KOLONNE(\" \";A2:AC2;1;USANN)=\" \";\"** ERROR **\";\"\");\"\")"); // TODO: Test for each row in code
-//				Range red = sheetTable.getRange(formulaStartCell, currentEndCell);
-//				red.fillDown();
-//				red.getInterior().setColor(Color.red);
-//				red.getBorders().setLineStyle(LineStyle.CONTINUOUS);
+
+				//				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
+				//				sheetTable.getRange(formulaStartCell).setFormula("=HVISFEIL(HVIS(FINN.KOLONNE(\" \";A2:AC2;1;USANN)=\" \";\"** ERROR **\";\"\");\"\")"); // TODO: Test for each row in code
+				//				Range red = sheetTable.getRange(formulaStartCell, currentEndCell);
+				//				red.fillDown();
+				//				red.getInterior().setColor(Color.red);
+				//				red.getBorders().setLineStyle(LineStyle.CONTINUOUS);
 
 				sheetTable.getListObjects().add(); // Creates the excel table
+
+				/*
+				 * Colors rows red based on certain criteria 
+				 */
 				
 				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
 				int count = rows.getCount();
 				int row = 1;
 				setProgress(0);
 				processed = 0;
+				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
+
 				while(row++ < count){ 
 					progressField.setText("Marking erroneus rows");
 					setProgress(100 * ++processed / count);
-					
+
 					String itemStatus = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
 					String cdd = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
 					String edd = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
 					String rfi = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
 					
-					if(!itemStatus.equalsIgnoreCase("Delivered")) sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfi);
-					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) if(rfi.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					Boolean isHistoricalDate = false;
+					Boolean isEmpty = false;
+					
+					if(rfi.equalsIgnoreCase(" ")) {
+						isEmpty = true;
+					}else{
+						DateTime historical = fmt.parseDateTime(rfi);
+						if(historical.isBeforeNow()) isHistoricalDate = true;
+					}
+					
+					if(!itemStatus.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
+						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfi); 
+					}
+					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) {
+						if(rfi.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
+					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) {
+						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
+					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) {
+						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
 				}
-				
+
 				//				String endRight = sheetTable.getRange("A1").getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
 				//				sheetTable.getRange("A1", endRight).getInterior().setColor(Color.yellow);
 
