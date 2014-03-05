@@ -2,6 +2,8 @@ package com.sff.report_performance;
 
 import java.awt.Color;
 import java.io.File;
+import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
@@ -219,16 +221,26 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				// TODO: Language preference?
 				// TODO: get address from columns instead of hard coded values
-
+				
+				// Get EUR sell rate
+				Statement st = db.getJdbcConnection().createStatement();
+				st.setQueryTimeout(60);
+				ResultSet rs = st.executeQuery("SELECT vendor.dbo.Exchange_rate.sell_rate FROM vendor.dbo.Exchange_rate WHERE vendor.dbo.Exchange_rate.currency_id=99");
+				rs.next();
+				Double sellRate = rs.getDouble("sell_rate");
+				// Have to replace period with comma as excel only accepts norwegian
+				String convertedSellRate = sellRate.toString().replace(".", ","); 
+				st.close();
+				rs.close();
+				
 				String startCell = formulaStartCell;
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("Total_EUR");
 				sheetTable.getRange(currentHeaderCell).setValue("Total [EUR]");
-				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(HVIS(Q2=\"EUR\";P2;(P2/8)*R2);0)");
+				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(HVIS(Q2=\"EUR\";P2;(P2/" + convertedSellRate + ")*R2);0)"); 
 				//TODO: Move to separate method
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
-				//				sheetTable.getRange(topIndex).setFormula("=AVRUND(FINN.RAD(M2; Exchange!$A$2:$B$16;2; USANN) / FINN.RAD(\"EUR\"; Exchange!$A$2:$B$16;2; USANN) * T2;0)");
 
 				/*
 				 *  Creates the delay part of the "Table"-sheet.
@@ -261,8 +273,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(S2=\" \"; 0; HVIS(G2=\" \"; 0; AVRUND(((S2-G2)/7);0)))");
 				Range yellow = sheetTable.getRange(startCell, currentEndCell);
 				yellow.fillDown(); 
-				//				yellow.getBorders().setLineStyle(LineStyle.CONTINUOUS);
-				//				yellow.getInterior().setColor(Color.yellow);
 
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
@@ -284,13 +294,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * If missing CDD or EDD
 				 * If ItemStatus is NOT Delivered set EDD = RFI, unless historical date.
 				 */
-
-				//				sheetTable.getRange(currentHeaderCell).setValue("Error Rows");
-				//				sheetTable.getRange(formulaStartCell).setFormula("=HVISFEIL(HVIS(FINN.KOLONNE(\" \";A2:AC2;1;USANN)=\" \";\"** ERROR **\";\"\");\"\")"); // TODO: Test for each row in code
-				//				Range red = sheetTable.getRange(formulaStartCell, currentEndCell);
-				//				red.fillDown();
-				//				red.getInterior().setColor(Color.red);
-				//				red.getBorders().setLineStyle(LineStyle.CONTINUOUS);
 
 				sheetTable.getListObjects().add(); // Creates the excel table
 
@@ -337,9 +340,6 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
 					}
 				}
-
-				//				String endRight = sheetTable.getRange("A1").getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
-				//				sheetTable.getRange("A1", endRight).getInterior().setColor(Color.yellow);
 
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
