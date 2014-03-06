@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.io.File;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -12,11 +11,6 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-
-import com.borland.dx.dataset.VariantException;
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
@@ -29,7 +23,6 @@ import com.moyosoft.connector.ms.excel.ChartType;
 import com.moyosoft.connector.ms.excel.Direction;
 import com.moyosoft.connector.ms.excel.Excel;
 import com.moyosoft.connector.ms.excel.LineStyle;
-import com.moyosoft.connector.ms.excel.ListRows;
 import com.moyosoft.connector.ms.excel.Range;
 import com.moyosoft.connector.ms.excel.Workbook;
 import com.moyosoft.connector.ms.excel.Worksheet;
@@ -128,83 +121,117 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			publishedOutput.setText("Creating Table Sheet");
 
 			while(!isCancelled()){
-				//TODO: set standard number format in Itemnr. column
-				Range cell = sheetTable.getRange("A1");
+				//TODO: set standard number format in ItemNr. column
+				//TODO: divide sellRate by exch_type 
+//				Range cell = sheetTable.getRange("A1");
+				
+				String[][] frameAgr = new String[rowCount][1];
+				String[][] project = new String[rowCount][1];
+				String[][] client = new String[rowCount][1];
+				String[][] category = new String[rowCount][1];
+				String[][] clientRef = new String[rowCount][1];
+				int[][] orderNr = new int[rowCount][1];
+				String[][] orderRegDate = new String[rowCount][1];
+				String[][] orderCdd = new String[rowCount][1];
+				String[][] itemNr = new String[rowCount][1];
+				String[][] clientArtCode = new String[rowCount][1];
+				int[][] vendorNr = new int[rowCount][1];
+				String[][] description = new String[rowCount][1];
+				String[][] supplier = new String[rowCount][1];
+				int[][] qty = new int[rowCount][1];
+				int[][] unitPrice = new int[rowCount][1];
+				int[][] totalPrice = new int[rowCount][1];
+				String[][] currency = new String[rowCount][1];
+				int[][] cRate = new int[rowCount][1];
+				String[][] cdd = new String[rowCount][1];
+				String[][] edd = new String[rowCount][1];
+				String[][] rfi = new String[rowCount][1];
+				String[][] ccd = new String[rowCount][1];
+				String[][] ecd = new String[rowCount][1];
+				String[][] itemStatus = new String[rowCount][1];
+				
 				Set<String> projectSet = new HashSet<String>();
 				Set<String> millSet = new HashSet<String>();
 				Set<String> currencySet = new HashSet<String>();
-				while(dataSet.inBounds() && !isCancelled()){ //TODO: If canceled, do not open excel
-					setProgress(100 * processed++ / rowCount);
+				
+				while(dataSet.inBounds() && !isCancelled()){
+					setProgress(100 * processed / rowCount);
 					progressField.setText("Adding row: " + processed);
-					for(int column = 0; column < dataSet.getColumnCount(); column++){
-						cell = sheetTable.getCell(dataSet.getRow()+1, column);
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Supplier"))){
-							millSet.add(dataSet.getString(column).trim());
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("Project"))){
-							projectSet.add(dataSet.getString(column).trim());
-						}
-						if(dataSet.getColumn(column).equals(dataSet.getColumn("currency"))){
-							currencySet.add(dataSet.getString(column).trim());
-						}
-						try{ 
-							// http://blogs.office.com/2008/10/03/what-is-the-fastest-way-to-scan-a-large-range-in-excel/
-							//TODO: Inserting into range takes a long time, try to use arrays. create one array for each column?
-							String s = dataSet.getString(column);
-							if(s.length()>0)cell.setValue(s.trim());
-							else cell.setValue(" ");
-						}catch(VariantException e){
-							try{
-								Double d = dataSet.getDouble(column);
-								cell.setValue(d);
-							}catch(VariantException v){
-								try{
-									int i = dataSet.getInt(column);
-									cell.setValue(i);
-								}catch(VariantException a){
-									Timestamp time = dataSet.getTimestamp(column);
-									cell.setValue(time);
-								}
-							}
-						}
-					}
+					
+					int column = 0;
+					frameAgr[processed][0] = dataSet.getString(column++);
+					projectSet.add(dataSet.getString(column));
+					project[processed][0] = dataSet.getString(column++);
+					client[processed][0] = dataSet.getString(column++);
+					category[processed][0] = dataSet.getString(column++);
+					clientRef[processed][0] = dataSet.getString(column++);
+					orderNr[processed][0] = dataSet.getInt(column++);
+					orderRegDate[processed][0] = dataSet.getString(column++);
+					orderCdd[processed][0] = dataSet.getString(column++);
+					itemNr[processed][0] = dataSet.getString(column++);
+					clientArtCode[processed][0] = dataSet.getString(column++);
+					vendorNr[processed][0] = dataSet.getInt(column++);
+					description[processed][0] = dataSet.getString(column++);
+					millSet.add(dataSet.getString(column));
+					supplier[processed][0] = dataSet.getString(column++);
+					qty[processed][0] = (int) dataSet.getDouble(column++); //TODO these needs to be double
+					unitPrice[processed][0] = (int) dataSet.getDouble(column++);
+					totalPrice[processed][0] = (int) dataSet.getDouble(column++);
+					currencySet.add(dataSet.getString(column));
+					currency[processed][0] = dataSet.getString(column++);
+					cRate[processed][0] = (int) dataSet.getDouble(column++);
+					cdd[processed][0] = dataSet.getString(column++);
+					edd[processed][0] = dataSet.getString(column++);
+					rfi[processed][0] = dataSet.getString(column++);
+					ccd[processed][0] = dataSet.getString(column++);
+					ecd[processed][0] = dataSet.getString(column++);
+					itemStatus[processed][0] = dataSet.getString(column++);
+					
+					processed++;
 					dataSet.next();
 				}
-
-				//TODO: Solution to the slow load times
-				//				double[][] m = new double[10][1];
-				//
-				//				for(int k=0; k<10; k++) {
-				//					for(int j=0; j<1; j++) {
-				//						m[k][j] = k*j;
-				//					}
-				//				}
-				//				long startTime = System.nanoTime();
-				//				sheetDelPerformance.getRange("A40:J50").setValues(m);
-				//
-				//				long endTime = System.nanoTime();
-				//				long duration = endTime - startTime;
-				//				System.out.println(duration);
-
 				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
 				dataSet.close();
-
+				
+				sheetTable.getRange("A1", "A"+rowCount).setValues(frameAgr);
+				sheetTable.getRange("B1", "B"+rowCount).setValues(project);
+				sheetTable.getRange("C1", "C"+rowCount).setValues(client);
+				sheetTable.getRange("D1", "D"+rowCount).setValues(category);
+				sheetTable.getRange("E1", "E"+rowCount).setValues(clientRef);
+				sheetTable.getRange("F1", "F"+rowCount).setValues(orderNr);
+				sheetTable.getRange("G1", "G"+rowCount).setValues(orderRegDate);
+				sheetTable.getRange("H1", "H"+rowCount).setValues(orderCdd);
+				sheetTable.getRange("I1", "I"+rowCount).setValues(itemNr);
+				sheetTable.getRange("J1", "J"+rowCount).setValues(clientArtCode);
+				sheetTable.getRange("K1", "K"+rowCount).setValues(vendorNr);
+				sheetTable.getRange("L1", "L"+rowCount).setValues(description);
+				sheetTable.getRange("M1", "M"+rowCount).setValues(supplier);
+				sheetTable.getRange("N1", "N"+rowCount).setValues(qty);
+				sheetTable.getRange("O1", "O"+rowCount).setValues(unitPrice);
+				sheetTable.getRange("P1", "P"+rowCount).setValues(totalPrice);
+				sheetTable.getRange("Q1", "Q"+rowCount).setValues(currency);
+				sheetTable.getRange("R1", "R"+rowCount).setValues(cRate);
+				sheetTable.getRange("S1", "S"+rowCount).setValues(cdd);
+				sheetTable.getRange("T1", "T"+rowCount).setValues(edd);
+				sheetTable.getRange("U1", "U"+rowCount).setValues(rfi);
+				sheetTable.getRange("V1", "V"+rowCount).setValues(ccd);
+				sheetTable.getRange("W1", "W"+rowCount).setValues(ecd);
+				sheetTable.getRange("X1", "X"+rowCount).setValues(itemStatus);
+				
 				String firstHeaderCell = "A1";
 				String currentHeaderCell = firstHeaderCell;
 				String formulaStartCell = "A2";
-				String currentEndCell = "";
+				String currentEndCell = sheetTable.getRange(currentHeaderCell).getEntireColumn().getEnd(Direction.DOWN).getAddress();
 
 				/*
 				 * Creates header row in the "Table"-sheet
 				 */
-
 				for(String column : columnNames){
 					String headerName = column.replaceAll("\\s+", "");
 					sheetTable.getRange(currentHeaderCell).setValue(headerName);
-					String end = sheetTable.getRange(currentHeaderCell).getEntireColumn().getEnd(Direction.DOWN).getAddress();
-					sheetTable.getRange(currentHeaderCell, end).setName(headerName);
+					sheetTable.getRange(currentHeaderCell, currentEndCell).setName(headerName);
 					currentHeaderCell = sheetTable.getRange(headerName).getNext().getAddress();
-					currentEndCell = sheetTable.getRange(end).getNext().getAddress();
+					currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 					formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				}
 
@@ -214,7 +241,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String quantityRangeAddress = sheetTable.getRange("QTY").getAddress(false, false);
 				String quantityRangeAddressAbsolute = sheetTable.getRange("QTY").getAddress(true, true);
 				String supplierRangeAddressAbsolute = sheetTable.getRange("Supplier").getAddress(true, true);
-
+				
 				/*
 				 * Converts total value into value[eur]
 				 */
@@ -248,7 +275,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("RFICDD");
 				sheetTable.getRange(currentHeaderCell).setValue("RFI-CDD");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\" \"; 0; HVIS(S2=\" \"; 0; ((U2-S2)/7)))"); 
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(S2=\"\"; 0; ((U2-S2)/7)))"); 
 				sheetTable.getRange(formulaStartCell).setNumberFormat("Standard");
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
@@ -263,16 +290,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("RFIOrderDate");
 				sheetTable.getRange(currentHeaderCell).setValue("RFI-Order Date");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\" \"; 0; HVIS(G2=\" \"; 0; AVRUND(((U2-G2)/7);0)))");
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((U2-G2)/7);0)))");
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("CDDOrderdate");
 				sheetTable.getRange(currentHeaderCell).setValue("CDD-Order date");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(S2=\" \"; 0; HVIS(G2=\" \"; 0; AVRUND(((S2-G2)/7);0)))");
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(S2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((S2-G2)/7);0)))");
 				Range yellow = sheetTable.getRange(startCell, currentEndCell);
-				yellow.fillDown(); 
+				yellow.fillDown();  
 
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
@@ -296,50 +323,50 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 */
 
 				sheetTable.getListObjects().add(); // Creates the excel table
-
+				
 				/*
 				 * Colors rows red based on certain criteria 
 				 */
 				
-				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
-				int count = rows.getCount();
-				int row = 1;
-				setProgress(0);
-				processed = 0;
-				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
-
-				while(row++ < count){ 
-					progressField.setText("Marking erroneus rows");
-					setProgress(100 * ++processed / count);
-
-					String itemStatus = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
-					String cdd = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
-					String edd = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
-					String rfi = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
-					
-					Boolean isHistoricalDate = false;
-					Boolean isEmpty = false;
-					
-					if(rfi.equalsIgnoreCase(" ")) {
-						isEmpty = true;
-					}else{
-						DateTime historical = fmt.parseDateTime(rfi);
-						if(historical.isBeforeNow()) isHistoricalDate = true;
-					}
-					
-					if(!itemStatus.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
-						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfi); 
-					}
-					if(itemStatus.equalsIgnoreCase("Delivered") || itemStatus.equalsIgnoreCase("RFI Notified")) {
-						if(rfi.equalsIgnoreCase(" ")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					}
-					if(itemStatus.equalsIgnoreCase("On Hold") || itemStatus.equalsIgnoreCase("Created")) {
-						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					}
-					if(cdd.equalsIgnoreCase(" ") || edd.equalsIgnoreCase(" ")) {
-						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					}
-				}
+//				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
+//				int count = rows.getCount();
+//				int row = 1;
+//				setProgress(0);
+//				processed = 0;
+//				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
+//
+//				while(row++ < count){ 
+//					progressField.setText("Marking erroneus rows");
+//					setProgress(100 * ++processed / count);
+//
+//					String itemStatusValue = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
+//					String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
+//					String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
+//					String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
+//					
+//					Boolean isHistoricalDate = false;
+//					Boolean isEmpty = false;
+//					
+//					if(rfiValue.equalsIgnoreCase("")) {
+//						isEmpty = true;
+//					}else{
+//						DateTime historical = fmt.parseDateTime(rfiValue);
+//						if(historical.isBeforeNow()) isHistoricalDate = true;
+//					}
+//					
+//					if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
+//						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
+//					}
+//					if(itemStatusValue.equalsIgnoreCase("Delivered") || itemStatusValue.equalsIgnoreCase("RFI Notified")) {
+//						if(rfiValue.equalsIgnoreCase("")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+//					}
+//					if(itemStatusValue.equalsIgnoreCase("On Hold") || itemStatusValue.equalsIgnoreCase("Created")) {
+//						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+//					}
+//					if(cddValue.equalsIgnoreCase("") || eddValue.equalsIgnoreCase(" ")) {
+//						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+//					}
+//				}
 
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
@@ -359,8 +386,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				excel.getWorksheets().getItem("Project").activate();
 				String firstCell = "A1";
 				sheetProject.getRange(firstCell).activate();
-
-				for(String project : projectSet){
+				
+				for(String projectName : projectSet){
 					progressField.setText("Processing project: " + processed);
 					setProgress(100 * ++processed / projectSet.size());
 
@@ -385,22 +412,22 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					String rightHeaderEnd = excel.getActiveCell().getEntireRow().getEnd(Direction.TO_RIGHT).getAddress(false, false);
 					sheetProject.getRange(leftHeaderEnd, rightHeaderEnd).getInterior().setColor(Color.yellow);
 
-					for(String currency : currencySet){
+					for(String currencyName : currencySet){
 						excel.getActiveCell().getOffset(1).activate();
 						Range currentCell = excel.getActiveCell();
-						currentCell.setValue(project);
+						currentCell.setValue(projectName);
 						currentCell = currentCell.getNext();
-						currentCell.setValue("Total Value [" + currency + "]:");
+						currentCell.setValue("Total Value [" + currencyName + "]:");
 						currentCell = currentCell.getNext();
-						String totalValueFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueRangeAddress + ";Table!" + currencyRangeAddress + ";\"" + currency + "\";Table!" + projectRangeAddress + ";\"" + project + "\")";
+						String totalValueFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueRangeAddress + ";Table!" + currencyRangeAddress + ";\"" + currencyName + "\";Table!" + projectRangeAddress + ";\"" + projectName + "\")";
 						currentCell.setNumberFormat("# #0"); // Thousand separator with 0 decimals
 						currentCell.setFormula(totalValueFormula);
 						currentCell = currentCell.getNext();
-						String totalValueEurFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueEurAddress + ";Table!" + currencyRangeAddress + ";\"" + currency + "\";Table!" + projectRangeAddress + ";\"" + project + "\")";
+						String totalValueEurFormula = "=SUMMER.HVIS.SETT(Table!" + totalValueEurAddress + ";Table!" + currencyRangeAddress + ";\"" + currencyName + "\";Table!" + projectRangeAddress + ";\"" + projectName + "\")";
 						currentCell.setNumberFormat("# #0");
 						currentCell.setFormula(totalValueEurFormula);
 						currentCell = currentCell.getNext();
-						String quantityFormula = "=SUMMER.HVIS.SETT(Table!" + quantityRangeAddress + ";Table!" + currencyRangeAddress + ";\"" + currency + "\";Table!" + projectRangeAddress + ";\"" + project + "\")";
+						String quantityFormula = "=SUMMER.HVIS.SETT(Table!" + quantityRangeAddress + ";Table!" + currencyRangeAddress + ";\"" + currencyName + "\";Table!" + projectRangeAddress + ";\"" + projectName + "\")";
 						currentCell.setNumberFormat("# #0");
 						currentCell.setFormula(quantityFormula);
 						currentCell = currentCell.getNext();
@@ -415,7 +442,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					excel.getActiveCell().getOffset(1).activate();
 					Range currentCell = excel.getActiveCell();
 
-					currentCell.setValue(project);
+					currentCell.setValue(projectName);
 					currentCell = currentCell.getNext();
 					currentCell.setValue("Total:");
 					currentCell = currentCell.getOffset(0, 2);
