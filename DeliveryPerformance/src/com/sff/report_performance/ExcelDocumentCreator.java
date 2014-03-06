@@ -11,6 +11,10 @@ import java.util.Set;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
 import com.borland.dx.sql.dataset.Database;
 import com.borland.dx.sql.dataset.QueryDataSet;
 import com.borland.dx.sql.dataset.QueryDescriptor;
@@ -23,6 +27,7 @@ import com.moyosoft.connector.ms.excel.ChartType;
 import com.moyosoft.connector.ms.excel.Direction;
 import com.moyosoft.connector.ms.excel.Excel;
 import com.moyosoft.connector.ms.excel.LineStyle;
+import com.moyosoft.connector.ms.excel.ListRows;
 import com.moyosoft.connector.ms.excel.Range;
 import com.moyosoft.connector.ms.excel.Workbook;
 import com.moyosoft.connector.ms.excel.Worksheet;
@@ -138,11 +143,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int[][] vendorNr = new int[rowCount][1];
 				String[][] description = new String[rowCount][1];
 				String[][] supplier = new String[rowCount][1];
-				int[][] qty = new int[rowCount][1];
-				int[][] unitPrice = new int[rowCount][1];
-				int[][] totalPrice = new int[rowCount][1];
+				double[][] qty = new double[rowCount][1];
+				double[][] unitPrice = new double[rowCount][1];
+				double[][] totalPrice = new double[rowCount][1];
 				String[][] currency = new String[rowCount][1];
-				int[][] cRate = new int[rowCount][1];
+				double[][] cRate = new double[rowCount][1];
 				String[][] cdd = new String[rowCount][1];
 				String[][] edd = new String[rowCount][1];
 				String[][] rfi = new String[rowCount][1];
@@ -159,33 +164,33 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					progressField.setText("Adding row: " + processed);
 					
 					int column = 0;
-					frameAgr[processed][0] = dataSet.getString(column++);
-					projectSet.add(dataSet.getString(column));
-					project[processed][0] = dataSet.getString(column++);
-					client[processed][0] = dataSet.getString(column++);
-					category[processed][0] = dataSet.getString(column++);
-					clientRef[processed][0] = dataSet.getString(column++);
+					frameAgr[processed][0] = dataSet.getString(column++).trim();
+					projectSet.add(dataSet.getString(column).trim());
+					project[processed][0] = dataSet.getString(column++).trim();
+					client[processed][0] = dataSet.getString(column++).trim();
+					category[processed][0] = dataSet.getString(column++).trim();
+					clientRef[processed][0] = dataSet.getString(column++).trim();
 					orderNr[processed][0] = dataSet.getInt(column++);
-					orderRegDate[processed][0] = dataSet.getString(column++);
-					orderCdd[processed][0] = dataSet.getString(column++);
-					itemNr[processed][0] = dataSet.getString(column++);
-					clientArtCode[processed][0] = dataSet.getString(column++);
+					orderRegDate[processed][0] = dataSet.getString(column++).trim();
+					orderCdd[processed][0] = dataSet.getString(column++).trim();
+					itemNr[processed][0] = dataSet.getString(column++).trim();
+					clientArtCode[processed][0] = dataSet.getString(column++).trim();
 					vendorNr[processed][0] = dataSet.getInt(column++);
-					description[processed][0] = dataSet.getString(column++);
-					millSet.add(dataSet.getString(column));
-					supplier[processed][0] = dataSet.getString(column++);
-					qty[processed][0] = (int) dataSet.getDouble(column++); //TODO these needs to be double
-					unitPrice[processed][0] = (int) dataSet.getDouble(column++);
-					totalPrice[processed][0] = (int) dataSet.getDouble(column++);
-					currencySet.add(dataSet.getString(column));
-					currency[processed][0] = dataSet.getString(column++);
-					cRate[processed][0] = (int) dataSet.getDouble(column++);
-					cdd[processed][0] = dataSet.getString(column++);
-					edd[processed][0] = dataSet.getString(column++);
-					rfi[processed][0] = dataSet.getString(column++);
-					ccd[processed][0] = dataSet.getString(column++);
-					ecd[processed][0] = dataSet.getString(column++);
-					itemStatus[processed][0] = dataSet.getString(column++);
+					description[processed][0] = dataSet.getString(column++).trim();
+					millSet.add(dataSet.getString(column).trim());
+					supplier[processed][0] = dataSet.getString(column++).trim();
+					qty[processed][0] = dataSet.getDouble(column++); 
+					unitPrice[processed][0] = dataSet.getDouble(column++);
+					totalPrice[processed][0] = dataSet.getDouble(column++);
+					currencySet.add(dataSet.getString(column).trim());
+					currency[processed][0] = dataSet.getString(column++).trim();
+					cRate[processed][0] = dataSet.getDouble(column++);
+					cdd[processed][0] = dataSet.getString(column++).trim();
+					edd[processed][0] = dataSet.getString(column++).trim();
+					rfi[processed][0] = dataSet.getString(column++).trim();
+					ccd[processed][0] = dataSet.getString(column++).trim();
+					ecd[processed][0] = dataSet.getString(column++).trim();
+					itemStatus[processed][0] = dataSet.getString(column++).trim();
 					
 					processed++;
 					dataSet.next();
@@ -248,6 +253,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				// TODO: Language preference?
 				// TODO: get address from columns instead of hard coded values
+				// TODO: Special letter issues. æ,ø,å,û,ü,ù etc
 				
 				// Get EUR sell rate
 				Statement st = db.getJdbcConnection().createStatement();
@@ -328,45 +334,47 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Colors rows red based on certain criteria 
 				 */
 				
-//				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
-//				int count = rows.getCount();
-//				int row = 1;
-//				setProgress(0);
-//				processed = 0;
-//				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
-//
-//				while(row++ < count){ 
-//					progressField.setText("Marking erroneus rows");
-//					setProgress(100 * ++processed / count);
-//
-//					String itemStatusValue = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
-//					String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
-//					String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
-//					String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
-//					
-//					Boolean isHistoricalDate = false;
-//					Boolean isEmpty = false;
-//					
-//					if(rfiValue.equalsIgnoreCase("")) {
-//						isEmpty = true;
-//					}else{
-//						DateTime historical = fmt.parseDateTime(rfiValue);
-//						if(historical.isBeforeNow()) isHistoricalDate = true;
-//					}
-//					
-//					if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
-//						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
-//					}
-//					if(itemStatusValue.equalsIgnoreCase("Delivered") || itemStatusValue.equalsIgnoreCase("RFI Notified")) {
-//						if(rfiValue.equalsIgnoreCase("")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-//					}
-//					if(itemStatusValue.equalsIgnoreCase("On Hold") || itemStatusValue.equalsIgnoreCase("Created")) {
-//						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-//					}
-//					if(cddValue.equalsIgnoreCase("") || eddValue.equalsIgnoreCase(" ")) {
-//						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-//					}
-//				}
+				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
+				int count = rows.getCount();
+				int row = 1;
+				setProgress(0);
+				processed = 0;
+				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
+				
+				// TODO: get values as array, manipulate data and post back
+				
+				while(row++ < count){ 
+					progressField.setText("Marking erroneus rows");
+					setProgress(100 * ++processed / count);
+
+					String itemStatusValue = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
+					String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
+					String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
+					String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
+					
+					Boolean isHistoricalDate = false;
+					Boolean isEmpty = false;
+					
+					if(rfiValue.equalsIgnoreCase("")) {
+						isEmpty = true;
+					}else{
+						DateTime historical = fmt.parseDateTime(rfiValue);
+						if(historical.isBeforeNow()) isHistoricalDate = true;
+					}
+					
+					if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
+						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
+					}
+					if(itemStatusValue.equalsIgnoreCase("Delivered") || itemStatusValue.equalsIgnoreCase("RFI Notified")) {
+						if(rfiValue.equalsIgnoreCase("")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
+					if(itemStatusValue.equalsIgnoreCase("On Hold") || itemStatusValue.equalsIgnoreCase("Created")) {
+						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
+					if(cddValue.equalsIgnoreCase("") || eddValue.equalsIgnoreCase(" ")) {
+						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+					}
+				}
 
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
