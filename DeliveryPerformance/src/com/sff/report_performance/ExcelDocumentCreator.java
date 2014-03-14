@@ -428,7 +428,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
 				 */
-
+				
 				int rowPointer = 0;
 				setProgress(0);
 				processed = 0;
