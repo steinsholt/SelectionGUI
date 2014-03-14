@@ -63,6 +63,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		this.progressField = progressField;
 
 		try {
+			/*
+			 * Creates the workbook and adds the sheets
+			 */
 			excel = new Excel();
 			workbook = excel.getWorkbooks().add();
 
@@ -85,6 +88,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			sheetTable = new Worksheet(workbook);
 			sheetTable.setName("Table");
 
+			/*
+			 * Excel provides 3 default sheets, these are removed after adding the sheets above
+			 */
 			workbook.getWorksheets().getItem("Ark1").delete();
 			workbook.getWorksheets().getItem("Ark2").delete();
 			workbook.getWorksheets().getItem("Ark3").delete();
@@ -95,6 +101,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	}
 
 	private void saveWorkbook() {
+		/*
+		 * Before saving and opening the excel file the width of all columns are set to fit the longest entry
+		 */
 		sheetTable.getColumns().autoFit();
 		sheetProject.getColumns().autoFit();
 		sheetDelay.getColumns().autoFit();
@@ -110,10 +119,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	protected String doInBackground() {
 		try{
 
+			/*
+			 * If a list containing the selected customers, projects or statuses is empty they are evaluated the same way as if they were full
+			 */
 			boolean allCustSelected = customerData.size()==0 ? true : false;
 			boolean allProjSelected = projectData.size()==0 ? true : false;
 			boolean allStatSelected = statusData.size()==0 ? true : false;
-
+			
+			/*
+			 * The query is built and executed. Afterwards the data is loaded into a data set 
+			 */
 			StringBuilder query = generateQuery(allCustSelected, allProjSelected, allStatSelected, customerData, projectData, statusData);
 
 			Database db = DatabaseConnection.getDatabase();
@@ -126,10 +141,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			publishedOutput.setText("Creating Table Sheet");
 
 			while(!isCancelled()){
-				//TODO: set standard number format in ItemNr. column
-				//TODO: divide sellRate by exch_type 
-//				Range cell = sheetTable.getRange("A1");
-				
+				// TODO: Language preference?
+				// TODO: get address from columns instead of hard coded values
+				// TODO: set standard number format in ItemNr. column
+				/*
+				 * All data are loaded into 2D-arrays to shorten execution time. One array for each column in the data set ensures less communication between
+				 * the application and Excel.
+				 */
 				String[][] frameAgr = new String[rowCount][1];
 				String[][] project = new String[rowCount][1];
 				String[][] client = new String[rowCount][1];
@@ -155,15 +173,22 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String[][] ecd = new String[rowCount][1];
 				String[][] itemStatus = new String[rowCount][1];
 				
+				/*
+				 * Sets only allow unique entries. Thus when we need to display one graph per supplier we utilize the sets.
+				 */
 				Set<String> projectSet = new HashSet<String>();
 				Set<String> millSet = new HashSet<String>();
 				Set<String> currencySet = new HashSet<String>();
 				
+				/*
+				 * We iterate over the data set and insert the results into the arrays while publishing the progress to the progress bar.
+				 */
 				while(dataSet.inBounds() && !isCancelled()){
 					setProgress(100 * processed / rowCount);
 					progressField.setText("Adding row: " + processed);
 					
 					int column = 0;
+					
 					frameAgr[processed][0] = dataSet.getString(column++).trim();
 					projectSet.add(dataSet.getString(column).trim());
 					project[processed][0] = dataSet.getString(column++).trim();
@@ -198,6 +223,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
 				dataSet.close();
 				
+				/*
+				 * The data in the arrays are inserted into the "Table"-sheet
+				 * Note that currently .setValues will interpret UTF-8 as Windows-1252 characters. By inserting value cell by cell the characters
+				 * are interpreted correctly but the application will slow down greatly. 
+				 */
 				sheetTable.getRange("A1", "A"+rowCount).setValues(frameAgr);
 				sheetTable.getRange("B1", "B"+rowCount).setValues(project);
 				sheetTable.getRange("C1", "C"+rowCount).setValues(client);
@@ -210,7 +240,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange("J1", "J"+rowCount).setValues(clientArtCode);
 				sheetTable.getRange("K1", "K"+rowCount).setValues(vendorNr);
 				sheetTable.getRange("L1", "L"+rowCount).setValues(description);
-				sheetTable.getRange("M1", "M"+rowCount).setValues(supplier);
+				sheetTable.getRange("M1", "M"+rowCount).setValues(supplier); 
 				sheetTable.getRange("N1", "N"+rowCount).setValues(qty);
 				sheetTable.getRange("O1", "O"+rowCount).setValues(unitPrice);
 				sheetTable.getRange("P1", "P"+rowCount).setValues(totalPrice);
@@ -223,13 +253,36 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange("W1", "W"+rowCount).setValues(ecd);
 				sheetTable.getRange("X1", "X"+rowCount).setValues(itemStatus);
 				
+				/*
+				 * To account for the incorrect interpretation of UTF-8 characters the actual characters are translated back to the expected characters.
+				 * Ref: http://www.i18nqa.com/debug/utf8-debug.html
+				 */
+				Range entireTableSheet = sheetTable.getRange("A1:X"+rowCount);
+				if(entireTableSheet.find("Ã˜")!=null) entireTableSheet.replace("Ã˜", "Ø");
+				if(entireTableSheet.find("Ã¸")!=null) entireTableSheet.replace("Ã¸", "ø");
+				if(entireTableSheet.find("Ã…")!=null) entireTableSheet.replace("Ã…", "Å");
+				if(entireTableSheet.find("Ã¥")!=null) entireTableSheet.replace("Ã¥", "å");
+				if(entireTableSheet.find("Ã†")!=null) entireTableSheet.replace("Ã†", "Æ");
+				if(entireTableSheet.find("Ã¦")!=null) entireTableSheet.replace("Ã¦", "æ");
+				if(entireTableSheet.find("Ãœ")!=null) entireTableSheet.replace("Ãœ", "Ü");
+				if(entireTableSheet.find("Ã¼")!=null) entireTableSheet.replace("Ã¼", "ü");
+				if(entireTableSheet.find("Ã„")!=null) entireTableSheet.replace("Ã„", "Ä");
+				if(entireTableSheet.find("Ã¤")!=null) entireTableSheet.replace("Ã¤", "ä");
+				if(entireTableSheet.find("Ã©")!=null) entireTableSheet.replace("Ã©", "é");
+				if(entireTableSheet.find("Ã¨")!=null) entireTableSheet.replace("Ã¨", "è");
+				if(entireTableSheet.find("Ã‰")!=null) entireTableSheet.replace("Ã‰", "É");
+				if(entireTableSheet.find("Ãˆ")!=null) entireTableSheet.replace("Ãˆ", "È");
+				if(entireTableSheet.find("â€“")!=null) entireTableSheet.replace("â€“", "–");
+				if(entireTableSheet.find("Ã’")!=null) entireTableSheet.replace("Ã’", "Ò");
+				if(entireTableSheet.find("Ã²")!=null) entireTableSheet.replace("Ã²", "ò");
+				
 				String firstHeaderCell = "A1";
 				String currentHeaderCell = firstHeaderCell;
 				String formulaStartCell = "A2";
-				String currentEndCell = sheetTable.getRange(currentHeaderCell).getEntireColumn().getEnd(Direction.DOWN).getAddress();
+				String currentEndCell = sheetTable.getRange(currentHeaderCell).getEntireColumn().getEnd(Direction.DOWN).getAddress(); 
 
 				/*
-				 * Creates header row in the "Table"-sheet
+				 * Creates the header row in the "Table"-sheet by using the column names in the data set.
 				 */
 				for(String column : columnNames){
 					String headerName = column.replaceAll("\\s+", "");
@@ -240,6 +293,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				}
 
+				/*
+				 * Gets the address of excel ranges used later in formulas.
+				 */
 				String totalValueRangeAddress = sheetTable.getRange("TotalPrice").getAddress(false, false);
 				String currencyRangeAddress = sheetTable.getRange("currency").getAddress(false, false);
 				String projectRangeAddress = sheetTable.getRange("Project").getAddress(false, false);
@@ -248,20 +304,15 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String supplierRangeAddressAbsolute = sheetTable.getRange("Supplier").getAddress(true, true);
 				
 				/*
-				 * Converts total value into value[eur]
+				 * Converts total value into EURO. The NOK to EURO conversion rate is retrieved from the database. The period is replaced
+				 * by a comma as we are using a Norwegian version of Excel. This is not needed when inserting a double directly into a cell,
+				 * however when creating a string formula it seems needed.  
 				 */
-
-				// TODO: Language preference?
-				// TODO: get address from columns instead of hard coded values
-				// TODO: Special letter issues. æ,ø,å,û,ü,ù etc
-				
-				// Get EUR sell rate
 				Statement st = db.getJdbcConnection().createStatement();
 				st.setQueryTimeout(60);
 				ResultSet rs = st.executeQuery("SELECT vendor.dbo.Exchange_rate.sell_rate FROM vendor.dbo.Exchange_rate WHERE vendor.dbo.Exchange_rate.currency_id=99");
 				rs.next();
 				Double sellRate = rs.getDouble("sell_rate");
-				// Have to replace period with comma as excel only accepts norwegian
 				String convertedSellRate = sellRate.toString().replace(".", ","); 
 				st.close();
 				rs.close();
@@ -270,15 +321,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("Total_EUR");
 				sheetTable.getRange(currentHeaderCell).setValue("Total [EUR]");
 				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(HVIS(Q2=\"EUR\";P2;(P2/" + convertedSellRate + ")*R2);0)"); 
-				//TODO: Move to separate method
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
 
 				/*
-				 *  Creates the delay part of the "Table"-sheet.
+				 *  Creates the delay part of the "Table"-sheet. The formulas are put into one cell and then by using fillDown all cells are given
 				 */
-
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("RFICDD");
 				sheetTable.getRange(currentHeaderCell).setValue("RFI-CDD");
 				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(S2=\"\"; 0; ((U2-S2)/7)))"); 
@@ -396,6 +445,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetProject.getRange(firstCell).activate();
 				
 				for(String projectName : projectSet){
+					publishedOutput.setText("Creating Project Sheet");
 					progressField.setText("Processing project: " + processed);
 					setProgress(100 * ++processed / projectSet.size());
 
@@ -693,7 +743,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int chartX = 0;
 				int chartY = 15;
 				processed = 0;
-
+				
+				publishedOutput.setText("Creating Delay Mill Sheet");
 				for(String mill : millSet){
 
 					progressField.setText("Processing Delay Mill: " + processed);
@@ -817,7 +868,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Creates and populates the "Mill"-sheet
 				 */
-
+				publishedOutput.setText("Creating Mill Sheet");
 				String firstCellMill = "A1";
 				excel.getWorksheets().getItem("Mill").activate();
 				sheetMill.getRange(firstCellMill).activate();
