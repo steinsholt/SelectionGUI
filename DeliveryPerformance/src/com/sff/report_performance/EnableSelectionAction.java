@@ -11,25 +11,21 @@ import com.sff.report_performance.GUI.State;
 public class EnableSelectionAction extends AbstractAction{
 	private static final long serialVersionUID = 1L;
 	private GUI gui;
-	private State state;
 
-	public EnableSelectionAction(GUI gui, State state){
+	public EnableSelectionAction(GUI gui){
 		this.gui = gui;
-		this.state = state;
 	}
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		
-		Active.setState(state);
-		
-		boolean isCustomerEnabled = Active.getState() == State.CUSTOMER;
+		boolean isCustomerEnabled = Active.getState() == State.CLIENT;
 		boolean isProjectEnabled = Active.getState() == State.PROJECT;
-		boolean isStatusEnabled = Active.getState() == State.STATUS;
+		boolean isStatusEnabled = Active.getState() == State.CATEGORY;
 		
 		if(isCustomerEnabled)gui.getSelectionHeadline().setText("Select Customers");
 		else if(isProjectEnabled)gui.getSelectionHeadline().setText("Select Projects");
-		else gui.getSelectionHeadline().setText("Select Statuses");
+		else gui.getSelectionHeadline().setText("Select Category");
 		
 		if(isStatusEnabled)gui.getNameLabel().setVisible(false);
 		else gui.getNameLabel().setVisible(true);

@@ -3,12 +3,16 @@ package com.sff.report_performance;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -21,7 +25,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToolBar;
-import javax.swing.SpringLayout;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
@@ -31,47 +34,52 @@ import javax.swing.text.PlainDocument;
 public class GUI {
 
 	private JFrame frame;
-	private JButton generateReportButton;
 	private JTextField idField;
 	private JTextField nameField;
+	private JTextField categoryField;
+	private JTextField frameAgrField;
 	private JLabel idLabel;
 	private JLabel nameLabel;
-	private JButton searchButton;
+	private JLabel frameAgrLabel;
+	private JLabel categoryLabel;
+	private JLabel selectionHeadlineLabel;
+	private JLabel reportParameterLabel;
 	private JScrollPane scrollPane;
-	private SelectionTable selectionTable;
 	private JScrollPane scrollPaneCustomers;
-	private static ReportParameterTable customerTable;
 	private JScrollPane scrollPaneProjects;
+	private SelectionTable selectionTable;
+	private static ReportParameterTable clientTable;
 	private static ReportParameterTable projectTable;
-	private JScrollPane scrollPaneStatuses;
-	private static ReportParameterTable statusTable;
-	private static MyTableModel reportParameterCustomerModel;
+	private static ReportParameterTable categoryTable;
+	private static MyTableModel reportParameterClientModel;
 	private static MyTableModel reportParameterProjectModel;
-	private static MyTableModel reportParameterStatusModel;
-	private static MyTableModel selectCustomerModel;
+	private static MyTableModel selectClientModel;
 	private static MyTableModel selectProjectModel;
-	private static MyTableModel selectStatusModel;
+	private static MyTableModel selectCategoryModel;
+	private static MyTableModel selecFrameAgrModel;
 	private NullSelectionModel nullSelectionModel;
 	private JToolBar toolBar;
-	private JPanel selectionPanel;
-	private SpringLayout selectionPanelLayout;
-	private JButton customerButton;
+	private JButton generateReportButton;
+	private JButton helpButton;
+	private JButton frameAgrButton;
+	private JButton clientButton;
 	private JButton projectButton;
-	private JButton statusButton;
+	private JButton categoryButton;
+	private JButton searchButton;
 	private CheckBoxHeader header;
 	private DatabaseConnection databaseConnection;
-	private List<String> customerColumnNames;
+	private List<String> clientColumnNames;
 	private List<String> projectColumnNames;
-	private List<String> statusColumnNames;
-	private SpringLayout displayPanelLayout;
+	private List<String> categoryColumnNames;
+	private List<String> frameAgrColumnNames;
+	private JPanel backgroundPanel;;
+	private JPanel selectionPanel;
 	private JPanel displayPanel;
-	private Font bold;
-	private SpringLayout reportPerformancePanelLayout;
-	private JButton button;
-	private JLabel label;
 	private JPanel buttonPanel;
-	private JLabel selectionHeadline;
 	private JPanel reportPanel;
+	private JPanel navigationPanel;
+	private JPanel helpPanel;
+	private Font bold;
 
 	public JFrame getFrame() {
 		return frame;
@@ -90,137 +98,227 @@ public class GUI {
 			e.printStackTrace();
 		}
 
-		customerColumnNames = new ArrayList<String>();
-		customerColumnNames.add("");
-		customerColumnNames.add("ID");
-		customerColumnNames.add("Customers");
+		clientColumnNames = new ArrayList<String>();
+		clientColumnNames.add("");
+		clientColumnNames.add("ID");
+		clientColumnNames.add("Clients");
 
 		projectColumnNames = new ArrayList<String>();
 		projectColumnNames.add("");
 		projectColumnNames.add("Projects");
 
-		statusColumnNames = new ArrayList<String>();
-		statusColumnNames.add("");
-		statusColumnNames.add("Item Statuses");
+		categoryColumnNames = new ArrayList<String>();
+		categoryColumnNames.add("");
+		categoryColumnNames.add("Categories");
+		
+		frameAgrColumnNames = new ArrayList<String>();
+		frameAgrColumnNames.add("");
+		frameAgrColumnNames.add("Frame Agreements");
 
 		frame = new JFrame();
 		frame.setBounds(100, 100, 1000, 900);
-		frame.setMinimumSize(new Dimension(700,600));
+		frame.setMinimumSize(new Dimension(700, 600));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		reportPerformancePanelLayout = new SpringLayout();
-		frame.getContentPane().setLayout(reportPerformancePanelLayout);
 		frame.getContentPane().setBackground(Color.white);
 		
-		nullSelectionModel = new NullSelectionModel();
-
 		bold = new Font("Serif", Font.BOLD, 12);
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 
-		selectCustomerModel = new MyTableModel(customerColumnNames);
+		selectClientModel = new MyTableModel(clientColumnNames);
 		selectProjectModel = new MyTableModel(projectColumnNames);
-		selectStatusModel = new MyTableModel(statusColumnNames);
+		selectCategoryModel = new MyTableModel(categoryColumnNames);
+		selecFrameAgrModel = new MyTableModel(frameAgrColumnNames);
 
-		reportParameterStatusModel = new MyTableModel(statusColumnNames);
 		reportParameterProjectModel = new MyTableModel(projectColumnNames);
-		reportParameterCustomerModel = new MyTableModel(customerColumnNames);
+		reportParameterClientModel = new MyTableModel(clientColumnNames);
+		
+		backgroundPanel = new JPanel(new GridBagLayout());
+		frame.getContentPane().add(backgroundPanel);
 
-		selectionPanel = new JPanel();
-		selectionPanel.setBackground(Color.white);
-		frame.getContentPane().add(selectionPanel);
+		GridBagConstraints constraints = new GridBagConstraints();
+		
+		createSelectionTable(constraints);
+		createNavigationPanel(constraints);
+		createButtonPanel(headline, subheadline, constraints);
+		createHelpPanel(constraints);
+		createReportPanel(constraints);
+		createDisplayPanel(constraints);
 
-		selectionPanelLayout = new SpringLayout();
-		selectionPanel.setLayout(selectionPanelLayout);
-		scrollPane = new JScrollPane();
-		selectionPanelLayout.putConstraint(SpringLayout.WEST, scrollPane, 0, SpringLayout.WEST, selectionPanel);
-		selectionPanelLayout.putConstraint(SpringLayout.SOUTH, scrollPane, 0, SpringLayout.SOUTH, selectionPanel);
-		reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, scrollPane, 10, SpringLayout.WEST, selectionPanel);
-		selectionPanelLayout.putConstraint(SpringLayout.EAST, scrollPane, 0, SpringLayout.EAST, selectionPanel);
-		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
-		reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, scrollPane, 454, SpringLayout.WEST, selectionPanel);
-		selectionPanel.add(scrollPane);
+		selectionTable.setAutoCreateRowSorter(true);
+		frame.pack();
+	}
 
-		selectionTable = new SelectionTable(selectCustomerModel);
-		selectionTable.setName("selection");
-		selectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(selectionTable));
-		TableColumn tc = configureTableColumns(selectionTable);
-		header = new CheckBoxHeader(new SelectionTableHeaderListener(selectionTable));
-		tc.setHeaderRenderer(header);
+	private void createDisplayPanel(GridBagConstraints constraints) {
+		constraints.gridx = 1;
+		constraints.gridy = 1;
+		constraints.weightx = 0.5;
+		constraints.weighty = 1;
+		displayPanel = new JPanel(new GridBagLayout());
+		backgroundPanel.add(displayPanel, constraints);
+		
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.gridwidth = 2;
+		constraints.weightx = 0.5;
+		constraints.weighty = 0.5;
+		scrollPaneProjects = new JScrollPane();
+		displayPanel.add(scrollPaneProjects, constraints);
+		
+		constraints.gridx = 0;
+		constraints.gridy = 2;
+		constraints.weightx = 0.5;
+		constraints.weighty = 0.5;
+		scrollPaneCustomers = new JScrollPane();
+		displayPanel.add(scrollPaneCustomers, constraints);
+		constraints.gridwidth = 1;
+		
+		constraints.weightx = 0;
+		constraints.weighty = 0;
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		frameAgrLabel = new JLabel("Frame Agreement");
+		displayPanel.add(frameAgrLabel, constraints);
+		
+		constraints.gridx = 1;
+		constraints.gridy = 0;
+		frameAgrField = new JTextField();
+		frameAgrField.setColumns(15);
+		displayPanel.add(frameAgrField, constraints);
+		
+		constraints.gridx = 1;
+		constraints.gridy = 3;
+		categoryField = new JTextField();
+		categoryField.setColumns(15);
+		displayPanel.add(categoryField, constraints);
+		
+		constraints.gridx = 0;
+		constraints.gridy = 3;
+		categoryLabel = new JLabel("Category");
+		displayPanel.add(categoryLabel, constraints);
+		
+		nullSelectionModel = new NullSelectionModel();
+		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
+		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel);
+		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,selectionTable));
+		projectTable.setName("projects");
+		configureTableColumns(projectTable);
+		scrollPaneProjects.setViewportView(projectTable);
+		projectTable.disable();
 
-		scrollPane.setViewportView(selectionTable);
-		scrollPane.getViewport().setBackground(Color.white);
+		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
+		clientTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterClientModel);
+		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(clientTable,selectionTable));
+		clientTable.setName("clients");
+		configureTableColumns(clientTable);
+		clientTable.getColumnModel().getColumn(1).setMaxWidth(50);
+		scrollPaneCustomers.setViewportView(clientTable);
+		clientTable.disable();
+	}
 
-		databaseConnection = new DatabaseConnection();
-		databaseConnection.loadStatusData(selectStatusModel);
+	private void createReportPanel(GridBagConstraints constraints) {
+		constraints.gridx = 1;
+		constraints.gridy = 2;
+		reportPanel = new JPanel();
+		backgroundPanel.add(reportPanel, constraints);
+		generateReportButton = new JButton();
+		reportPanel.add(generateReportButton);
 
-		final JPanel reportPerformancePanel = new JPanel();
+//		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), reportParameterCategoryModel.getRowData(), frame));
+		generateReportButton.setForeground(Color.blue);
+		generateReportButton.setFont(bold);
+		generateReportButton.setText("Generate Report");
+	}
 
-		buttonPanel = new JPanel();
-		selectionPanelLayout.putConstraint(SpringLayout.NORTH, scrollPane, 6, SpringLayout.SOUTH, buttonPanel);
-		reportPerformancePanelLayout.putConstraint(SpringLayout.EAST, buttonPanel, -22, SpringLayout.EAST, scrollPane);
-		reportPerformancePanelLayout.putConstraint(SpringLayout.WEST, buttonPanel, 0, SpringLayout.WEST, selectionPanel);
-		reportPerformancePanelLayout.putConstraint(SpringLayout.NORTH, buttonPanel, 0, SpringLayout.NORTH, selectionPanel);
-		selectionPanel.add(buttonPanel);
-		buttonPanel.setPreferredSize(new Dimension(460,150));
+	private void createHelpPanel(GridBagConstraints constraints) {
+		constraints.gridx = 1;
+		constraints.gridy = 0;
+		constraints.weightx = 0.5;
+		constraints.weighty = 0;
+		helpPanel = new JPanel();
+		backgroundPanel.add(helpPanel,constraints);
+		helpButton = new JButton("Help");
+		helpPanel.add(helpButton);
+		reportParameterLabel = new JLabel("Report Parameters");
+		reportParameterLabel.setFont(new Font("Serif", Font.PLAIN, 24));
+		helpPanel.add(reportParameterLabel);
+	}
+
+	private void createButtonPanel(Font headline, Font subheadline, GridBagConstraints constraints) {
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		buttonPanel = new JPanel(new GridBagLayout());
+		backgroundPanel.add(buttonPanel, constraints);
 		buttonPanel.setBackground(Color.white);
-		SpringLayout sl_panel_5 = new SpringLayout();
-		buttonPanel.setLayout(sl_panel_5);
 
-		selectionHeadline = new JLabel("Select Customers");
-		sl_panel_5.putConstraint(SpringLayout.NORTH, selectionHeadline, 10, SpringLayout.NORTH, buttonPanel);
-		sl_panel_5.putConstraint(SpringLayout.WEST, selectionHeadline, 10, SpringLayout.WEST, buttonPanel);
-		selectionHeadline.setFont(headline);
-		buttonPanel.add(selectionHeadline);
+		constraints.weightx = 0;
+		constraints.weighty = 0;
+		constraints.gridx = 0;
+		constraints.gridy = 0;
+		constraints.fill = GridBagConstraints.NONE;
+		selectionHeadlineLabel = new JLabel("Select Frame Agreement");
+		selectionHeadlineLabel.setFont(headline);
+		buttonPanel.add(selectionHeadlineLabel, constraints);
 
+		constraints.gridx = 0;
+		constraints.gridy = 1;
 		idLabel = new JLabel("Customer ID");
-		sl_panel_5.putConstraint(SpringLayout.NORTH, idLabel, 6, SpringLayout.SOUTH, selectionHeadline);
-		sl_panel_5.putConstraint(SpringLayout.WEST, idLabel, 0, SpringLayout.WEST, selectionHeadline);
-		buttonPanel.add(idLabel);
+		buttonPanel.add(idLabel, constraints);
 		idLabel.setFont(subheadline);
+		
+		constraints.gridx = 0;
+		constraints.gridy = 2;
 		nameLabel = new JLabel("Customer Name");
-		sl_panel_5.putConstraint(SpringLayout.WEST, nameLabel, 0, SpringLayout.WEST, selectionHeadline);
-		buttonPanel.add(nameLabel);
+		buttonPanel.add(nameLabel, constraints);
 		nameLabel.setFont(subheadline);
 
+		constraints.gridx = 1;
+		constraints.gridy = 1;
 		PlainDocument doc = MyDocumentFilter.createDocumentFilter();
 		idField = new JTextField();
+		idField.setColumns(15);
 		idField.setDocument(doc);
-		sl_panel_5.putConstraint(SpringLayout.NORTH, idField, 9, SpringLayout.SOUTH, selectionHeadline);
-		sl_panel_5.putConstraint(SpringLayout.WEST, idField, 63, SpringLayout.EAST, idLabel);
-		sl_panel_5.putConstraint(SpringLayout.EAST, idField, -129, SpringLayout.EAST, buttonPanel);
-		buttonPanel.add(idField);
-		idField.setColumns(10);
+		buttonPanel.add(idField, constraints);
 		
+		constraints.gridx = 1;
+		constraints.gridy = 2;
 		nameField = new JTextField();
-		sl_panel_5.putConstraint(SpringLayout.NORTH, nameLabel, -3, SpringLayout.NORTH, nameField);
-		sl_panel_5.putConstraint(SpringLayout.NORTH, nameField, 6, SpringLayout.SOUTH, idField);
-		sl_panel_5.putConstraint(SpringLayout.WEST, nameField, 0, SpringLayout.WEST, idField);
-		sl_panel_5.putConstraint(SpringLayout.EAST, nameField, 0, SpringLayout.EAST, idField);
-		buttonPanel.add(nameField);
-		nameField.setColumns(10);
+		nameField.setColumns(15);
+		buttonPanel.add(nameField, constraints);
 
+		constraints.gridx = 0;
+		constraints.gridy = 3;
 		toolBar = new JToolBar();
-		sl_panel_5.putConstraint(SpringLayout.WEST, toolBar, 0, SpringLayout.WEST, selectionHeadline);
-		sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 10, SpringLayout.SOUTH, buttonPanel);
-		sl_panel_5.putConstraint(SpringLayout.EAST, toolBar, 0, SpringLayout.EAST, idField);
-		buttonPanel.add(toolBar);
+		buttonPanel.add(toolBar, constraints);
 		toolBar.setLayout(new GridLayout());
 		toolBar.setFloatable(false);
 
-		customerButton = new JButton();
-		customerButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		frameAgrButton = new JButton();
+		frameAgrButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		
+		clientButton = new JButton();
+		clientButton.setBorder(BorderFactory.createSoftBevelBorder(0));
 
 		projectButton = new JButton();
 		projectButton.setBorder(BorderFactory.createSoftBevelBorder(0));
 
-		statusButton = new JButton();
-		statusButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		categoryButton = new JButton();
+		categoryButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		
+		clientButton.setText("Clients");
+		projectButton.setText("Projects");
+		categoryButton.setText("Category");
+		frameAgrButton.setText("Frame Agr.");
+		
+		toolBar.add(frameAgrButton);
+		toolBar.add(projectButton);
+		toolBar.add(clientButton);
+		toolBar.add(categoryButton);
 
+		constraints.gridx = 1;
+		constraints.gridy = 4;
 		searchButton = new JButton("Search");
-		sl_panel_5.putConstraint(SpringLayout.SOUTH, searchButton, -8, SpringLayout.SOUTH, buttonPanel);
-		sl_panel_5.putConstraint(SpringLayout.SOUTH, toolBar, 0, SpringLayout.SOUTH, searchButton);
-		sl_panel_5.putConstraint(SpringLayout.EAST, searchButton, -10, SpringLayout.EAST, buttonPanel);
-		buttonPanel.add(searchButton);
+		buttonPanel.add(searchButton, constraints);
 		searchButton.setForeground(Color.blue);
 		searchButton.setFont(bold);
 		searchButton.addActionListener(new ActionListener() {
@@ -245,103 +343,43 @@ public class GUI {
 				}
 			}
 		});
+	}
 
-		frame.getContentPane().add(reportPerformancePanel);
-		reportPerformancePanel.setLayout(new SpringLayout());
+	private void createNavigationPanel(GridBagConstraints constraints) {
+		constraints.gridx = 0;
+		constraints.gridy = 2;
+		constraints.weightx = 0.5;
+		constraints.weighty = 0;
+		navigationPanel = new JPanel();
+		backgroundPanel.add(navigationPanel, constraints); 
+		JButton previousStepButton = new JButton("Previous");
+		navigationPanel.add(previousStepButton);
+		JButton nextStepButton = new JButton("Next");
+		navigationPanel.add(nextStepButton);
+	}
 
-		final JPanel helpPanel = new JPanel();
-		helpPanel.setPreferredSize(new Dimension(100, 75));
-		reportPerformancePanel.add(helpPanel);
-		SpringLayout sl_panel_4 = new SpringLayout();
-		helpPanel.setLayout(sl_panel_4);
+	private void createSelectionTable(GridBagConstraints constraints) {
+		constraints.insets = new Insets(2,2,2,2);
+		constraints.gridx = 0;
+		constraints.gridy = 1;
+		constraints.fill = GridBagConstraints.BOTH;
+		constraints.weightx = 0.5;
+		constraints.weighty = 1;
+		selectionPanel = new JPanel();
+		selectionPanel.setBackground(Color.white);
+		scrollPane = new JScrollPane();
+		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
+		selectionPanel.add(scrollPane);
+		backgroundPanel.add(scrollPane, constraints);
 
-		button = new JButton("Help");
-		sl_panel_4.putConstraint(SpringLayout.SOUTH, button, 0, SpringLayout.SOUTH, helpPanel);
-		sl_panel_4.putConstraint(SpringLayout.EAST, button, -10, SpringLayout.EAST, helpPanel);
-		helpPanel.add(button);
-
-		label = new JLabel("Report Parameters");
-		sl_panel_4.putConstraint(SpringLayout.WEST, label, 85, SpringLayout.WEST, helpPanel);
-		sl_panel_4.putConstraint(SpringLayout.SOUTH, label, 0, SpringLayout.SOUTH, helpPanel);
-		label.setFont(new Font("Serif", Font.PLAIN, 24));
-		helpPanel.add(label);
-
-		displayPanel = new JPanel();
-		reportPerformancePanel.add(displayPanel);
-		displayPanelLayout = new SpringLayout();
-		displayPanel.setLayout(displayPanelLayout);
-
-		scrollPaneCustomers = new JScrollPane();
-		displayPanel.add(scrollPaneCustomers);	
-		scrollPaneProjects = new JScrollPane();
-		displayPanel.add(scrollPaneProjects);	
-		scrollPaneStatuses = new JScrollPane();
-		displayPanel.add(scrollPaneStatuses);	
-		SpringUtilities.makeGrid(displayPanel,3,1,0,0,0,5);
-
-		PartialSelectionModel statusSelectionModel = new PartialSelectionModel();
-		statusTable = new ReportParameterTable(statusSelectionModel, nullSelectionModel, reportParameterStatusModel);
-		statusSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(statusTable,selectionTable));
-		statusTable.setName("statuses");
-		configureTableColumns(statusTable);
-		scrollPaneStatuses.setViewportView(statusTable);
-		statusTable.disable();
-
-		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
-		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel);
-		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,selectionTable));
-		projectTable.setName("projects");
-		configureTableColumns(projectTable);
-		scrollPaneProjects.setViewportView(projectTable);
-		projectTable.disable();
-
-		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
-		customerTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterCustomerModel);
-		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(customerTable,selectionTable));
-		customerTable.setName("customers");
-		configureTableColumns(customerTable);
-		customerTable.getColumnModel().getColumn(1).setMaxWidth(50);
-		scrollPaneCustomers.setViewportView(customerTable);
-		customerTable.enable();
-
-		// TODO: Fix overlapping panels after resize. GUI looks horrible at certain screen sizes.
-
-		reportPanel = new JPanel();
-		reportPanel.setPreferredSize(new Dimension(100,75));
-		reportPerformancePanel.add(reportPanel);
-		SpringLayout reportPanelLayout = new SpringLayout();
-		reportPanel.setLayout(reportPanelLayout);
-		generateReportButton = new JButton();
-		reportPanelLayout.putConstraint(SpringLayout.EAST, generateReportButton, -5, SpringLayout.EAST, reportPanel);
-		reportPanelLayout.putConstraint(SpringLayout.SOUTH, generateReportButton, 0, SpringLayout.SOUTH, reportPanel);
-		reportPanel.add(generateReportButton);
-
-		generateReportButton.setAction(new GenerateReportAction(reportParameterCustomerModel.getRowData(), reportParameterProjectModel.getRowData(), reportParameterStatusModel.getRowData(), frame));
-		generateReportButton.setForeground(Color.blue);
-		generateReportButton.setFont(bold);
-		generateReportButton.setText("Generate Report");
-
-		SpringUtilities.makeCompactGrid(reportPerformancePanel,3,1,0,5,5,5);
-		SpringUtilities.makeGrid(frame.getContentPane(),1,2,0,0,10,10);
-		
-		EnableSelectionAction selectCustomers = new EnableSelectionAction(this, State.CUSTOMER);
-		customerButton.setAction(selectCustomers);
-		customerButton.setText("Select Customers");
-
-		EnableSelectionAction selectProjects = new EnableSelectionAction(this, State.PROJECT);
-		projectButton.setAction(selectProjects);
-		projectButton.setText("Select Projects");
-
-		EnableSelectionAction selectStatuses = new EnableSelectionAction(this, State.STATUS);
-		statusButton.setAction(selectStatuses);
-		statusButton.setText("Select Statuses");
-
-		toolBar.add(customerButton);
-		toolBar.add(projectButton);
-		toolBar.add(statusButton);
-
-		Active.setState(State.CUSTOMER);
-		selectionTable.setAutoCreateRowSorter(true);
+		selectionTable = new SelectionTable(selectClientModel);
+		selectionTable.setName("selection");
+		selectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(selectionTable));
+		TableColumn tc = configureTableColumns(selectionTable);
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(selectionTable));
+		tc.setHeaderRenderer(header);
+		scrollPane.setViewportView(selectionTable);
+		scrollPane.getViewport().setBackground(Color.white);
 	}
 
 	public TableColumn configureTableColumns(JTable table) {
@@ -365,14 +403,18 @@ public class GUI {
 		return tc;
 	}
 
-	public enum State {CUSTOMER, PROJECT, STATUS};
+	public enum State {
+		FRAME, CLIENT, PROJECT, CATEGORY;
+		public static final EnumSet<State> enumList = EnumSet.allOf(State.class);
+		
+		}
 	public static class Active{
 
 		private static MyTableModel display;
 		private static MyTableModel select;
 		private static ReportParameterTable table;
-		private static State activeState;
-
+		private static State activeState = State.FRAME;
+		
 		public static MyTableModel getActiveDisplayModel(){
 			return display;
 		}
@@ -388,29 +430,74 @@ public class GUI {
 		public static State getState(){
 			return activeState;
 		}
-
-		public static void setState(State state){
-			switch (state){
-			case CUSTOMER:
-				display = reportParameterCustomerModel;
-				select = selectCustomerModel;
-				table = customerTable;
-				activeState = state;
-				break;
-			case PROJECT:
+		
+		public static State setNextState(){
+			switch(activeState){
+			case FRAME:
 				display = reportParameterProjectModel;
 				select = selectProjectModel;
 				table = projectTable;
-				activeState = state;
-				break;
-			case STATUS:
-				display = reportParameterStatusModel;
-				select = selectStatusModel;
-				table = statusTable;
-				activeState = state;
-				break;
+				return State.PROJECT;
+			case PROJECT:
+				display = reportParameterClientModel;
+				select = selectClientModel;
+				table = clientTable;
+				return State.CLIENT;
+			case CLIENT:
+				
+				return State.CATEGORY;
+			case CATEGORY:
+				return activeState;
 			}
+			return activeState;
 		}
+		
+		public static State setPreviousState(){
+			switch(activeState){
+			case FRAME:
+				return activeState;
+			case PROJECT:
+				
+				return State.FRAME;
+			case CLIENT:
+				display = reportParameterProjectModel;
+				select = selectProjectModel;
+				table = projectTable;
+				return State.PROJECT;
+			case CATEGORY:
+				display = reportParameterClientModel;
+				select = selectClientModel;
+				table = clientTable;
+				return State.CLIENT;
+			}
+			return activeState;
+		}
+
+//		public static void setState(State state){
+//			switch (state){
+//			case CLIENT:
+//				display = reportParameterClientModel;
+//				select = selectClientModel;
+//				table = clientTable;
+//				activeState = state;
+//				break;
+//			case PROJECT:
+//				display = reportParameterProjectModel;
+//				select = selectProjectModel;
+//				table = projectTable;
+//				activeState = state;
+//				break;
+//			case CATEGORY:
+//				display = reportParameterCategoryModel;
+//				select = selectCategoryModel;
+//				table = categoryTable;
+//				activeState = state;
+//				break;
+//			case FRAME:
+//				
+//				break;
+//			}
+//		}
 	}
 
 	public JTextField getIdField() {
@@ -432,43 +519,40 @@ public class GUI {
 		return selectionTable;
 	}
 	public ReportParameterTable getCustomerTable() {
-		return customerTable;
+		return clientTable;
 	}
 	public ReportParameterTable getProjectTable() {
 		return projectTable;
 	}
 	public ReportParameterTable getStatusTable() {
-		return statusTable;
+		return categoryTable;
 	}
 	public MyTableModel getReportParameterCustomerModel() {
-		return reportParameterCustomerModel;
+		return reportParameterClientModel;
 	}
 	public MyTableModel getReportParameterProjectModel() {
 		return reportParameterProjectModel;
 	}
-	public MyTableModel getReportParameterStatusModel() {
-		return reportParameterStatusModel;
-	}
 	public MyTableModel getSelectCustomerModel() {
-		return selectCustomerModel;
+		return selectClientModel;
 	}
 	public MyTableModel getSelectProjectModel() {
 		return selectProjectModel;
 	}
 	public MyTableModel getSelectStatusModel() {
-		return selectStatusModel;
+		return selectCategoryModel;
 	}
 	public JButton getCustomersButton() {
-		return customerButton;
+		return clientButton;
 	}
 	public JButton getProjectsButton() {
 		return projectButton;
 	}
 	public JButton getStatusesButton() {
-		return statusButton;
+		return categoryButton;
 	}
 	public JLabel getSelectionHeadline() {
-		return selectionHeadline;
+		return selectionHeadlineLabel;
 	}	
 	public TableCellRenderer getHeader() {
 		return header;
