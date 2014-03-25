@@ -1,12 +1,8 @@
 package com.sff.report_performance;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.GridLayout;
-import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -30,6 +26,8 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.PlainDocument;
+
+import net.miginfocom.swing.MigLayout;
 
 public class GUI {
 
@@ -116,8 +114,6 @@ public class GUI {
 		frameAgrColumnNames.add("Frame Agreements");
 
 		frame = new JFrame();
-		frame.setBounds(100, 100, 1000, 900);
-		frame.setMinimumSize(new Dimension(700, 600));
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setBackground(Color.white);
 		
@@ -133,69 +129,50 @@ public class GUI {
 		reportParameterProjectModel = new MyTableModel(projectColumnNames);
 		reportParameterClientModel = new MyTableModel(clientColumnNames);
 		
-		backgroundPanel = new JPanel(new GridBagLayout());
+		backgroundPanel = new JPanel(new MigLayout("fill, width :800:, height :700:, flowy"));
 		frame.getContentPane().add(backgroundPanel);
 
-		GridBagConstraints constraints = new GridBagConstraints();
+		JPanel buttonPanel = createButtonPanel(headline, subheadline);
+		JPanel helpPanel = createHelpPanel();
+		JScrollPane scrollPane = createSelectionTable();
+		JPanel displayPanel = createDisplayPanel();
+		JPanel navigationPanel = createNavigationPanel();
+		JPanel reportPanel = createReportPanel();
 		
-		createSelectionTable(constraints);
-		createNavigationPanel(constraints);
-		createButtonPanel(headline, subheadline, constraints);
-		createHelpPanel(constraints);
-		createReportPanel(constraints);
-		createDisplayPanel(constraints);
+		backgroundPanel.add(buttonPanel, "growx, spany 2");
+		backgroundPanel.add(scrollPane, "grow, spany 3");
+		backgroundPanel.add(navigationPanel, "growx, wrap"); 
+		backgroundPanel.add(helpPanel, "growx");
+		backgroundPanel.add(displayPanel, "grow, spany 4");
+		backgroundPanel.add(reportPanel, "growx");
 
 		selectionTable.setAutoCreateRowSorter(true);
 		frame.pack();
 	}
-
-	private void createDisplayPanel(GridBagConstraints constraints) {
-		constraints.gridx = 1;
-		constraints.gridy = 1;
-		constraints.weightx = 0.5;
-		constraints.weighty = 1;
-		displayPanel = new JPanel(new GridBagLayout());
-		backgroundPanel.add(displayPanel, constraints);
+	
+	// TODO: Split the help panel and move model creation out of the UI building methods
+	private JPanel createDisplayPanel() {
 		
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		constraints.gridwidth = 2;
-		constraints.weightx = 0.5;
-		constraints.weighty = 0.5;
-		scrollPaneProjects = new JScrollPane();
-		displayPanel.add(scrollPaneProjects, constraints);
+		displayPanel = new JPanel(new MigLayout("fill"));
+		displayPanel.setBorder(BorderFactory.createLineBorder(Color.black));
 		
-		constraints.gridx = 0;
-		constraints.gridy = 2;
-		constraints.weightx = 0.5;
-		constraints.weighty = 0.5;
-		scrollPaneCustomers = new JScrollPane();
-		displayPanel.add(scrollPaneCustomers, constraints);
-		constraints.gridwidth = 1;
-		
-		constraints.weightx = 0;
-		constraints.weighty = 0;
-		constraints.gridx = 0;
-		constraints.gridy = 0;
 		frameAgrLabel = new JLabel("Frame Agreement");
-		displayPanel.add(frameAgrLabel, constraints);
+		displayPanel.add(frameAgrLabel, "split, center");
 		
-		constraints.gridx = 1;
-		constraints.gridy = 0;
 		frameAgrField = new JTextField();
-		frameAgrField.setColumns(15);
-		displayPanel.add(frameAgrField, constraints);
+		displayPanel.add(frameAgrField, "wrap, width :180:");
 		
-		constraints.gridx = 1;
-		constraints.gridy = 3;
-		categoryField = new JTextField();
-		categoryField.setColumns(15);
-		displayPanel.add(categoryField, constraints);
+		scrollPaneProjects = new JScrollPane();
+		displayPanel.add(scrollPaneProjects, "wrap, grow");
 		
-		constraints.gridx = 0;
-		constraints.gridy = 3;
+		scrollPaneCustomers = new JScrollPane();
+		displayPanel.add(scrollPaneCustomers, "wrap, grow");
+		
 		categoryLabel = new JLabel("Category");
-		displayPanel.add(categoryLabel, constraints);
+		displayPanel.add(categoryLabel, "split, center");
+		
+		categoryField = new JTextField();
+		displayPanel.add(categoryField, "width :180:");
 		
 		nullSelectionModel = new NullSelectionModel();
 		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
@@ -214,13 +191,12 @@ public class GUI {
 		clientTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(clientTable);
 		clientTable.disable();
+		
+		return displayPanel;
 	}
 
-	private void createReportPanel(GridBagConstraints constraints) {
-		constraints.gridx = 1;
-		constraints.gridy = 2;
-		reportPanel = new JPanel();
-		backgroundPanel.add(reportPanel, constraints);
+	private JPanel createReportPanel() {
+		reportPanel = new JPanel(new MigLayout("fillx, insets 0", "push[]"));
 		generateReportButton = new JButton();
 		reportPanel.add(generateReportButton);
 
@@ -228,68 +204,48 @@ public class GUI {
 		generateReportButton.setForeground(Color.blue);
 		generateReportButton.setFont(bold);
 		generateReportButton.setText("Generate Report");
+		
+		return reportPanel;
 	}
 
-	private void createHelpPanel(GridBagConstraints constraints) {
-		constraints.gridx = 1;
-		constraints.gridy = 0;
-		constraints.weightx = 0.5;
-		constraints.weighty = 0;
-		helpPanel = new JPanel();
-		backgroundPanel.add(helpPanel,constraints);
-		helpButton = new JButton("Help");
-		helpPanel.add(helpButton);
+	private JPanel createHelpPanel() {
+		helpPanel = new JPanel(new MigLayout("fillx"));
+		
 		reportParameterLabel = new JLabel("Report Parameters");
 		reportParameterLabel.setFont(new Font("Serif", Font.PLAIN, 24));
-		helpPanel.add(reportParameterLabel);
+		helpPanel.add(reportParameterLabel, "center, push");
+		helpButton = new JButton("Help");
+		helpPanel.add(helpButton);
+		
+		return helpPanel;
 	}
 
-	private void createButtonPanel(Font headline, Font subheadline, GridBagConstraints constraints) {
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		buttonPanel = new JPanel(new GridBagLayout());
-		backgroundPanel.add(buttonPanel, constraints);
+	private JPanel createButtonPanel(Font headline, Font subheadline) {
+		buttonPanel = new JPanel(new MigLayout("fillx, insets 10 10 10 0"));
 		buttonPanel.setBackground(Color.white);
 
-		constraints.weightx = 0;
-		constraints.weighty = 0;
-		constraints.gridx = 0;
-		constraints.gridy = 0;
-		constraints.fill = GridBagConstraints.NONE;
 		selectionHeadlineLabel = new JLabel("Select Frame Agreement");
 		selectionHeadlineLabel.setFont(headline);
-		buttonPanel.add(selectionHeadlineLabel, constraints);
+		buttonPanel.add(selectionHeadlineLabel, "span 2, wrap");
 
-		constraints.gridx = 0;
-		constraints.gridy = 1;
 		idLabel = new JLabel("Customer ID");
-		buttonPanel.add(idLabel, constraints);
+		buttonPanel.add(idLabel, "split, left, gapright 61");
 		idLabel.setFont(subheadline);
 		
-		constraints.gridx = 0;
-		constraints.gridy = 2;
-		nameLabel = new JLabel("Customer Name");
-		buttonPanel.add(nameLabel, constraints);
-		nameLabel.setFont(subheadline);
-
-		constraints.gridx = 1;
-		constraints.gridy = 1;
 		PlainDocument doc = MyDocumentFilter.createDocumentFilter();
 		idField = new JTextField();
-		idField.setColumns(15);
 		idField.setDocument(doc);
-		buttonPanel.add(idField, constraints);
+		buttonPanel.add(idField, "wrap, width :183:");
 		
-		constraints.gridx = 1;
-		constraints.gridy = 2;
+		nameLabel = new JLabel("Customer Name");
+		buttonPanel.add(nameLabel, "split, left, gapright 40");
+		nameLabel.setFont(subheadline);
+		
 		nameField = new JTextField();
-		nameField.setColumns(15);
-		buttonPanel.add(nameField, constraints);
+		buttonPanel.add(nameField, "wrap, width :183:");
 
-		constraints.gridx = 0;
-		constraints.gridy = 3;
 		toolBar = new JToolBar();
-		buttonPanel.add(toolBar, constraints);
+		buttonPanel.add(toolBar, "gaptop 20, span 2, push, width :325:, split, left");
 		toolBar.setLayout(new GridLayout());
 		toolBar.setFloatable(false);
 
@@ -315,10 +271,8 @@ public class GUI {
 		toolBar.add(clientButton);
 		toolBar.add(categoryButton);
 
-		constraints.gridx = 1;
-		constraints.gridy = 4;
 		searchButton = new JButton("Search");
-		buttonPanel.add(searchButton, constraints);
+		buttonPanel.add(searchButton, "gaptop 20, gapright 5, gapleft 20");
 		searchButton.setForeground(Color.blue);
 		searchButton.setFont(bold);
 		searchButton.addActionListener(new ActionListener() {
@@ -343,34 +297,26 @@ public class GUI {
 				}
 			}
 		});
+		return buttonPanel;
 	}
 
-	private void createNavigationPanel(GridBagConstraints constraints) {
-		constraints.gridx = 0;
-		constraints.gridy = 2;
-		constraints.weightx = 0.5;
-		constraints.weighty = 0;
-		navigationPanel = new JPanel();
-		backgroundPanel.add(navigationPanel, constraints); 
-		JButton previousStepButton = new JButton("Previous");
-		navigationPanel.add(previousStepButton);
+	private JPanel createNavigationPanel() {
+		navigationPanel = new JPanel(new MigLayout("fillx, insets 0"));
+		
+		JButton previousStepButton = new JButton("Back");
 		JButton nextStepButton = new JButton("Next");
+		navigationPanel.add(previousStepButton, "split, right");
 		navigationPanel.add(nextStepButton);
+		
+		return navigationPanel;
 	}
 
-	private void createSelectionTable(GridBagConstraints constraints) {
-		constraints.insets = new Insets(2,2,2,2);
-		constraints.gridx = 0;
-		constraints.gridy = 1;
-		constraints.fill = GridBagConstraints.BOTH;
-		constraints.weightx = 0.5;
-		constraints.weighty = 1;
+	private JScrollPane createSelectionTable() {
 		selectionPanel = new JPanel();
 		selectionPanel.setBackground(Color.white);
 		scrollPane = new JScrollPane();
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		selectionPanel.add(scrollPane);
-		backgroundPanel.add(scrollPane, constraints);
 
 		selectionTable = new SelectionTable(selectClientModel);
 		selectionTable.setName("selection");
@@ -380,6 +326,8 @@ public class GUI {
 		tc.setHeaderRenderer(header);
 		scrollPane.setViewportView(selectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
+		
+		return scrollPane;
 	}
 
 	public TableColumn configureTableColumns(JTable table) {
