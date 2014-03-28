@@ -12,6 +12,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -48,7 +49,6 @@ public class GUI {
 	private SelectionTable selectionTable;
 	private static ReportParameterTable clientTable;
 	private static ReportParameterTable projectTable;
-	private static ReportParameterTable categoryTable;
 	private static MyTableModel reportParameterClientModel;
 	private static MyTableModel reportParameterProjectModel;
 	private static MyTableModel selectClientModel;
@@ -64,6 +64,8 @@ public class GUI {
 	private JButton projectButton;
 	private JButton categoryButton;
 	private JButton searchButton;
+	private JButton previousStepButton;
+	private JButton nextStepButton;
 	private CheckBoxHeader header;
 	private DatabaseConnection databaseConnection;
 	private List<String> clientColumnNames;
@@ -150,7 +152,6 @@ public class GUI {
 		frame.pack();
 	}
 	
-	// TODO: Split the help panel and move model creation out of the UI building methods
 	private JPanel createDisplayPanel() {
 		
 		displayPanel = new JPanel(new MigLayout("fill"));
@@ -160,6 +161,8 @@ public class GUI {
 		displayPanel.add(frameAgrLabel, "split, center");
 		
 		frameAgrField = new JTextField();
+		frameAgrField.setEnabled(false);
+		frameAgrField.setBackground(Color.white);
 		displayPanel.add(frameAgrField, "wrap, width :180:");
 		
 		scrollPaneProjects = new JScrollPane();
@@ -172,6 +175,8 @@ public class GUI {
 		displayPanel.add(categoryLabel, "split, center");
 		
 		categoryField = new JTextField();
+		categoryField.setEnabled(false);
+		categoryField.setBackground(Color.lightGray);
 		displayPanel.add(categoryField, "width :180:");
 		
 		nullSelectionModel = new NullSelectionModel();
@@ -191,6 +196,8 @@ public class GUI {
 		clientTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(clientTable);
 		clientTable.disable();
+		
+		
 		
 		return displayPanel;
 	}
@@ -229,16 +236,18 @@ public class GUI {
 		buttonPanel.add(selectionHeadlineLabel, "span 2, wrap");
 
 		idLabel = new JLabel("Customer ID");
-		buttonPanel.add(idLabel, "split, left, gapright 61");
+		buttonPanel.add(idLabel, "split, left, gapright 40, width :110:");
 		idLabel.setFont(subheadline);
+		idLabel.setVisible(false);
 		
 		PlainDocument doc = MyDocumentFilter.createDocumentFilter();
 		idField = new JTextField();
 		idField.setDocument(doc);
+		idField.setVisible(false);
 		buttonPanel.add(idField, "wrap, width :183:");
 		
 		nameLabel = new JLabel("Customer Name");
-		buttonPanel.add(nameLabel, "split, left, gapright 40");
+		buttonPanel.add(nameLabel, "split, left, gapright 40, width :110:");
 		nameLabel.setFont(subheadline);
 		
 		nameField = new JTextField();
@@ -251,15 +260,20 @@ public class GUI {
 
 		frameAgrButton = new JButton();
 		frameAgrButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		frameAgrButton.setEnabled(false);
+		frameAgrButton.setForeground(Color.black);
 		
 		clientButton = new JButton();
 		clientButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		clientButton.setEnabled(false);
 
 		projectButton = new JButton();
 		projectButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		projectButton.setEnabled(false);
 
 		categoryButton = new JButton();
 		categoryButton.setBorder(BorderFactory.createSoftBevelBorder(0));
+		categoryButton.setEnabled(false);
 		
 		clientButton.setText("Clients");
 		projectButton.setText("Projects");
@@ -302,9 +316,13 @@ public class GUI {
 
 	private JPanel createNavigationPanel() {
 		navigationPanel = new JPanel(new MigLayout("fillx, insets 0"));
-		
-		JButton previousStepButton = new JButton("Back");
-		JButton nextStepButton = new JButton("Next");
+		previousStepButton = new JButton();
+		previousStepButton.setAction(new PreviousStateAction(this));
+		previousStepButton.setEnabled(false);
+		previousStepButton.setText("Back");
+		nextStepButton = new JButton();
+		nextStepButton.setAction(new NextStageAction(this));
+		nextStepButton.setText("Next");
 		navigationPanel.add(previousStepButton, "split, right");
 		navigationPanel.add(nextStepButton);
 		
@@ -362,6 +380,7 @@ public class GUI {
 		private static MyTableModel select;
 		private static ReportParameterTable table;
 		private static State activeState = State.FRAME;
+		int singleSelection = DefaultListSelectionModel.SINGLE_SELECTION;
 		
 		public static MyTableModel getActiveDisplayModel(){
 			return display;
@@ -379,20 +398,27 @@ public class GUI {
 			return activeState;
 		}
 		
+		//TODO: Switch between selectionTable and JTable in the view port?
+		// No need to create other listeners, simply use standard JTable with SINGLE_SELECTION
+		// Move all logic into the actions
 		public static State setNextState(){
 			switch(activeState){
 			case FRAME:
 				display = reportParameterProjectModel;
 				select = selectProjectModel;
 				table = projectTable;
+				activeState = State.PROJECT;
 				return State.PROJECT;
 			case PROJECT:
 				display = reportParameterClientModel;
 				select = selectClientModel;
 				table = clientTable;
+				activeState = State.CLIENT;
 				return State.CLIENT;
 			case CLIENT:
 				
+				select = selectCategoryModel;
+				activeState = State.CATEGORY;
 				return State.CATEGORY;
 			case CATEGORY:
 				return activeState;
@@ -405,17 +431,19 @@ public class GUI {
 			case FRAME:
 				return activeState;
 			case PROJECT:
-				
+				activeState = State.FRAME;
 				return State.FRAME;
 			case CLIENT:
 				display = reportParameterProjectModel;
 				select = selectProjectModel;
 				table = projectTable;
+				activeState = State.PROJECT;
 				return State.PROJECT;
 			case CATEGORY:
 				display = reportParameterClientModel;
 				select = selectClientModel;
 				table = clientTable;
+				activeState = State.CLIENT;
 				return State.CLIENT;
 			}
 			return activeState;
@@ -466,14 +494,11 @@ public class GUI {
 	public SelectionTable getSelectionTable() {
 		return selectionTable;
 	}
-	public ReportParameterTable getCustomerTable() {
+	public ReportParameterTable getClientTable() {
 		return clientTable;
 	}
 	public ReportParameterTable getProjectTable() {
 		return projectTable;
-	}
-	public ReportParameterTable getStatusTable() {
-		return categoryTable;
 	}
 	public MyTableModel getReportParameterCustomerModel() {
 		return reportParameterClientModel;
@@ -487,22 +512,40 @@ public class GUI {
 	public MyTableModel getSelectProjectModel() {
 		return selectProjectModel;
 	}
-	public MyTableModel getSelectStatusModel() {
+	public MyTableModel getSelectCategoryModel() {
 		return selectCategoryModel;
 	}
-	public JButton getCustomersButton() {
+	public JButton getClientsButton() {
 		return clientButton;
 	}
 	public JButton getProjectsButton() {
 		return projectButton;
 	}
-	public JButton getStatusesButton() {
+	public JButton getCategoryButton() {
 		return categoryButton;
+	}
+	public JButton getFrameAgrButton(){
+		return frameAgrButton;
 	}
 	public JLabel getSelectionHeadline() {
 		return selectionHeadlineLabel;
 	}	
 	public TableCellRenderer getHeader() {
 		return header;
+	}
+	public JButton getPreviousStepButton() {
+		return previousStepButton;
+	}
+	public JButton getNextStepButton() {
+		return nextStepButton;
+	}
+	public JTextField getCategoryField() {
+		return categoryField;
+	}
+	public JTextField getFrameAgrField() {
+		return frameAgrField;
+	}
+	public JToolBar getToolBar() {
+		return toolBar;
 	}
 }
