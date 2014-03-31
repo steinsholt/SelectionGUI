@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 
 import javax.swing.AbstractAction;
+import javax.swing.table.TableColumn;
 
 import com.sff.report_performance.GUI.Active;
 import com.sff.report_performance.GUI.State;
@@ -32,6 +33,11 @@ public class NextStageAction extends AbstractAction {
 			gui.getFrameAgrField().setBackground(Color.lightGray);
 			gui.getProjectsButton().setForeground(Color.black);
 			gui.getFrameAgrButton().setForeground(Color.lightGray);
+			
+			gui.getScrollPane().setViewportView(gui.getIntervalSelectionTable());
+			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
+			TableColumn tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
+			tc.setHeaderRenderer(gui.getHeader());
 			break;
 		case CLIENT:
 			gui.getSelectionHeadline().setText("Select Clients");
@@ -43,6 +49,10 @@ public class NextStageAction extends AbstractAction {
 			gui.getClientTable().setEnabled(true);
 			gui.getProjectsButton().setForeground(Color.lightGray);
 			gui.getClientsButton().setForeground(Color.black);
+			
+			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
+			tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
+			tc.setHeaderRenderer(gui.getHeader());
 			break;
 		case CATEGORY:
 			gui.getNextStepButton().setEnabled(false);
@@ -55,7 +65,13 @@ public class NextStageAction extends AbstractAction {
 			gui.getCategoryField().setBackground(Color.white);
 			gui.getClientsButton().setForeground(Color.lightGray);
 			gui.getCategoryButton().setForeground(Color.black);
+			
+			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
 			break;
 		}
 	}
 }
+
+////gui.getSelectionTable().setModel(Active.getActiveSelectModel());
+////TableColumn tc = gui.configureTableColumns(gui.getSelectionTable());		
+////tc.setHeaderRenderer(gui.getHeader());
