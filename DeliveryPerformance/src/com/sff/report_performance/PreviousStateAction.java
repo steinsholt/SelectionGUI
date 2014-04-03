@@ -31,6 +31,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getProjectsButton().setForeground(Color.lightGray);
 			gui.getFrameAgrButton().setForeground(Color.black);
 			
+			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
 			break;
 		case PROJECT:

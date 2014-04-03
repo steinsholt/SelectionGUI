@@ -7,13 +7,18 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 import com.borland.dx.sql.dataset.Database;
+import com.sff.report_performance.GUI.State;
 
 public class DatabaseSearch {
+	
+	// switch on state, instead of synching displayModel synch on textField when needed.
 	@SuppressWarnings("rawtypes")
-	public static void executeSearch(MyTableModel selectionModel, MyTableModel displayModel, DatabaseConnection data, JTextField nameField,
+	public static void executeCheckboxSearch(MyTableModel selectionModel, MyTableModel displayModel, DatabaseConnection data, JTextField nameField,
 			JTextField idField) {
 		try{
 			/*
@@ -55,7 +60,40 @@ public class DatabaseSearch {
 					}
 				}
 			}
+			st.close(); //TODO : newly added
+			db.closeConnection();
 		}catch(PatternSyntaxException | SQLException e){
+			e.printStackTrace();
+		}
+	}
+	public static void executeStandardSearch(DatabaseConnection data, JTextField nameField, DefaultTableModel model, State state){
+		try {
+			model.setRowCount(0); 
+			String name = nameField.getText();
+			Database db = DatabaseConnection.getDatabase();
+			Statement st = db.getJdbcConnection().createStatement();
+			st.setQueryTimeout(10);
+			ResultSet rs = null;
+			
+			switch(state){
+			case CATEGORY:
+				rs = st.executeQuery("");
+				break;
+			case FRAME:
+				rs = st.executeQuery("select fr_agr_cat_id, frame_cat_name "
+						+ "from vendor.dbo.Frame_agr_catalog "
+						+ "where fr_agr_cat_id>0 "
+						+ "and frame_cat_name like '" + name + "%'" 
+						+ "union select -1, ' ALL' order by frame_cat_name");
+				break;
+			default:break;
+			}
+			while(rs.next()){
+				model.addRow(new Object[]{rs.getInt(1),rs.getString(2).trim()}); // Perhaps the model is missing columns? try adding random names to the model at initialization
+			}
+			st.close();
+			db.closeConnection();
+		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 	}

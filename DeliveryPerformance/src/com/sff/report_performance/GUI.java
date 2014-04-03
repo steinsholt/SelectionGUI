@@ -12,7 +12,6 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListSelectionModel;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -25,6 +24,7 @@ import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.text.PlainDocument;
@@ -54,6 +54,8 @@ public class GUI {
 	private static MyTableModel reportParameterProjectModel;
 	private static MyTableModel selectClientModel;
 	private static MyTableModel selectProjectModel;
+	private static DefaultTableModel selectCategoryModel;
+	private static DefaultTableModel selectFrameAgrModel;
 	private NullSelectionModel nullSelectionModel;
 	private JToolBar toolBar;
 	private JButton generateReportButton;
@@ -69,8 +71,6 @@ public class GUI {
 	private DatabaseConnection databaseConnection;
 	private List<String> clientColumnNames;
 	private List<String> projectColumnNames;
-	private List<String> categoryColumnNames;
-	private List<String> frameAgrColumnNames;
 	private JPanel backgroundPanel;;
 	private JPanel selectionPanel;
 	private JPanel displayPanel;
@@ -107,14 +107,6 @@ public class GUI {
 		projectColumnNames.add("");
 		projectColumnNames.add("Projects");
 
-		categoryColumnNames = new ArrayList<String>();
-		categoryColumnNames.add("");
-		categoryColumnNames.add("Categories");
-
-		frameAgrColumnNames = new ArrayList<String>();
-		frameAgrColumnNames.add("");
-		frameAgrColumnNames.add("Frame Agreements");
-
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frame.getContentPane().setBackground(Color.white);
@@ -125,6 +117,8 @@ public class GUI {
 
 		selectClientModel = new MyTableModel(clientColumnNames);
 		selectProjectModel = new MyTableModel(projectColumnNames);
+		selectFrameAgrModel = new DefaultTableModel();
+		selectCategoryModel = new DefaultTableModel();
 
 		reportParameterProjectModel = new MyTableModel(projectColumnNames);
 		reportParameterClientModel = new MyTableModel(clientColumnNames);
@@ -148,7 +142,7 @@ public class GUI {
 
 		intervalSelectionTable.setAutoCreateRowSorter(true);
 		frame.pack();
-		
+
 		DatabaseConnection db = new DatabaseConnection();
 	}
 
@@ -233,7 +227,7 @@ public class GUI {
 		selectionHeadlineLabel.setFont(headline);
 		buttonPanel.add(selectionHeadlineLabel, "span 2, wrap");
 
-		idLabel = new JLabel("Customer ID");
+		idLabel = new JLabel("Client ID");
 		buttonPanel.add(idLabel, "split, left, gapright 40, width :110:");
 		idLabel.setFont(subheadline);
 		idLabel.setVisible(false);
@@ -244,7 +238,7 @@ public class GUI {
 		idField.setVisible(false);
 		buttonPanel.add(idField, "wrap, width :183:");
 
-		nameLabel = new JLabel("Customer Name");
+		nameLabel = new JLabel("Frame Agreement");
 		buttonPanel.add(nameLabel, "split, left, gapright 40, width :110:");
 		nameLabel.setFont(subheadline);
 
@@ -283,32 +277,43 @@ public class GUI {
 		toolBar.add(clientButton);
 		toolBar.add(categoryButton);
 
+		ActionListener checkBoxSearch = new ActionListener() { 
+			public void actionPerformed(ActionEvent e) {
+				DatabaseSearch.executeCheckboxSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+				intervalSelectionTable.synchronizeHeader();
+			}
+		};
+
+		KeyAdapter checkBoxKeySearch = new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					DatabaseSearch.executeCheckboxSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
+					intervalSelectionTable.synchronizeHeader();
+				}
+			}
+		};
+
+		ActionListener plainTableSearch = new ActionListener() { 
+			public void actionPerformed(ActionEvent e) {
+				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+			}
+		};
+
+		KeyAdapter plainKeySearch = new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+				}
+			}
+		};
+
 		searchButton = new JButton("Search");
 		buttonPanel.add(searchButton, "gaptop 20, gapright 5, gapleft 20");
 		searchButton.setForeground(Color.blue);
 		searchButton.setFont(bold);
-		searchButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-				intervalSelectionTable.synchronizeHeader();
-			}
-		});
-		nameField.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e){
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-					intervalSelectionTable.synchronizeHeader();
-				}
-			}
-		});
-		idField.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e){
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					DatabaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-					intervalSelectionTable.synchronizeHeader();
-				}
-			}
-		});
+		searchButton.addActionListener(plainTableSearch);
+		nameField.addKeyListener(plainKeySearch);
+		idField.addKeyListener(plainKeySearch);
 		return buttonPanel;
 	}
 
@@ -341,11 +346,13 @@ public class GUI {
 		header = new CheckBoxHeader(new SelectionTableHeaderListener(intervalSelectionTable));
 		tc.setHeaderRenderer(header);
 
-		singleSelectionTable = new JTable();
+		singleSelectionTable = new JTable(selectFrameAgrModel);
 		singleSelectionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		singleSelectionTable.getSelectionModel().addListSelectionListener(new SingleSelectionListener(singleSelectionTable));
 		scrollPane.setViewportView(singleSelectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
+		((DefaultTableModel)singleSelectionTable.getModel()).addColumn("ID");
+		((DefaultTableModel)singleSelectionTable.getModel()).addColumn("Name");
 
 		return scrollPane;
 	}
@@ -376,24 +383,30 @@ public class GUI {
 		public static final EnumSet<State> enumList = EnumSet.allOf(State.class);
 
 	}
+	//TODO: Rename everything so it makes sense
 	public static class Active{
 
-		private static MyTableModel displayModel;
-		private static MyTableModel select;
+		private static MyTableModel checkboxDisplayModel;
+		private static MyTableModel checkboxSelectModel;
+		private static DefaultTableModel simpleSelectModel = selectFrameAgrModel;
 		private static ReportParameterTable table;
 		private static State activeState = State.FRAME;
 		private static JTextField displayField = frameAgrField;
+
+		public static DefaultTableModel getActiveSimpleSelectModel() {
+			return simpleSelectModel;
+		}
 
 		public static JTextField getDisplayField() {
 			return displayField;
 		}
 
 		public static MyTableModel getActiveDisplayModel(){
-			return displayModel;
+			return checkboxDisplayModel;
 		}
 
 		public static MyTableModel getActiveSelectModel(){
-			return select;
+			return checkboxSelectModel;
 		}
 
 		public static ReportParameterTable getActiveDisplayTable(){
@@ -410,20 +423,21 @@ public class GUI {
 		public static State setNextState(){
 			switch(activeState){
 			case FRAME:
-				displayModel = reportParameterProjectModel;
-				select = selectProjectModel;
+				checkboxDisplayModel = reportParameterProjectModel;
+				checkboxSelectModel = selectProjectModel;
 				table = projectTable;
 				activeState = State.PROJECT;
 				return State.PROJECT;
 			case PROJECT:
-				displayModel = reportParameterClientModel;
-				select = selectClientModel;
+				checkboxDisplayModel = reportParameterClientModel;
+				checkboxSelectModel = selectClientModel;
 				table = clientTable;
 				activeState = State.CLIENT;
 				return State.CLIENT;
 			case CLIENT:
 				activeState = State.CATEGORY;
 				displayField = categoryField;
+				simpleSelectModel = selectCategoryModel;
 				return State.CATEGORY;
 			case CATEGORY:
 				return activeState;
@@ -438,16 +452,17 @@ public class GUI {
 			case PROJECT:
 				activeState = State.FRAME;
 				displayField = frameAgrField;
+				simpleSelectModel = selectFrameAgrModel;
 				return State.FRAME;
 			case CLIENT:
-				displayModel = reportParameterProjectModel;
-				select = selectProjectModel;
+				checkboxDisplayModel = reportParameterProjectModel;
+				checkboxSelectModel = selectProjectModel;
 				table = projectTable;
 				activeState = State.PROJECT;
 				return State.PROJECT;
 			case CATEGORY:
-				displayModel = reportParameterClientModel;
-				select = selectClientModel;
+				checkboxDisplayModel = reportParameterClientModel;
+				checkboxSelectModel = selectClientModel;
 				table = clientTable;
 				activeState = State.CLIENT;
 				return State.CLIENT;

@@ -66,6 +66,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getClientsButton().setForeground(Color.lightGray);
 			gui.getCategoryButton().setForeground(Color.black);
 			
+			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
 			break;
 		}
