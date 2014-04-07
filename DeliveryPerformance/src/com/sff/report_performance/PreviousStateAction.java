@@ -33,6 +33,7 @@ public class PreviousStateAction extends AbstractAction {
 			
 			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
+			
 			break;
 		case PROJECT:
 			gui.getSelectionHeadline().setText("Select Projects");
@@ -63,6 +64,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
 			tc.setHeaderRenderer(gui.getHeader());
+			
 			break;
 		case CATEGORY:
 			break;

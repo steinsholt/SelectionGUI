@@ -38,6 +38,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			TableColumn tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
 			tc.setHeaderRenderer(gui.getHeader());
+			
 			break;
 		case CLIENT:
 			gui.getSelectionHeadline().setText("Select Clients");
@@ -68,6 +69,7 @@ public class NextStageAction extends AbstractAction {
 			
 			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
+			
 			break;
 		}
 	}

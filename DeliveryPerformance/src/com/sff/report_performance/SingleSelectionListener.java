@@ -1,6 +1,7 @@
 package com.sff.report_performance;
 
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -15,6 +16,7 @@ public class SingleSelectionListener implements ListSelectionListener{
 
 	@Override
 	public void valueChanged(ListSelectionEvent e) {
-		Active.getDisplayField().setText((String) table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
+		ListSelectionModel lsm = (ListSelectionModel)e.getSource();
+		if(!lsm.isSelectionEmpty())Active.getDisplayField().setText((String) table.getValueAt(table.getSelectedRow(), table.getSelectedColumn()));
 	}
 }

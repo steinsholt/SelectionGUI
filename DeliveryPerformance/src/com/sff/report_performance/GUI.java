@@ -80,6 +80,8 @@ public class GUI {
 	private JPanel helpPanel;
 	private Font bold;
 	private JTable singleSelectionTable;
+	private ActionListener searchButtonListener;
+	private KeyAdapter SearchKeyListener;
 
 	public JFrame getFrame() {
 		return frame;
@@ -97,6 +99,38 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
+		
+		final DatabaseSearch databaseSearch = new DatabaseSearch();
+		
+		searchButtonListener = new ActionListener() { 
+			public void actionPerformed(ActionEvent e) {
+				databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel());
+//				intervalSelectionTable.synchronizeHeader();
+			}
+		};
+
+		SearchKeyListener = new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel());
+//					intervalSelectionTable.synchronizeHeader();
+				}
+			}
+		};
+
+//		plainTableSearch = new ActionListener() { 
+//			public void actionPerformed(ActionEvent e) {
+//				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+//			}
+//		};
+//
+//		plainKeySearch = new KeyAdapter(){
+//			public void keyPressed(KeyEvent e){
+//				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+//					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+//				}
+//			}
+//		};
 
 		clientColumnNames = new ArrayList<String>();
 		clientColumnNames.add("");
@@ -118,7 +152,9 @@ public class GUI {
 		selectClientModel = new MyTableModel(clientColumnNames);
 		selectProjectModel = new MyTableModel(projectColumnNames);
 		selectFrameAgrModel = new DefaultTableModel();
+		selectFrameAgrModel.addColumn("Name");
 		selectCategoryModel = new DefaultTableModel();
+		selectCategoryModel.addColumn("Name");
 
 		reportParameterProjectModel = new MyTableModel(projectColumnNames);
 		reportParameterClientModel = new MyTableModel(clientColumnNames);
@@ -157,6 +193,7 @@ public class GUI {
 		frameAgrField = new JTextField();
 		frameAgrField.setEnabled(false);
 		frameAgrField.setBackground(Color.white);
+		frameAgrField.setText("ALL");
 		displayPanel.add(frameAgrField, "wrap, width :180:");
 
 		scrollPaneProjects = new JScrollPane();
@@ -171,6 +208,7 @@ public class GUI {
 		categoryField = new JTextField();
 		categoryField.setEnabled(false);
 		categoryField.setBackground(Color.lightGray);
+		categoryField.setText("ALL");
 		displayPanel.add(categoryField, "width :180:");
 
 		nullSelectionModel = new NullSelectionModel();
@@ -277,43 +315,13 @@ public class GUI {
 		toolBar.add(clientButton);
 		toolBar.add(categoryButton);
 
-		ActionListener checkBoxSearch = new ActionListener() { 
-			public void actionPerformed(ActionEvent e) {
-				DatabaseSearch.executeCheckboxSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-				intervalSelectionTable.synchronizeHeader();
-			}
-		};
-
-		KeyAdapter checkBoxKeySearch = new KeyAdapter(){
-			public void keyPressed(KeyEvent e){
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					DatabaseSearch.executeCheckboxSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField);
-					intervalSelectionTable.synchronizeHeader();
-				}
-			}
-		};
-
-		ActionListener plainTableSearch = new ActionListener() { 
-			public void actionPerformed(ActionEvent e) {
-				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-			}
-		};
-
-		KeyAdapter plainKeySearch = new KeyAdapter(){
-			public void keyPressed(KeyEvent e){
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-				}
-			}
-		};
-
 		searchButton = new JButton("Search");
 		buttonPanel.add(searchButton, "gaptop 20, gapright 5, gapleft 20");
 		searchButton.setForeground(Color.blue);
 		searchButton.setFont(bold);
-		searchButton.addActionListener(plainTableSearch);
-		nameField.addKeyListener(plainKeySearch);
-		idField.addKeyListener(plainKeySearch);
+		searchButton.addActionListener(searchButtonListener);
+		nameField.addKeyListener(SearchKeyListener);
+		idField.addKeyListener(SearchKeyListener);
 		return buttonPanel;
 	}
 
@@ -351,8 +359,6 @@ public class GUI {
 		singleSelectionTable.getSelectionModel().addListSelectionListener(new SingleSelectionListener(singleSelectionTable));
 		scrollPane.setViewportView(singleSelectionTable);
 		scrollPane.getViewport().setBackground(Color.white);
-		((DefaultTableModel)singleSelectionTable.getModel()).addColumn("ID");
-		((DefaultTableModel)singleSelectionTable.getModel()).addColumn("Name");
 
 		return scrollPane;
 	}
@@ -571,5 +577,11 @@ public class GUI {
 	}
 	public JToolBar getToolBar() {
 		return toolBar;
+	}
+	public ActionListener getCheckBoxSearch() {
+		return searchButtonListener;
+	}
+	public KeyAdapter getCheckBoxKeySearch() {
+		return SearchKeyListener;
 	}
 }
