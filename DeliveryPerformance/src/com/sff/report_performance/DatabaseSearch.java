@@ -6,10 +6,8 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.PatternSyntaxException;
 
-import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
@@ -18,24 +16,25 @@ import com.sff.report_performance.GUI.State;
 
 public class DatabaseSearch {
 	private HashMap<String, Integer> frameIdMap;
-	private HashMap<String, Integer> projectMap;
+	private HashMap<String, Integer> categoryIdMap;
 	
 	public DatabaseSearch(){
 		frameIdMap = new HashMap<String, Integer>();
-		projectMap = new HashMap<String, Integer>();
+		categoryIdMap = new HashMap<String, Integer>();
 	}
 	
 	@SuppressWarnings("rawtypes")
 	public void executeSearch(MyTableModel selectionModel, MyTableModel displayModel, DatabaseConnection data, JTextField nameField,
-			JTextField idField, State state, DefaultTableModel model) {
+			JTextField idField, State state, DefaultTableModel model, JTextField frameAgrField) {
 		try{
 			String name = nameField.getText();
 			String ID = idField.getText();
+			String frameAgr = frameAgrField.getText();
 			Database db = DatabaseConnection.getDatabase();
 			Statement st = db.getJdbcConnection().createStatement();
 			st.setQueryTimeout(60);
 			ResultSet rs = null;
-			String queryConditions = "";
+			StringBuilder queryConditions = new StringBuilder("");
 
 			switch(state){
 			case FRAME:
@@ -49,20 +48,30 @@ public class DatabaseSearch {
 				while(rs.next()){
 					model.addRow(new Object[]{rs.getString(2).trim()});
 					frameIdMap.put(rs.getString(2).trim(), rs.getInt(1));
-					// TODO: add id to a list. use in project search with "where fr_agr_id like id"
 				}
 				break;
 
 			case PROJECT:
+				queryConditions.setLength(0);
 				if(!selectionModel.getRowData().isEmpty()){
 					selectionModel.getRowData().clear();
 					selectionModel.fireTableDataChanged();
 				}
 				
+				if(!frameAgr.equalsIgnoreCase("ALL")){
+					rs = st.executeQuery("select fr_agr_id from vendor.dbo.Frame_agr where fr_agr_cat_id like '" + frameIdMap.get(frameAgr) + "%'");
+					queryConditions.append(" and fr_agr_id in (");
+					
+					while(rs.next()){
+						queryConditions.append(rs.getInt(1) + ","); 
+					}
+					queryConditions.delete(queryConditions.length()-1, queryConditions.length());
+					queryConditions.append(")");
+				}
+				
 				rs = st.executeQuery("select pr_name, project_id from Project where pr_name like '" + name + "%'" + queryConditions);
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getString(1).trim()));
-					projectMap.put(rs.getString(1).trim(), rs.getInt(2));
 				}
 				
 				for(List rowDisplay : displayModel.getRowData()){
@@ -76,18 +85,21 @@ public class DatabaseSearch {
 				break;
 
 			case CLIENT:
+				queryConditions.setLength(0);
 				if(!selectionModel.getRowData().isEmpty()){
 					selectionModel.getRowData().clear();
 					selectionModel.fireTableDataChanged();
 				}
+				if(!frameAgr.equalsIgnoreCase("ALL")) queryConditions.append("and fr_agr_cat_id like '" + frameIdMap.get(frameAgr) + "%'");
 				
-				rs = st.executeQuery("select assoc_id, assoc_name"
+				rs = st.executeQuery("select assoc_id, assoc_name, category_id"
 						+ " from Assoc customerList"
 						+ " where assoc_id like '" + ID + "%'"
 						+ " and assoc_id<20000"
 						+ " and assoc_name like '" + name + "%'" + queryConditions);
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getInt(1), rs.getString(2).trim()));
+					categoryIdMap.put(rs.getString(2), rs.getInt(3)); // TODO: Use this to narrow the category query
 				}
 				
 				for(List rowDisplay : displayModel.getRowData()){
@@ -101,6 +113,7 @@ public class DatabaseSearch {
 				break;
 
 			case CATEGORY:
+				queryConditions.setLength(0);
 				rs = st.executeQuery("select category_id, category_name "
 						+ "from vendor.dbo.Tr_category "
 						+ "union select 0, ' ALL' "
