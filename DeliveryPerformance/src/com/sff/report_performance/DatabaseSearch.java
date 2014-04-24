@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.regex.PatternSyntaxException;
 
@@ -17,12 +18,12 @@ import com.sff.report_performance.GUI.State;
 public class DatabaseSearch {
 	private HashMap<String, Integer> frameIdMap;
 	private HashMap<String, Integer> categoryIdMap;
-	
+
 	public DatabaseSearch(){
 		frameIdMap = new HashMap<String, Integer>();
 		categoryIdMap = new HashMap<String, Integer>();
 	}
-	
+
 	@SuppressWarnings("rawtypes")
 	public void executeSearch(MyTableModel selectionModel, MyTableModel displayModel, DatabaseConnection data, JTextField nameField,
 			JTextField idField, State state, DefaultTableModel model, JTextField frameAgrField) {
@@ -43,7 +44,7 @@ public class DatabaseSearch {
 						+ "where fr_agr_cat_id>0 "
 						+ "and frame_cat_name like '" + name + "%'" 
 						+ "union select -1, ' ALL' order by frame_cat_name");
-				
+
 				model.setRowCount(0); 
 				while(rs.next()){
 					model.addRow(new Object[]{rs.getString(2).trim()});
@@ -57,23 +58,23 @@ public class DatabaseSearch {
 					selectionModel.getRowData().clear();
 					selectionModel.fireTableDataChanged();
 				}
-				
+
 				if(!frameAgr.equalsIgnoreCase("ALL")){
 					rs = st.executeQuery("select fr_agr_id from vendor.dbo.Frame_agr where fr_agr_cat_id like '" + frameIdMap.get(frameAgr) + "%'");
 					queryConditions.append(" and fr_agr_id in (");
-					
+
 					while(rs.next()){
 						queryConditions.append(rs.getInt(1) + ","); 
 					}
 					queryConditions.delete(queryConditions.length()-1, queryConditions.length());
 					queryConditions.append(")");
 				}
-				
+
 				rs = st.executeQuery("select pr_name, project_id from Project where pr_name like '" + name + "%'" + queryConditions);
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getString(1).trim()));
 				}
-				
+
 				for(List rowDisplay : displayModel.getRowData()){
 					for(List rowSelect : selectionModel.getRowData()){
 						if(rowDisplay.get(1).equals(rowSelect.get(1))){
@@ -91,7 +92,7 @@ public class DatabaseSearch {
 					selectionModel.fireTableDataChanged();
 				}
 				if(!frameAgr.equalsIgnoreCase("ALL")) queryConditions.append("and fr_agr_cat_id like '" + frameIdMap.get(frameAgr) + "%'");
-				
+
 				rs = st.executeQuery("select assoc_id, assoc_name, category_id"
 						+ " from Assoc customerList"
 						+ " where assoc_id like '" + ID + "%'"
@@ -99,9 +100,9 @@ public class DatabaseSearch {
 						+ " and assoc_name like '" + name + "%'" + queryConditions);
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getInt(1), rs.getString(2).trim()));
-					categoryIdMap.put(rs.getString(2), rs.getInt(3)); // TODO: Use this to narrow the category query
+					categoryIdMap.put(rs.getString(2).trim(), rs.getInt(3)); 
 				}
-				
+
 				for(List rowDisplay : displayModel.getRowData()){
 					for(List rowSelect : selectionModel.getRowData()){
 						if(rowDisplay.get(1).equals(rowSelect.get(1))){
@@ -113,12 +114,26 @@ public class DatabaseSearch {
 				break;
 
 			case CATEGORY:
+				/*
+				 * For each client name in display model get category from categoryIdMap
+				 */
+
 				queryConditions.setLength(0);
+				HashSet<Integer> catIdSet = new HashSet<Integer>();
+
+				if(displayModel.getRowCount() != 0){
+					for(List rowDisplay : displayModel.getRowData()){
+						catIdSet.add(categoryIdMap.get(rowDisplay.get(2)));
+					}
+
+					queryConditions.append("where category_id in " + Arrays.toString(catIdSet.toArray(new Integer[catIdSet.size()])).replace("[", "(").replace("]", ")"));
+				}
 				rs = st.executeQuery("select category_id, category_name "
 						+ "from vendor.dbo.Tr_category "
-						+ "union select 0, ' ALL' "
-						+ "order by category_name" + queryConditions);
-				
+						+ queryConditions
+						+ " union select 0, ' ALL' "
+						+ "order by category_name");
+
 				model.setRowCount(0); 
 				while(rs.next()){
 					model.addRow(new Object[]{rs.getString(2).trim()});
