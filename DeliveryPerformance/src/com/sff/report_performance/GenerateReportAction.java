@@ -7,19 +7,22 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTextField;
 
 @SuppressWarnings("rawtypes")
 public class GenerateReportAction extends AbstractAction{
 	private static final long serialVersionUID = 1L;
 	private List<List> customerData;
 	private List<List> projectData;
-	private List<List> statusData;
+	private JTextField frameAgr;
+	private JTextField category;
 	private JFrame frame;
 	
-	public GenerateReportAction(List<List> customerData, List<List> projectData, List<List> statusData, JFrame frame){
+	public GenerateReportAction(List<List> customerData, List<List> projectData, JTextField frameAgr, JTextField category, JFrame frame){
 		this.customerData = customerData;
 		this.projectData = projectData;
-		this.statusData = statusData;
+		this.frameAgr = frameAgr;
+		this.category = category;
 		this.frame = frame;
 	}
 
@@ -32,7 +35,7 @@ public class GenerateReportAction extends AbstractAction{
 		output = new File(directory + fileName);
 		isFileUnlocked = true;
 		if(isFileUnlocked){
-			ProgressDialog.runReport(customerData, projectData, statusData, output, frame);
+			ProgressDialog.runReport(customerData, projectData, frameAgr, category, output, frame);
 		}
 		else{
 			JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");

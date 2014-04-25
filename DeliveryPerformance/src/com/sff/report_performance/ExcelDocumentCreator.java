@@ -5,7 +5,9 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JTextField;
@@ -51,16 +53,18 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private Worksheet sheetNoUnits;
 	private List<List> customerData;
 	private List<List> projectData;
-	private List<List> statusData;
 	private JTextField publishedOutput;
 	private JTextField progressField;
+	private JTextField category; // TODO: take in text field instead
+	private JTextField frameAgreement;
 
-	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, List<List> statusData, JTextField publishedOutput, JTextField progressField, File output){
+	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
 		this.customerData = customerData;
 		this.projectData = projectData;
-		this.statusData = statusData;
 		this.publishedOutput = publishedOutput;
 		this.progressField = progressField;
+		this.frameAgreement = frameAgreement;
+		this.category = category;
 
 		try {
 			/*
@@ -120,16 +124,17 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		try{
 
 			/*
-			 * If a list containing the selected customers, projects or statuses is empty they are evaluated the same way as if they were full
+			 * 
 			 */
 			boolean allCustSelected = customerData.size()==0 ? true : false;
 			boolean allProjSelected = projectData.size()==0 ? true : false;
-			boolean allStatSelected = statusData.size()==0 ? true : false;
-			
+			boolean allCatSelected = category.getText().equals("ALL") ? true : false;
+			boolean allFrameAgrSelected = frameAgreement.getText().equals("ALL") ? true : false;
+
 			/*
 			 * The query is built and executed. Afterwards the data is loaded into a data set 
 			 */
-			StringBuilder query = generateQuery(allCustSelected, allProjSelected, allStatSelected, customerData, projectData, statusData);
+			StringBuilder query = generateQuery(allCustSelected, allProjSelected, allCatSelected, allFrameAgrSelected, customerData, projectData, category, frameAgreement);
 
 			Database db = DatabaseConnection.getDatabase();
 			QueryDataSet dataSet = new QueryDataSet();
@@ -172,23 +177,23 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String[][] ccd = new String[rowCount][1];
 				String[][] ecd = new String[rowCount][1];
 				String[][] itemStatus = new String[rowCount][1];
-				
+
 				/*
 				 * Sets only allow unique entries. Thus when we need to display one graph per supplier we utilize the sets.
 				 */
 				Set<String> projectSet = new HashSet<String>();
 				Set<String> millSet = new HashSet<String>();
 				Set<String> currencySet = new HashSet<String>();
-				
+
 				/*
 				 * We iterate over the data set and insert the results into the arrays while publishing the progress to the progress bar.
 				 */
 				while(dataSet.inBounds() && !isCancelled()){
 					setProgress(100 * processed / rowCount);
 					progressField.setText("Adding row: " + processed);
-					
+
 					int column = 0;
-					
+
 					frameAgr[processed][0] = dataSet.getString(column++).trim();
 					projectSet.add(dataSet.getString(column).trim());
 					project[processed][0] = dataSet.getString(column++).trim();
@@ -216,13 +221,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					ccd[processed][0] = dataSet.getString(column++).trim();
 					ecd[processed][0] = dataSet.getString(column++).trim();
 					itemStatus[processed][0] = dataSet.getString(column++).trim();
-					
+
 					processed++;
 					dataSet.next();
 				}
 				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
 				dataSet.close();
-				
+
 				/*
 				 * The data in the arrays are inserted into the "Table"-sheet
 				 * Note that currently .setValues will interpret UTF-8 as Windows-1252 characters. By inserting value cell by cell the characters
@@ -252,7 +257,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				sheetTable.getRange("V1", "V"+rowCount).setValues(ccd);
 				sheetTable.getRange("W1", "W"+rowCount).setValues(ecd);
 				sheetTable.getRange("X1", "X"+rowCount).setValues(itemStatus);
-				
+
 				/*
 				 * To account for the incorrect interpretation of UTF-8 characters the actual characters are translated back to the expected characters.
 				 * Ref: http://www.i18nqa.com/debug/utf8-debug.html
@@ -275,7 +280,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				if(entireTableSheet.find("–")!=null) entireTableSheet.replace("–", "�");
 				if(entireTableSheet.find("Ò")!=null) entireTableSheet.replace("Ò", "�");
 				if(entireTableSheet.find("ò")!=null) entireTableSheet.replace("ò", "�");
-				
+
 				String firstHeaderCell = "A1";
 				String currentHeaderCell = firstHeaderCell;
 				String formulaStartCell = "A2";
@@ -302,7 +307,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String quantityRangeAddress = sheetTable.getRange("QTY").getAddress(false, false);
 				String quantityRangeAddressAbsolute = sheetTable.getRange("QTY").getAddress(true, true);
 				String supplierRangeAddressAbsolute = sheetTable.getRange("Supplier").getAddress(true, true);
-				
+
 				/*
 				 * Converts total value into EURO. The NOK to EURO conversion rate is retrieved from the database. The period is replaced
 				 * by a comma as we are using a Norwegian version of Excel. This is not needed when inserting a double directly into a cell,
@@ -316,7 +321,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String convertedSellRate = sellRate.toString().replace(".", ","); 
 				st.close();
 				rs.close();
-				
+
 				String startCell = formulaStartCell;
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("Total_EUR");
 				sheetTable.getRange(currentHeaderCell).setValue("Total [EUR]");
@@ -378,20 +383,20 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 */
 
 				sheetTable.getListObjects().add(); // Creates the excel table
-				
+
 				/*
 				 * Colors rows red based on certain criteria 
 				 */
-				
+
 				ListRows rows = sheetTable.getListObjects().getItem(0).getListRows();
 				int count = rows.getCount();
 				int row = 1;
 				setProgress(0);
 				processed = 0;
 				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
-				
+
 				// TODO: get values as array, manipulate data and post back
-				
+
 				while(row++ < count){ 
 					progressField.setText("Marking erroneus rows");
 					setProgress(100 * ++processed / count);
@@ -400,17 +405,17 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
 					String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
 					String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
-					
+
 					Boolean isHistoricalDate = false;
 					Boolean isEmpty = false;
-					
+
 					if(rfiValue.equalsIgnoreCase("")) {
 						isEmpty = true;
 					}else{
 						DateTime historical = fmt.parseDateTime(rfiValue);
 						if(historical.isBeforeNow()) isHistoricalDate = true;
 					}
-					
+
 					if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
 						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
 					}
@@ -428,7 +433,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Inserts the formulae into the "Project"-sheet.
 				 */
-				
+
 				int rowPointer = 0;
 				setProgress(0);
 				processed = 0;
@@ -443,7 +448,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				excel.getWorksheets().getItem("Project").activate();
 				String firstCell = "A1";
 				sheetProject.getRange(firstCell).activate();
-				
+
 				for(String projectName : projectSet){
 					publishedOutput.setText("Creating Project Sheet");
 					progressField.setText("Processing project: " + processed);
@@ -743,7 +748,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int chartX = 0;
 				int chartY = 15;
 				processed = 0;
-				
+
 				publishedOutput.setText("Creating Delay Mill Sheet");
 				for(String mill : millSet){
 
@@ -979,8 +984,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		return null;
 	}
 	private StringBuilder generateQuery(boolean allCustSelected,
-			boolean allProjSelected, boolean allStatSelected,
-			List<List> temp_cust, List<List> temp_proj, List<List> temp_stat) {
+			boolean allProjSelected, boolean allCategoriesSelected, boolean allFrameAgrSelected, 
+			List<List> temp_cust, List<List> temp_proj, JTextField categoryId, JTextField frameAgrId) {
 
 		/*
 		 * The base statement is used no matter the user selection
@@ -1005,15 +1010,21 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			query.delete(query.length()-2, query.length());
 			query.append(")");
 		}
-		if(!allStatSelected){
-			query.append(" and Tr_dtl_status.tr_dtl_stname in (");
-			for(List l : temp_stat){
-				String status = (String) l.get(1);
-				query.append("''" + status + "'', ");
-			}
-			query.delete(query.length()-2, query.length());
-			query.append(")");
-		}
+		//TODO: get id from textfield databaseSearch.getCategoryIdMap().get(categoryField.getText())
+
+//		Iterator it = DatabaseSearch.getCategoryIdMap().entrySet().iterator();
+//		while (it.hasNext()) {
+//			Map.Entry pairs = (Map.Entry)it.next();
+//			System.out.println(pairs.getKey() + " = " + pairs.getValue());
+//		}
+
+//		if(!allCategoriesSelected){
+//			query.append(" and category_id like " + DatabaseSearch.getCategoryIdMap().get(categoryId.getText()));
+//		}
+//		if(!allFrameAgrSelected){
+//			query.append(" and frame_agr_cat_id like " + DatabaseSearch.getFrameIdMap().get(frameAgrId.getText()));
+//		}
+		System.out.println(query);
 		return query;
 	}
 }

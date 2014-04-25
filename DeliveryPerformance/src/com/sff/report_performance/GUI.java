@@ -82,6 +82,7 @@ public class GUI {
 	private JTable singleSelectionTable;
 	private ActionListener searchButtonListener;
 	private KeyAdapter SearchKeyListener;
+	private DatabaseSearch databaseSearch;
 
 	public JFrame getFrame() {
 		return frame;
@@ -99,13 +100,13 @@ public class GUI {
 				| IllegalAccessException | UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
-		
-		final DatabaseSearch databaseSearch = new DatabaseSearch();
-		
+
+		databaseSearch = new DatabaseSearch();
+
 		searchButtonListener = new ActionListener() { 
 			public void actionPerformed(ActionEvent e) {
 				databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
-//				intervalSelectionTable.synchronizeHeader();
+				//				intervalSelectionTable.synchronizeHeader();
 			}
 		};
 
@@ -113,24 +114,24 @@ public class GUI {
 			public void keyPressed(KeyEvent e){
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
 					databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
-//					intervalSelectionTable.synchronizeHeader();
+					//					intervalSelectionTable.synchronizeHeader();
 				}
 			}
 		};
 
-//		plainTableSearch = new ActionListener() { 
-//			public void actionPerformed(ActionEvent e) {
-//				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-//			}
-//		};
-//
-//		plainKeySearch = new KeyAdapter(){
-//			public void keyPressed(KeyEvent e){
-//				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-//					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-//				}
-//			}
-//		};
+		//		plainTableSearch = new ActionListener() { 
+		//			public void actionPerformed(ActionEvent e) {
+		//				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+		//			}
+		//		};
+		//
+		//		plainKeySearch = new KeyAdapter(){
+		//			public void keyPressed(KeyEvent e){
+		//				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+		//					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
+		//				}
+		//			}
+		//		};
 
 		clientColumnNames = new ArrayList<String>();
 		clientColumnNames.add("");
@@ -237,7 +238,7 @@ public class GUI {
 		generateReportButton = new JButton();
 		reportPanel.add(generateReportButton);
 
-		//		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), reportParameterCategoryModel.getRowData(), frame));
+		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, categoryField, frame));
 		generateReportButton.setForeground(Color.blue);
 		generateReportButton.setFont(bold);
 		generateReportButton.setText("Generate Report");

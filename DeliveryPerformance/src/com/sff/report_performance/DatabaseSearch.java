@@ -16,12 +16,14 @@ import com.borland.dx.sql.dataset.Database;
 import com.sff.report_performance.GUI.State;
 
 public class DatabaseSearch {
-	private HashMap<String, Integer> frameIdMap;
-	private HashMap<String, Integer> categoryIdMap;
+	private static HashMap<String, Integer> frameIdMap;
+	private static HashMap<String, Integer> categoryIdMap;
 
 	public DatabaseSearch(){
 		frameIdMap = new HashMap<String, Integer>();
+		frameIdMap.put("ALL", -1);
 		categoryIdMap = new HashMap<String, Integer>();
+		categoryIdMap.put("ALL", 0);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -46,6 +48,7 @@ public class DatabaseSearch {
 						+ "union select -1, ' ALL' order by frame_cat_name");
 
 				model.setRowCount(0); 
+				frameIdMap.clear();
 				while(rs.next()){
 					model.addRow(new Object[]{rs.getString(2).trim()});
 					frameIdMap.put(rs.getString(2).trim(), rs.getInt(1));
@@ -98,6 +101,7 @@ public class DatabaseSearch {
 						+ " where assoc_id like '" + ID + "%'"
 						+ " and assoc_id<20000"
 						+ " and assoc_name like '" + name + "%'" + queryConditions);
+				categoryIdMap.clear();
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getInt(1), rs.getString(2).trim()));
 					categoryIdMap.put(rs.getString(2).trim(), rs.getInt(3)); 
@@ -146,5 +150,13 @@ public class DatabaseSearch {
 		}catch(PatternSyntaxException | SQLException e){
 			e.printStackTrace();
 		}
+	}
+	
+	public static HashMap<String, Integer> getFrameIdMap() {
+		return frameIdMap;
+	}
+
+	public static HashMap<String, Integer> getCategoryIdMap() {
+		return categoryIdMap;
 	}
 }
