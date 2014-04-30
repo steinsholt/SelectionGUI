@@ -16,8 +16,8 @@ import com.borland.dx.sql.dataset.Database;
 import com.sff.report_performance.GUI.State;
 
 public class DatabaseSearch {
-	private static HashMap<String, Integer> frameIdMap;
-	private static HashMap<String, Integer> categoryIdMap;
+	private HashMap<String, Integer> frameIdMap;
+	private HashMap<String, Integer> categoryIdMap;
 
 	public DatabaseSearch(){
 		frameIdMap = new HashMap<String, Integer>();
@@ -150,13 +150,5 @@ public class DatabaseSearch {
 		}catch(PatternSyntaxException | SQLException e){
 			e.printStackTrace();
 		}
-	}
-	
-	public static HashMap<String, Integer> getFrameIdMap() {
-		return frameIdMap;
-	}
-
-	public static HashMap<String, Integer> getCategoryIdMap() {
-		return categoryIdMap;
 	}
 }

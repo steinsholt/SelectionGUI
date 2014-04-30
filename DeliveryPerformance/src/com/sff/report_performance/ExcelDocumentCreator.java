@@ -5,9 +5,7 @@ import java.io.File;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JTextField;
@@ -55,7 +53,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private List<List> projectData;
 	private JTextField publishedOutput;
 	private JTextField progressField;
-	private JTextField category; // TODO: take in text field instead
+	private JTextField category; 
 	private JTextField frameAgreement;
 
 	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
@@ -145,7 +143,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			int processed = 0;
 			publishedOutput.setText("Creating Table Sheet");
 
-			while(!isCancelled()){
+			while(!isCancelled() && rowCount!=0){
 				// TODO: Language preference?
 				// TODO: get address from columns instead of hard coded values
 				// TODO: set standard number format in ItemNr. column
@@ -233,6 +231,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Note that currently .setValues will interpret UTF-8 as Windows-1252 characters. By inserting value cell by cell the characters
 				 * are interpreted correctly but the application will slow down greatly. 
 				 */
+				// TODO: If empty report, let user know?
 				sheetTable.getRange("A1", "A"+rowCount).setValues(frameAgr);
 				sheetTable.getRange("B1", "B"+rowCount).setValues(project);
 				sheetTable.getRange("C1", "C"+rowCount).setValues(client);
@@ -985,11 +984,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	}
 	private StringBuilder generateQuery(boolean allCustSelected,
 			boolean allProjSelected, boolean allCategoriesSelected, boolean allFrameAgrSelected, 
-			List<List> temp_cust, List<List> temp_proj, JTextField categoryId, JTextField frameAgrId) {
+			List<List> temp_cust, List<List> temp_proj, JTextField categoryName, JTextField frameAgrName) {
 
-		/*
-		 * The base statement is used no matter the user selection
-		 */
 		StringBuilder query = new StringBuilder(5000);
 
 		if(!allCustSelected){
@@ -1010,21 +1006,12 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 			query.delete(query.length()-2, query.length());
 			query.append(")");
 		}
-		//TODO: get id from textfield databaseSearch.getCategoryIdMap().get(categoryField.getText())
-
-//		Iterator it = DatabaseSearch.getCategoryIdMap().entrySet().iterator();
-//		while (it.hasNext()) {
-//			Map.Entry pairs = (Map.Entry)it.next();
-//			System.out.println(pairs.getKey() + " = " + pairs.getValue());
-//		}
-
-//		if(!allCategoriesSelected){
-//			query.append(" and category_id like " + DatabaseSearch.getCategoryIdMap().get(categoryId.getText()));
-//		}
-//		if(!allFrameAgrSelected){
-//			query.append(" and frame_agr_cat_id like " + DatabaseSearch.getFrameIdMap().get(frameAgrId.getText()));
-//		}
-		System.out.println(query);
+		if(!allCategoriesSelected){
+			query.append(" and Tr_category.category_name like ''" + categoryName.getText() + "''");
+		}
+		if(!allFrameAgrSelected){
+			query.append(" and Frame_agr_catalog.frame_cat_name like ''" + frameAgrName.getText() + "''");
+		}
 		return query;
 	}
 }
