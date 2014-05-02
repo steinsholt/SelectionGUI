@@ -19,7 +19,6 @@ public class NextStageAction extends AbstractAction {
 
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		
 		State state = Active.setNextState();
 		
 		switch(state){

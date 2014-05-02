@@ -73,6 +73,18 @@ public class DatabaseSearch {
 					queryConditions.append(")");
 				}
 
+//				select distinct project_id, pr_name 
+//				  from Tr_hdr, Project 
+//				  where Tr_hdr.active_id = Project.project_id
+//				  and Tr_hdr.fr_agr_cat_id = 1001 // where 1001 is the chosen fr_agr_cat_id
+				
+//				 select distinct Tr_category.category_id, category_name 
+//				  from Tr_hdr, Tr_category 
+//				  where Tr_hdr.category_id = Tr_category.category_id
+//				  and Tr_hdr.assoc_id in (10935, 20106)
+//				  and Tr_hdr.active_id in (85, 96)
+//				  and Tr_hdr.fr_agr_cat_id = 1001
+				
 				rs = st.executeQuery("select pr_name, project_id from Project where pr_name like '" + name + "%'" + queryConditions);
 				while(rs.next()){
 					selectionModel.addRow(Arrays.asList(false, rs.getString(1).trim()));

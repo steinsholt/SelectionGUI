@@ -106,7 +106,7 @@ public class GUI {
 		searchButtonListener = new ActionListener() { 
 			public void actionPerformed(ActionEvent e) {
 				databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
-				//				intervalSelectionTable.synchronizeHeader();
+				if(Active.getState().equals(State.CLIENT) || Active.getState().equals(State.PROJECT))intervalSelectionTable.synchronizeHeader();
 			}
 		};
 
@@ -114,7 +114,7 @@ public class GUI {
 			public void keyPressed(KeyEvent e){
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
 					databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
-					//					intervalSelectionTable.synchronizeHeader();
+					if(Active.getState().equals(State.CLIENT) || Active.getState().equals(State.PROJECT))intervalSelectionTable.synchronizeHeader();
 				}
 			}
 		};
