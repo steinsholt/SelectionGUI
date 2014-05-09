@@ -395,37 +395,38 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
 
 				// TODO: get values as array, manipulate data and post back
+				boolean disable = false;
+				if(disable){
+					while(row++ < count){ 
+						progressField.setText("Marking erroneus rows");
+						setProgress(100 * ++processed / count);
 
-				while(row++ < count){ 
-					progressField.setText("Marking erroneus rows");
-					setProgress(100 * ++processed / count);
+						String itemStatusValue = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
+						String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
+						String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
+						String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
 
-					String itemStatusValue = sheetTable.getRange("ItemStatus").getRows().getItem(row).getValue();
-					String cddValue = sheetTable.getRange("CDD").getRows().getItem(row).getValue();
-					String eddValue = sheetTable.getRange("EDD").getRows().getItem(row).getValue();
-					String rfiValue = sheetTable.getRange("RFI").getRows().getItem(row).getValue();
+						Boolean isHistoricalDate = false;
+						Boolean isEmpty = false;
 
-					Boolean isHistoricalDate = false;
-					Boolean isEmpty = false;
-
-					if(rfiValue.equalsIgnoreCase("")) {
-						isEmpty = true;
-					}else{
-						DateTime historical = fmt.parseDateTime(rfiValue);
-						if(historical.isBeforeNow()) isHistoricalDate = true;
-					}
-
-					if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
-						sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
-					}
-					if(itemStatusValue.equalsIgnoreCase("Delivered") || itemStatusValue.equalsIgnoreCase("RFI Notified")) {
-						if(rfiValue.equalsIgnoreCase("")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					}
-					if(itemStatusValue.equalsIgnoreCase("On Hold") || itemStatusValue.equalsIgnoreCase("Created")) {
-						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
-					}
-					if(cddValue.equalsIgnoreCase("") || eddValue.equalsIgnoreCase(" ")) {
-						rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+						if(rfiValue.equalsIgnoreCase("")) {
+							isEmpty = true;
+						}else{
+							DateTime historical = fmt.parseDateTime(rfiValue);
+							if(historical.isBeforeNow()) isHistoricalDate = true;
+						}
+						if(!itemStatusValue.equalsIgnoreCase("Delivered") && !isHistoricalDate && !isEmpty){
+							sheetTable.getRange("EDD").getRows().getItem(row).setValue(rfiValue); 
+						}
+						if(itemStatusValue.equalsIgnoreCase("Delivered") || itemStatusValue.equalsIgnoreCase("RFI Notified")) {
+							if(rfiValue.equalsIgnoreCase("")) rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+						}
+						if(itemStatusValue.equalsIgnoreCase("On Hold") || itemStatusValue.equalsIgnoreCase("Created")) {
+							rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+						}
+						if(cddValue.equalsIgnoreCase("") || eddValue.equalsIgnoreCase(" ")) {
+							rows.getItem(row-1).getRange().getInterior().setColor(Color.red);
+						}
 					}
 				}
 

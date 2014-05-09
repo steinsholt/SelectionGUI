@@ -62,11 +62,9 @@ public class DatabaseSearch {
 					selectionModel.fireTableDataChanged();
 				}
 				
-				frameAgrCatId = "";
 				if(!frameAgr.equalsIgnoreCase("ALL")){
 					frameAgrCatId = " and Tr_hdr.fr_agr_cat_id = " + frameIdMap.get(frameAgr);
 				}
-
 				rs = st.executeQuery("select distinct project_id, pr_name "
 						+ "from Tr_hdr, Project "
 						+ "where Tr_hdr.active_id = Project.project_id "
@@ -95,13 +93,16 @@ public class DatabaseSearch {
 					selectionModel.fireTableDataChanged();
 				}
 				
-				activeId = "";
 				HashSet<Integer> projectIdSet = new HashSet<Integer>();
 				if(projectModel.getRowCount() != 0){
 					for(List rowDisplay : projectModel.getRowData()){
 						projectIdSet.add(projectIdMap.get(rowDisplay.get(1)));
 					}
 					activeId = " and Tr_hdr.active_id in " + Arrays.toString(projectIdSet.toArray(new Integer[projectIdSet.size()])).replace("[", "(").replace("]", ")");
+				}
+				
+				if(!frameAgr.equalsIgnoreCase("ALL")){
+					frameAgrCatId = " and Tr_hdr.fr_agr_cat_id = " + frameIdMap.get(frameAgr);
 				}
 				
 				rs = st.executeQuery("select distinct Assoc.assoc_id, assoc_name"
@@ -126,13 +127,24 @@ public class DatabaseSearch {
 				break;
 
 			case CATEGORY:
-				assocId = "";
 				HashSet<Integer> clientIdSet = new HashSet<Integer>();
 				if(clientModel.getRowCount() != 0){
 					for(List rowDisplay : clientModel.getRowData()){
 						clientIdSet.add((Integer) rowDisplay.get(1));
 					}
 					assocId = " and Tr_hdr.assoc_id in " + Arrays.toString(clientIdSet.toArray(new Integer[clientIdSet.size()])).replace("[", "(").replace("]", ")");
+				}
+				
+				HashSet<Integer> projectIdSetTest = new HashSet<Integer>();
+				if(projectModel.getRowCount() != 0){
+					for(List rowDisplay : projectModel.getRowData()){
+						projectIdSetTest.add(projectIdMap.get(rowDisplay.get(1)));
+					}
+					activeId = " and Tr_hdr.active_id in " + Arrays.toString(projectIdSetTest.toArray(new Integer[projectIdSetTest.size()])).replace("[", "(").replace("]", ")");
+				}
+				
+				if(!frameAgr.equalsIgnoreCase("ALL")){
+					frameAgrCatId = " and Tr_hdr.fr_agr_cat_id = " + frameIdMap.get(frameAgr);
 				}
 				
 				rs = st.executeQuery("select distinct Tr_category.category_id, category_name"
