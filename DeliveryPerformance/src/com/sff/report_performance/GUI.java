@@ -240,7 +240,6 @@ public class GUI {
 		reportPanel = new JPanel(new MigLayout("fillx, insets 0"));
 		generateReportButton = new JButton();
 		markErrorsCheckBox = new JCheckBox();
-		// TODO: push label and check box together
 		markErrorsLabel = new JLabel("Mark erroneous rows");
 		reportPanel.add(markErrorsCheckBox, "split 2, center");
 		reportPanel.add(markErrorsLabel, "push");
