@@ -237,13 +237,13 @@ public class GUI {
 	}
 
 	private JPanel createReportPanel() {
-		reportPanel = new JPanel(new MigLayout("fillx, insets 0", "push[]"));
+		reportPanel = new JPanel(new MigLayout("fillx, insets 0"));
 		generateReportButton = new JButton();
 		markErrorsCheckBox = new JCheckBox();
 		// TODO: push label and check box together
 		markErrorsLabel = new JLabel("Mark erroneous rows");
-		reportPanel.add(markErrorsCheckBox);
-		reportPanel.add(markErrorsLabel);
+		reportPanel.add(markErrorsCheckBox, "split 2, center");
+		reportPanel.add(markErrorsLabel, "push");
 		reportPanel.add(generateReportButton);
 
 		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, markErrorsCheckBox, categoryField, frame));
