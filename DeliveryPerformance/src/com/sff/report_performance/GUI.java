@@ -105,7 +105,7 @@ public class GUI {
 
 		searchButtonListener = new ActionListener() { 
 			public void actionPerformed(ActionEvent e) {
-				databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
+				databaseSearch.executeSearch(Active.getActiveSelectModel(), reportParameterClientModel, reportParameterProjectModel, databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
 				if(Active.getState().equals(State.CLIENT) || Active.getState().equals(State.PROJECT))intervalSelectionTable.synchronizeHeader();
 			}
 		};
@@ -113,7 +113,7 @@ public class GUI {
 		SearchKeyListener = new KeyAdapter(){
 			public void keyPressed(KeyEvent e){
 				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					databaseSearch.executeSearch(Active.getActiveSelectModel(), Active.getActiveDisplayModel(), databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
+					databaseSearch.executeSearch(Active.getActiveSelectModel(), reportParameterClientModel, reportParameterProjectModel, databaseConnection, nameField, idField, Active.getState(), Active.getActiveSimpleSelectModel(), frameAgrField);
 					if(Active.getState().equals(State.CLIENT) || Active.getState().equals(State.PROJECT))intervalSelectionTable.synchronizeHeader();
 				}
 			}
