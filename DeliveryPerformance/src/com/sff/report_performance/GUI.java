@@ -372,13 +372,13 @@ public class GUI {
 	}
 
 	public TableColumn configureTableColumns(JTable table) {
-		if(table.getColumnCount()==3) intervalSelectionTable.getColumnModel().getColumn(1).setMaxWidth(50);
-		table.getColumnModel().getColumn(0).setMinWidth(80); 
-		table.getColumnModel().getColumn(0).setMaxWidth(100);
+		if(table.getColumnCount()==3) intervalSelectionTable.getColumnModel().getColumn(1).setMaxWidth(75);
+		table.getColumnModel().getColumn(0).setMinWidth(60); 
+		table.getColumnModel().getColumn(0).setMaxWidth(60);
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
 		TableColumn tc = table.getColumnModel().getColumn(0);
-		tc.setHeaderValue("Select All");
+		tc.setHeaderValue("All");
 		if(table.getName().equals("selection")){
 			tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));

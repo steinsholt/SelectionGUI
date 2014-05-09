@@ -47,12 +47,12 @@ public class ReportParameterTable extends JTable {
 		if(this.getRowCount() > 0){
 			checkBoxHeader.setEnabled(true);
 			checkBoxHeader.setSelected(false);
-			column.setHeaderValue("Remove All");
+			column.setHeaderValue("None");
 			this.getParent().getParent().repaint();
 		}else{
 			checkBoxHeader.setEnabled(false);
 			checkBoxHeader.setSelected(true);
-			column.setHeaderValue("Select All");
+			column.setHeaderValue("All");
 			this.getParent().getParent().repaint();
 		}
 	}
