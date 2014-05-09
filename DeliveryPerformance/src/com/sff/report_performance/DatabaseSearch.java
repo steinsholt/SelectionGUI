@@ -108,6 +108,7 @@ public class DatabaseSearch {
 				rs = st.executeQuery("select distinct Assoc.assoc_id, assoc_name"
 						+ " from Tr_hdr, Assoc"
 						+ " where Tr_hdr.assoc_id = Assoc.assoc_id"
+						+ " and Tr_hdr.assoc_id < 20000"
 						+ " and Assoc.assoc_id like '" + ID + "%'"
 						+ " and assoc_name like '" + name + "%'" 
 						+ frameAgrCatId
