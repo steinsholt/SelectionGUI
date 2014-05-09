@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.swing.JCheckBox;
 import javax.swing.JTextField;
 import javax.swing.SwingWorker;
 
@@ -55,14 +56,16 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private JTextField progressField;
 	private JTextField category; 
 	private JTextField frameAgreement;
+	private JCheckBox markErrorsCheckBox;
 
-	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
+	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JCheckBox markErrorsCheckBox, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
 		this.customerData = customerData;
 		this.projectData = projectData;
 		this.publishedOutput = publishedOutput;
 		this.progressField = progressField;
 		this.frameAgreement = frameAgreement;
 		this.category = category;
+		this.markErrorsCheckBox = markErrorsCheckBox;
 
 		try {
 			/*
@@ -395,8 +398,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				DateTimeFormatter fmt = DateTimeFormat.forPattern("dd.MM.yyyy");
 
 				// TODO: get values as array, manipulate data and post back
-				boolean disable = false;
-				if(disable){
+				if(markErrorsCheckBox.isSelected()){
 					while(row++ < count){ 
 						progressField.setText("Marking erroneus rows");
 						setProgress(100 * ++processed / count);

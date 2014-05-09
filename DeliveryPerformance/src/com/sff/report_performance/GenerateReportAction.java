@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.List;
 
 import javax.swing.AbstractAction;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -17,13 +18,15 @@ public class GenerateReportAction extends AbstractAction{
 	private JTextField frameAgr;
 	private JTextField category;
 	private JFrame frame;
+	private JCheckBox markErrorsCheckBox;
 	
-	public GenerateReportAction(List<List> customerData, List<List> projectData, JTextField frameAgr, JTextField category, JFrame frame){
+	public GenerateReportAction(List<List> customerData, List<List> projectData, JTextField frameAgr, JCheckBox markErrorsCheckBox, JTextField category, JFrame frame){
 		this.customerData = customerData;
 		this.projectData = projectData;
 		this.frameAgr = frameAgr;
 		this.category = category;
 		this.frame = frame;
+		this.markErrorsCheckBox = markErrorsCheckBox;
 	}
 
 	@Override
@@ -35,7 +38,7 @@ public class GenerateReportAction extends AbstractAction{
 		output = new File(directory + fileName);
 		isFileUnlocked = true;
 		if(isFileUnlocked){
-			ProgressDialog.runReport(customerData, projectData, frameAgr, category, output, frame);
+			ProgressDialog.runReport(customerData, projectData, markErrorsCheckBox, frameAgr, category, output, frame);
 		}
 		else{
 			JOptionPane.showMessageDialog(frame, "Please close file " + fileName + " before generating a new report");

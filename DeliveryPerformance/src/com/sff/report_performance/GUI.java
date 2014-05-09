@@ -14,6 +14,7 @@ import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -44,6 +45,7 @@ public class GUI {
 	private JLabel categoryLabel;
 	private JLabel selectionHeadlineLabel;
 	private JLabel reportParameterLabel;
+	private JLabel markErrorsLabel;
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPaneCustomers;
 	private JScrollPane scrollPaneProjects;
@@ -83,6 +85,7 @@ public class GUI {
 	private ActionListener searchButtonListener;
 	private KeyAdapter SearchKeyListener;
 	private DatabaseSearch databaseSearch;
+	private JCheckBox markErrorsCheckBox;
 
 	public JFrame getFrame() {
 		return frame;
@@ -236,9 +239,14 @@ public class GUI {
 	private JPanel createReportPanel() {
 		reportPanel = new JPanel(new MigLayout("fillx, insets 0", "push[]"));
 		generateReportButton = new JButton();
+		markErrorsCheckBox = new JCheckBox();
+		// TODO: push label and check box together
+		markErrorsLabel = new JLabel("Mark erroneous rows");
+		reportPanel.add(markErrorsCheckBox);
+		reportPanel.add(markErrorsLabel);
 		reportPanel.add(generateReportButton);
 
-		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, categoryField, frame));
+		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, markErrorsCheckBox, categoryField, frame));
 		generateReportButton.setForeground(Color.blue);
 		generateReportButton.setFont(bold);
 		generateReportButton.setText("Generate Report");
@@ -584,5 +592,8 @@ public class GUI {
 	}
 	public KeyAdapter getCheckBoxKeySearch() {
 		return SearchKeyListener;
+	}
+	public JCheckBox getMarkErrorsCheckBox() {
+		return markErrorsCheckBox;
 	}
 }
