@@ -86,6 +86,8 @@ public class GUI {
 	private KeyAdapter SearchKeyListener;
 	private DatabaseSearch databaseSearch;
 	private JCheckBox markErrorsCheckBox;
+	private Color lighterGray = new Color(200,200,200);
+	private Color darkerGray = new Color(75,75,75);
 
 	public JFrame getFrame() {
 		return frame;
@@ -197,6 +199,7 @@ public class GUI {
 		frameAgrField = new JTextField();
 		frameAgrField.setEnabled(false);
 		frameAgrField.setBackground(Color.white);
+		frameAgrField.setDisabledTextColor(Color.black);
 		frameAgrField.setText("ALL");
 		displayPanel.add(frameAgrField, "wrap, width :180:");
 
@@ -211,13 +214,14 @@ public class GUI {
 
 		categoryField = new JTextField();
 		categoryField.setEnabled(false);
-		categoryField.setBackground(Color.lightGray);
+		categoryField.setBackground(lighterGray);
+		categoryField.setDisabledTextColor(darkerGray);
 		categoryField.setText("ALL");
 		displayPanel.add(categoryField, "width :180:");
 
 		nullSelectionModel = new NullSelectionModel();
 		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
-		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel);
+		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel, lighterGray, darkerGray);
 		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,intervalSelectionTable));
 		projectTable.setName("projects");
 		configureTableColumns(projectTable);
@@ -225,7 +229,7 @@ public class GUI {
 		projectTable.disable();
 
 		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
-		clientTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterClientModel);
+		clientTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterClientModel, lighterGray, darkerGray);
 		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(clientTable,intervalSelectionTable));
 		clientTable.setName("clients");
 		configureTableColumns(clientTable);
@@ -336,11 +340,11 @@ public class GUI {
 	private JPanel createNavigationPanel() {
 		navigationPanel = new JPanel(new MigLayout("fillx, insets 0"));
 		previousStepButton = new JButton();
-		previousStepButton.setAction(new PreviousStateAction(this));
+		previousStepButton.setAction(new PreviousStateAction(this, lighterGray, darkerGray));
 		previousStepButton.setEnabled(false);
 		previousStepButton.setText("Back");
 		nextStepButton = new JButton();
-		nextStepButton.setAction(new NextStageAction(this));
+		nextStepButton.setAction(new NextStageAction(this, lighterGray, darkerGray));
 		nextStepButton.setText("Next");
 		navigationPanel.add(previousStepButton, "split, right");
 		navigationPanel.add(nextStepButton);

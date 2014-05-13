@@ -12,9 +12,13 @@ import com.sff.report_performance.GUI.State;
 public class NextStageAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
 	private GUI gui;
+	private Color lighterGray;
+	private Color darkerGray;
 	
-	public NextStageAction(GUI gui){
+	public NextStageAction(GUI gui, Color lighterGray, Color darkerGray){
 		this.gui = gui;
+		this.lighterGray = lighterGray;
+		this.darkerGray = darkerGray;
 	}
 
 	@Override
@@ -29,7 +33,8 @@ public class NextStageAction extends AbstractAction {
 			gui.getSelectionHeadline().setText("Select Projects");
 			gui.getNameLabel().setText("Project Name");
 			gui.getProjectTable().setEnabled(true);
-			gui.getFrameAgrField().setBackground(Color.lightGray);
+			gui.getFrameAgrField().setBackground(lighterGray);
+			gui.getFrameAgrField().setDisabledTextColor(darkerGray);
 			gui.getProjectsButton().setForeground(Color.black);
 			gui.getFrameAgrButton().setForeground(Color.lightGray);
 			
@@ -63,6 +68,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getIdField().setVisible(false);
 			gui.getClientTable().setEnabled(false);
 			gui.getCategoryField().setBackground(Color.white);
+			gui.getCategoryField().setDisabledTextColor(Color.black);
 			gui.getClientsButton().setForeground(Color.lightGray);
 			gui.getCategoryButton().setForeground(Color.black);
 			

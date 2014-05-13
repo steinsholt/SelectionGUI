@@ -11,11 +11,15 @@ public class ReportParameterTable extends JTable {
 	private static final long serialVersionUID = 1L;
 	private PartialSelectionModel partialSelectionModel;
 	private NullSelectionModel nullSelectionModel;
+	private Color lighterGray;
+	private Color darkerGray;
 	
-	public ReportParameterTable(PartialSelectionModel partialSelectionModel, NullSelectionModel nullSelectionModel, MyTableModel model){
+	public ReportParameterTable(PartialSelectionModel partialSelectionModel, NullSelectionModel nullSelectionModel, MyTableModel model, Color lighterGray, Color darkerGray){
 		super(model);
 		this.partialSelectionModel = partialSelectionModel;
 		this.nullSelectionModel = nullSelectionModel;
+		this.lighterGray = lighterGray;
+		this.darkerGray = darkerGray;
 	}
 	
 	public PartialSelectionModel getPartialSelectionModel() {
@@ -24,11 +28,11 @@ public class ReportParameterTable extends JTable {
 
 	@Override
 	public void disable(){
-		this.setBackground(Color.lightGray);
-		this.setForeground(Color.gray);
+		this.setBackground(lighterGray);
+		this.setForeground(darkerGray);
 		this.setSelectionModel(nullSelectionModel);
-		((JViewport)this.getParent()).setBackground(Color.lightGray);
-		this.getTableHeader().setForeground(Color.gray);
+		((JViewport)this.getParent()).setBackground(lighterGray);
+		this.getTableHeader().setForeground(darkerGray);
 		((JComponent) this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(false);
 	}
 	@Override

@@ -12,9 +12,13 @@ import com.sff.report_performance.GUI.State;
 public class PreviousStateAction extends AbstractAction {
 	private static final long serialVersionUID = 1L;
 	private GUI gui;
+	private Color lighterGray;
+	private Color darkerGray;
 	
-	public PreviousStateAction(GUI gui){
+	public PreviousStateAction(GUI gui, Color lighterGray, Color darkerGray){
 		this.gui = gui;
+		this.lighterGray = lighterGray;
+		this.darkerGray = darkerGray;
 	}
 	
 	@Override
@@ -28,6 +32,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getPreviousStepButton().setEnabled(false);
 			gui.getProjectTable().setEnabled(false);
 			gui.getFrameAgrField().setBackground(Color.white);
+			gui.getFrameAgrField().setDisabledTextColor(Color.black);
 			gui.getProjectsButton().setForeground(Color.lightGray);
 			gui.getFrameAgrButton().setForeground(Color.black);
 			
@@ -56,7 +61,8 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getIdField().setVisible(true);
 			gui.getIdLabel().setVisible(true);
 			gui.getClientTable().setEnabled(true);
-			gui.getCategoryField().setBackground(Color.lightGray); 
+			gui.getCategoryField().setBackground(lighterGray);
+			gui.getCategoryField().setDisabledTextColor(darkerGray);
 			gui.getClientsButton().setForeground(Color.black);
 			gui.getCategoryButton().setForeground(Color.lightGray);
 			
