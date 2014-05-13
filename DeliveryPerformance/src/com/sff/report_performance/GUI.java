@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import javax.swing.AbstractButton;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
@@ -334,6 +336,7 @@ public class GUI {
 		searchButton.addActionListener(searchButtonListener);
 		nameField.addKeyListener(SearchKeyListener);
 		idField.addKeyListener(SearchKeyListener);
+		
 		return buttonPanel;
 	}
 
@@ -343,12 +346,16 @@ public class GUI {
 		previousStepButton.setAction(new PreviousStateAction(this, lighterGray, darkerGray));
 		previousStepButton.setEnabled(false);
 		previousStepButton.setText("Back");
+		previousStepButton.setHorizontalTextPosition(AbstractButton.RIGHT);
+		previousStepButton.setIcon(new ImageIcon("C:/vendorLogistics/previous_16.png"));
 		nextStepButton = new JButton();
 		nextStepButton.setAction(new NextStageAction(this, lighterGray, darkerGray));
 		nextStepButton.setText("Next");
+		nextStepButton.setHorizontalTextPosition(AbstractButton.LEFT);
+		nextStepButton.setIcon(new ImageIcon("C:/vendorLogistics/next_16.png"));
 		navigationPanel.add(previousStepButton, "split, right");
 		navigationPanel.add(nextStepButton);
-
+		
 		return navigationPanel;
 	}
 
