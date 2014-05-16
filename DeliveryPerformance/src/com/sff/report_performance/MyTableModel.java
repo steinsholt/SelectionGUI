@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 /*
@@ -23,16 +24,11 @@ public class MyTableModel extends AbstractTableModel {
 		this.columnNames = columnNames;
 		this.deleteIcon = new ImageIcon("C:/vendorLogistics/delete_14.png");
 	}
-
-//	public static BufferedImage resizeImage(final Image image, int width, int height) {
-//		final BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-//		final Graphics2D graphics2D = bufferedImage.createGraphics();
-//		graphics2D.setComposite(AlphaComposite.Src);
-//		graphics2D.drawImage(image, 0, 0, width, height, null);
-//		graphics2D.dispose();
-//
-//		return bufferedImage;
-//	}
+	
+	public MyTableModel(List<String> columnNames, TableModelListener tableModelListener){
+		this.columnNames = columnNames;
+		this.deleteIcon = new ImageIcon("C:/vendorLogistics/delete_14.png");
+	}
 
 	public void addRow(List rowData){
 		if(!data.contains(rowData)){
@@ -71,7 +67,7 @@ public class MyTableModel extends AbstractTableModel {
 		}
 	}
 
-	public void clear(JTable selectionTable){
+	public void clearSelection(JTable selectionTable){
 		MyTableModel model = (MyTableModel) selectionTable.getModel();
 		while(data.size()!=0){
 
@@ -98,6 +94,11 @@ public class MyTableModel extends AbstractTableModel {
 			}
 			if(data.size()>0) data.remove(selection[i]);
 		}
+	}
+	
+	public void removeAllRows(){ // NEW
+		data.clear();
+		fireTableDataChanged();
 	}
 
 	public int getRowContaining(Object id){

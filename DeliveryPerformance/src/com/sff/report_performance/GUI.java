@@ -166,6 +166,15 @@ public class GUI {
 
 		reportParameterProjectModel = new MyTableModel(projectColumnNames);
 		reportParameterClientModel = new MyTableModel(clientColumnNames);
+		
+		categoryField = new JTextField();
+		intervalSelectionTable = new SelectionTable(selectClientModel);
+		
+		ReportParameterTableModelListener clientModelListener = new ReportParameterTableModelListener(categoryField);
+		reportParameterClientModel.addTableModelListener(clientModelListener);
+		
+		ReportParameterTableModelListener projectModelListener = new ReportParameterTableModelListener(reportParameterClientModel, selectClientModel);
+		reportParameterProjectModel.addTableModelListener(projectModelListener);
 
 		backgroundPanel = new JPanel(new MigLayout("fill, width :800:, height :700:, flowy"));
 		frame.getContentPane().add(backgroundPanel);
@@ -203,6 +212,7 @@ public class GUI {
 		frameAgrField.setBackground(Color.white);
 		frameAgrField.setDisabledTextColor(Color.black);
 		frameAgrField.setText("ALL");
+		frameAgrField.getDocument().addDocumentListener(new TextFieldDocumentListener(reportParameterProjectModel, selectProjectModel));
 		displayPanel.add(frameAgrField, "wrap, width :180:");
 
 		scrollPaneProjects = new JScrollPane();
@@ -214,7 +224,6 @@ public class GUI {
 		categoryLabel = new JLabel("Category");
 		displayPanel.add(categoryLabel, "split, center");
 
-		categoryField = new JTextField();
 		categoryField.setEnabled(false);
 		categoryField.setBackground(lighterGray);
 		categoryField.setDisabledTextColor(darkerGray);
@@ -366,7 +375,6 @@ public class GUI {
 		scrollPane.setBorder(BorderFactory.createLineBorder(Color.black));
 		selectionPanel.add(scrollPane);
 
-		intervalSelectionTable = new SelectionTable(selectClientModel);
 		intervalSelectionTable.setName("selection");
 		intervalSelectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(intervalSelectionTable));
 		TableColumn tc = configureTableColumns(intervalSelectionTable);

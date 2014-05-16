@@ -14,7 +14,6 @@ public class SelectionTableListSelectionListener implements ListSelectionListene
 		this.table = table;
 	}
 
-	@Override
 	public void valueChanged(ListSelectionEvent e) {
 		ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 		int min = lsm.getMinSelectionIndex();
@@ -23,8 +22,7 @@ public class SelectionTableListSelectionListener implements ListSelectionListene
 		MyTableModel model = Active.getActiveDisplayModel();
 
 		if(!lsm.isSelectionEmpty() && !isAdjusting){
-			// TODO: need to add selection listener to all tables, remove partial selection model. 
-			// Two listeners, one for each table type.
+
 			int[] selection = table.getSelectedRows();
 
 			for (int i = 0; i < selection.length; i++) {

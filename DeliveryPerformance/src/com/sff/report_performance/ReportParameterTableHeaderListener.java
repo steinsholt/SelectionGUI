@@ -22,7 +22,7 @@ public class ReportParameterTableHeaderListener implements ItemListener{
 			if(model.getRowData().isEmpty()){
 				((CheckBoxHeader) display.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
 			}
-			else model.clear(selectionTable);
+			else model.clearSelection(selectionTable);
 			Active.getActiveDisplayTable().synchronizeHeader();
 			selectionTable.synchronizeHeader();
 		}
