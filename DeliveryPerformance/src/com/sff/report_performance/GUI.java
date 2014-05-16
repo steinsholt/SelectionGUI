@@ -170,7 +170,7 @@ public class GUI {
 		categoryField = new JTextField();
 		intervalSelectionTable = new SelectionTable(selectClientModel);
 		
-		ReportParameterTableModelListener clientModelListener = new ReportParameterTableModelListener(categoryField);
+		ReportParameterTableModelListener clientModelListener = new ReportParameterTableModelListener(categoryField, selectCategoryModel);
 		reportParameterClientModel.addTableModelListener(clientModelListener);
 		
 		ReportParameterTableModelListener projectModelListener = new ReportParameterTableModelListener(reportParameterClientModel, selectClientModel);
