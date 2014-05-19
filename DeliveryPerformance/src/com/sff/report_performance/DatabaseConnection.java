@@ -21,23 +21,4 @@ public class DatabaseConnection {
 		db.openConnection();
 		return db;
 	}
-
-//	// TODO: I don't like this here. Does not fit the class name
-//	public void loadStatusData(MyTableModel selectionModel){
-//		getDatabase();
-//
-//		try{
-//			Statement st = db.getJdbcConnection().createStatement();
-//			st.setQueryTimeout(60);
-//			ResultSet rs = st.executeQuery("select tr_dtl_stname from Tr_dtl_status");		      
-//			while(rs.next()){
-//				selectionModel.addRow(Arrays.asList(false, rs.getString(1).trim()));
-//			}	
-//			st.close();
-//			rs.close();
-//		}catch(Exception ex){
-//			ex.printStackTrace();
-//		}
-//		db.closeConnection();
-//	}
 }

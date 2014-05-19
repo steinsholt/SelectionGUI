@@ -42,6 +42,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			TableColumn tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
 			tc.setHeaderRenderer(gui.getHeader());
+			gui.getIntervalSelectionTable().synchronizeHeader();
 			
 			break;
 		case CLIENT:
@@ -58,6 +59,8 @@ public class NextStageAction extends AbstractAction {
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
 			tc.setHeaderRenderer(gui.getHeader());
+			gui.getIntervalSelectionTable().synchronizeHeader();
+			
 			break;
 		case CATEGORY:
 			gui.getNextStepButton().setEnabled(false);
