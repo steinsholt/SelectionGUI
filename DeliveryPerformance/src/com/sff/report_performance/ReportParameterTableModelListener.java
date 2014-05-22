@@ -10,15 +10,17 @@ public class ReportParameterTableModelListener implements TableModelListener {
 	private MyTableModel displayModel = null;
 	private MyTableModel selectionModel;
 	private DefaultTableModel defaultModel;
+	private ReportParameterTable displayTable;
 	
 	public ReportParameterTableModelListener(JTextField textField, DefaultTableModel defaultModel){
 		this.defaultModel = defaultModel;
 		this.textField = textField;
 	}
 	
-	public ReportParameterTableModelListener(MyTableModel displayModel, MyTableModel selectionModel){
+	public ReportParameterTableModelListener(MyTableModel displayModel, MyTableModel selectionModel, ReportParameterTable displayTable){
 		this.displayModel = displayModel;
 		this.selectionModel = selectionModel;
+		this.displayTable = displayTable;
 	}
 	
 	@Override
@@ -30,6 +32,11 @@ public class ReportParameterTableModelListener implements TableModelListener {
 		if(displayModel!=null) {
 			selectionModel.removeAllRows();
 			displayModel.removeAllRows();
+//			CheckBoxHeader checkBoxHeader = (CheckBoxHeader) displayTable.getColumnModel().getColumn(0).getHeaderRenderer();
+//			System.out.println(checkBoxHeader.isSelected());
+//			checkBoxHeader.setSelected(true);
+			displayTable.getColumnModel().getColumn(0).setHeaderValue("ALL");
+			displayTable.getParent().getParent().repaint();
 		}
 	}
 }

@@ -126,20 +126,6 @@ public class GUI {
 			}
 		};
 
-		//		plainTableSearch = new ActionListener() { 
-		//			public void actionPerformed(ActionEvent e) {
-		//				DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-		//			}
-		//		};
-		//
-		//		plainKeySearch = new KeyAdapter(){
-		//			public void keyPressed(KeyEvent e){
-		//				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-		//					DatabaseSearch.executeStandardSearch(databaseConnection, nameField, Active.getActiveSimpleSelectModel(), Active.getState());
-		//				}
-		//			}
-		//		};
-
 		clientColumnNames = new ArrayList<String>();
 		clientColumnNames.add("");
 		clientColumnNames.add("ID");
@@ -170,12 +156,6 @@ public class GUI {
 		categoryField = new JTextField();
 		intervalSelectionTable = new SelectionTable(selectClientModel);
 		
-		ReportParameterTableModelListener clientModelListener = new ReportParameterTableModelListener(categoryField, selectCategoryModel);
-		reportParameterClientModel.addTableModelListener(clientModelListener);
-		
-		ReportParameterTableModelListener projectModelListener = new ReportParameterTableModelListener(reportParameterClientModel, selectClientModel);
-		reportParameterProjectModel.addTableModelListener(projectModelListener);
-
 		backgroundPanel = new JPanel(new MigLayout("fill, width :800:, height :700:, flowy"));
 		frame.getContentPane().add(backgroundPanel);
 
@@ -192,6 +172,12 @@ public class GUI {
 		backgroundPanel.add(helpPanel, "growx");
 		backgroundPanel.add(displayPanel, "grow, spany 4");
 		backgroundPanel.add(reportPanel, "growx");
+		
+		ReportParameterTableModelListener clientModelListener = new ReportParameterTableModelListener(categoryField, selectCategoryModel);
+		reportParameterClientModel.addTableModelListener(clientModelListener);
+		
+		ReportParameterTableModelListener projectModelListener = new ReportParameterTableModelListener(reportParameterClientModel, selectClientModel, clientTable);
+		reportParameterProjectModel.addTableModelListener(projectModelListener);
 
 		intervalSelectionTable.setAutoCreateRowSorter(true);
 		frame.pack();
@@ -212,7 +198,7 @@ public class GUI {
 		frameAgrField.setBackground(Color.white);
 		frameAgrField.setDisabledTextColor(Color.black);
 		frameAgrField.setText("ALL");
-		frameAgrField.getDocument().addDocumentListener(new TextFieldDocumentListener(reportParameterProjectModel, selectProjectModel));
+		
 		displayPanel.add(frameAgrField, "wrap, width :180:");
 
 		scrollPaneProjects = new JScrollPane();
@@ -247,6 +233,8 @@ public class GUI {
 		clientTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(clientTable);
 		clientTable.disable();
+		
+		frameAgrField.getDocument().addDocumentListener(new TextFieldDocumentListener(reportParameterProjectModel, selectProjectModel, projectTable));
 
 		return displayPanel;
 	}
