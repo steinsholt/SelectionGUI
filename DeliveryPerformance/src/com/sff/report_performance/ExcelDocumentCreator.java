@@ -195,33 +195,33 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 					int column = 0;
 
-					frameAgr[processed][0] = dataSet.getString(column++).trim();
-					projectSet.add(dataSet.getString(column).trim());
-					project[processed][0] = dataSet.getString(column++).trim();
-					client[processed][0] = dataSet.getString(column++).trim();
-					category[processed][0] = dataSet.getString(column++).trim();
-					clientRef[processed][0] = dataSet.getString(column++).trim();
+					frameAgr[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					projectSet.add(correctSpecialCharacters(dataSet.getString(column).trim()));
+					project[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					client[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					category[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					clientRef[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 					orderNr[processed][0] = dataSet.getInt(column++);
-					orderRegDate[processed][0] = dataSet.getString(column++).trim();
-					orderCdd[processed][0] = dataSet.getString(column++).trim();
-					itemNr[processed][0] = dataSet.getString(column++).trim();
-					clientArtCode[processed][0] = dataSet.getString(column++).trim();
+					orderRegDate[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					orderCdd[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					itemNr[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					clientArtCode[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 					vendorNr[processed][0] = dataSet.getInt(column++);
-					description[processed][0] = dataSet.getString(column++).trim();
-					millSet.add(dataSet.getString(column).trim());
-					supplier[processed][0] = dataSet.getString(column++).trim();
+					description[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					millSet.add(correctSpecialCharacters(dataSet.getString(column).trim()));
+					supplier[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 					qty[processed][0] = dataSet.getDouble(column++); 
 					unitPrice[processed][0] = dataSet.getDouble(column++);
 					totalPrice[processed][0] = dataSet.getDouble(column++);
-					currencySet.add(dataSet.getString(column).trim());
-					currency[processed][0] = dataSet.getString(column++).trim();
+					currencySet.add(correctSpecialCharacters(dataSet.getString(column).trim()));
+					currency[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 					cRate[processed][0] = dataSet.getDouble(column++);
-					cdd[processed][0] = dataSet.getString(column++).trim();
-					edd[processed][0] = dataSet.getString(column++).trim();
-					rfi[processed][0] = dataSet.getString(column++).trim();
-					ccd[processed][0] = dataSet.getString(column++).trim();
-					ecd[processed][0] = dataSet.getString(column++).trim();
-					itemStatus[processed][0] = dataSet.getString(column++).trim();
+					cdd[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					edd[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					rfi[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					ccd[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					ecd[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					itemStatus[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 
 					processed++;
 					dataSet.next();
@@ -264,24 +264,24 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * To account for the incorrect interpretation of UTF-8 characters the actual characters are translated back to the expected characters.
 				 * Ref: http://www.i18nqa.com/debug/utf8-debug.html
 				 */
-				Range entireTableSheet = sheetTable.getRange("A1:X"+rowCount);
-				if(entireTableSheet.find("Ã˜")!=null) entireTableSheet.replace("Ã˜", "Ø");
-				if(entireTableSheet.find("Ã¸")!=null) entireTableSheet.replace("Ã¸", "ø");
-				if(entireTableSheet.find("Ã…")!=null) entireTableSheet.replace("Ã…", "Å");
-				if(entireTableSheet.find("Ã¥")!=null) entireTableSheet.replace("Ã¥", "å");
-				if(entireTableSheet.find("Ã†")!=null) entireTableSheet.replace("Ã†", "Æ");
-				if(entireTableSheet.find("Ã¦")!=null) entireTableSheet.replace("Ã¦", "æ");
-				if(entireTableSheet.find("Ãœ")!=null) entireTableSheet.replace("Ãœ", "Ü");
-				if(entireTableSheet.find("Ã¼")!=null) entireTableSheet.replace("Ã¼", "ü");
-				if(entireTableSheet.find("Ã„")!=null) entireTableSheet.replace("Ã„", "Ä");
-				if(entireTableSheet.find("Ã¤")!=null) entireTableSheet.replace("Ã¤", "ä");
-				if(entireTableSheet.find("Ã©")!=null) entireTableSheet.replace("Ã©", "é");
-				if(entireTableSheet.find("Ã¨")!=null) entireTableSheet.replace("Ã¨", "è");
-				if(entireTableSheet.find("Ã‰")!=null) entireTableSheet.replace("Ã‰", "É");
-				if(entireTableSheet.find("Ãˆ")!=null) entireTableSheet.replace("Ãˆ", "È");
-				if(entireTableSheet.find("â€“")!=null) entireTableSheet.replace("â€“", "–");
-				if(entireTableSheet.find("Ã’")!=null) entireTableSheet.replace("Ã’", "Ò");
-				if(entireTableSheet.find("Ã²")!=null) entireTableSheet.replace("Ã²", "ò");
+//				Range entireTableSheet = sheetTable.getRange("A1:X"+rowCount);
+//				if(entireTableSheet.find("Ã˜")!=null) entireTableSheet.replace("Ã˜", "Ø");
+//				if(entireTableSheet.find("Ã¸")!=null) entireTableSheet.replace("Ã¸", "ø");
+//				if(entireTableSheet.find("Ã…")!=null) entireTableSheet.replace("Ã…", "Å");
+//				if(entireTableSheet.find("Ã¥")!=null) entireTableSheet.replace("Ã¥", "å");
+//				if(entireTableSheet.find("Ã†")!=null) entireTableSheet.replace("Ã†", "Æ");
+//				if(entireTableSheet.find("Ã¦")!=null) entireTableSheet.replace("Ã¦", "æ");
+//				if(entireTableSheet.find("Ãœ")!=null) entireTableSheet.replace("Ãœ", "Ü");
+//				if(entireTableSheet.find("Ã¼")!=null) entireTableSheet.replace("Ã¼", "ü");
+//				if(entireTableSheet.find("Ã„")!=null) entireTableSheet.replace("Ã„", "Ä");
+//				if(entireTableSheet.find("Ã¤")!=null) entireTableSheet.replace("Ã¤", "ä");
+//				if(entireTableSheet.find("Ã©")!=null) entireTableSheet.replace("Ã©", "é");
+//				if(entireTableSheet.find("Ã¨")!=null) entireTableSheet.replace("Ã¨", "è");
+//				if(entireTableSheet.find("Ã‰")!=null) entireTableSheet.replace("Ã‰", "É");
+//				if(entireTableSheet.find("Ãˆ")!=null) entireTableSheet.replace("Ãˆ", "È");
+//				if(entireTableSheet.find("â€“")!=null) entireTableSheet.replace("â€“", "–");
+//				if(entireTableSheet.find("Ã’")!=null) entireTableSheet.replace("Ã’", "Ò");
+//				if(entireTableSheet.find("Ã²")!=null) entireTableSheet.replace("Ã²", "ò");
 
 				String firstHeaderCell = "A1";
 				String currentHeaderCell = firstHeaderCell;
@@ -985,6 +985,24 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		}
 		return null;
 	}
+	
+	private String correctSpecialCharacters(String value){
+		
+		value = value.replaceAll("Å", "AA");
+		value = value.replaceAll("å", "aa");
+		value = value.replaceAll("Ø", "OE");
+		value = value.replaceAll("ø", "oe");
+		value = value.replaceAll("Æ", "AE");
+		value = value.replaceAll("æ", "ae");
+		value = value.replaceAll("Ö", "OE");
+		value = value.replaceAll("ö", "oe");
+		value = value.replaceAll("Ä", "AA");
+		value = value.replaceAll("ä", "aa");
+		
+		return value;
+	}
+	
+	
 	private StringBuilder generateQuery(boolean allCustSelected,
 			boolean allProjSelected, boolean allCategoriesSelected, boolean allFrameAgrSelected, 
 			List<List> temp_cust, List<List> temp_proj, JTextField categoryName, JTextField frameAgrName) {

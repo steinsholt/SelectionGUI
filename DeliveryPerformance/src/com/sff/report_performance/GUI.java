@@ -75,7 +75,7 @@ public class GUI {
 	private DatabaseConnection databaseConnection;
 	private List<String> clientColumnNames;
 	private List<String> projectColumnNames;
-	private JPanel backgroundPanel;;
+	private JPanel backgroundPanel;
 	private JPanel selectionPanel;
 	private JPanel displayPanel;
 	private JPanel buttonPanel;
