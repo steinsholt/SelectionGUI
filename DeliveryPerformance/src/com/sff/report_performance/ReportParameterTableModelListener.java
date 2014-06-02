@@ -24,7 +24,7 @@ public class ReportParameterTableModelListener implements TableModelListener {
 	}
 	
 	@Override
-	public void tableChanged(TableModelEvent arg0) {
+	public void tableChanged(TableModelEvent evt) {
 		if(textField!=null) {
 			textField.setText("ALL");
 			defaultModel.setRowCount(0);

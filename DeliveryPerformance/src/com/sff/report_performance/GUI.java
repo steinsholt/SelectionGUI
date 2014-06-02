@@ -143,15 +143,15 @@ public class GUI {
 		Font headline = new Font("Serif", Font.PLAIN, 24);
 		Font subheadline = new Font("Serif", Font.PLAIN, 16);
 
-		selectClientModel = new MyTableModel(clientColumnNames);
-		selectProjectModel = new MyTableModel(projectColumnNames);
+		selectClientModel = new MyTableModel(clientColumnNames, "Select client Model");
+		selectProjectModel = new MyTableModel(projectColumnNames, "Select project Model");
 		selectFrameAgrModel = new DefaultTableModel();
 		selectFrameAgrModel.addColumn("Name");
 		selectCategoryModel = new DefaultTableModel();
 		selectCategoryModel.addColumn("Name");
 
-		reportParameterProjectModel = new MyTableModel(projectColumnNames);
-		reportParameterClientModel = new MyTableModel(clientColumnNames);
+		reportParameterProjectModel = new MyTableModel(projectColumnNames, "Report Parameter Project Model");
+		reportParameterClientModel = new MyTableModel(clientColumnNames, "Report Parameter Client Model");
 		
 		categoryField = new JTextField();
 		intervalSelectionTable = new SelectionTable(selectClientModel);
@@ -183,6 +183,7 @@ public class GUI {
 		frame.pack();
 
 		DatabaseConnection db = new DatabaseConnection();
+		
 	}
 
 	private JPanel createDisplayPanel() {
@@ -217,22 +218,22 @@ public class GUI {
 		displayPanel.add(categoryField, "width :180:");
 
 		nullSelectionModel = new NullSelectionModel();
-		PartialSelectionModel projectSelectionModel = new PartialSelectionModel();
-		projectTable = new ReportParameterTable(projectSelectionModel, nullSelectionModel,reportParameterProjectModel, lighterGray, darkerGray);
-		projectSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,intervalSelectionTable));
+		PartialSelectionModel projectListSelectionModel = new PartialSelectionModel();
+		projectTable = new ReportParameterTable(projectListSelectionModel, nullSelectionModel,reportParameterProjectModel, lighterGray, darkerGray);
+		projectListSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(projectTable,intervalSelectionTable));
 		projectTable.setName("projects");
 		configureTableColumns(projectTable);
 		scrollPaneProjects.setViewportView(projectTable);
-		projectTable.disable();
+		projectTable.setEnabled(false);
 
-		PartialSelectionModel customerSelectionModel = new PartialSelectionModel();
-		clientTable = new ReportParameterTable(customerSelectionModel, nullSelectionModel, reportParameterClientModel, lighterGray, darkerGray);
-		customerSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(clientTable,intervalSelectionTable));
+		PartialSelectionModel customerListSelectionModel = new PartialSelectionModel();
+		clientTable = new ReportParameterTable(customerListSelectionModel, nullSelectionModel, reportParameterClientModel, lighterGray, darkerGray);
+		customerListSelectionModel.addListSelectionListener(new ReportParameterTableListSelectionListener(clientTable,intervalSelectionTable));
 		clientTable.setName("clients");
 		configureTableColumns(clientTable);
 		clientTable.getColumnModel().getColumn(1).setMaxWidth(50);
 		scrollPaneCustomers.setViewportView(clientTable);
-		clientTable.disable();
+		clientTable.setEnabled(false);
 		
 		frameAgrField.getDocument().addDocumentListener(new TextFieldDocumentListener(reportParameterProjectModel, selectProjectModel, projectTable));
 
@@ -438,9 +439,7 @@ public class GUI {
 			return activeState;
 		}
 
-		//TODO: Switch between selectionTable and JTable in the view port?
-		// No need to create other listeners, simply use standard JTable with SINGLE_SELECTION
-		// Move all logic into the actions
+		// TODO: Move all logic into the actions
 		public static State setNextState(){
 			switch(activeState){
 			case FRAME:

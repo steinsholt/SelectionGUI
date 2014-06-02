@@ -6,7 +6,6 @@ import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JTable;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 
 /*
@@ -19,15 +18,12 @@ public class MyTableModel extends AbstractTableModel {
 	private List<String> columnNames = new ArrayList<String>();
 	private List<List> data = new ArrayList<List>();
 	private ImageIcon deleteIcon;
+	private String modelName;
 
-	public MyTableModel(List<String> columnNames){
+	public MyTableModel(List<String> columnNames, String modelName){
 		this.columnNames = columnNames;
 		this.deleteIcon = new ImageIcon("C:/vendorLogistics/delete_14.png");
-	}
-	
-	public MyTableModel(List<String> columnNames, TableModelListener tableModelListener){
-		this.columnNames = columnNames;
-		this.deleteIcon = new ImageIcon("C:/vendorLogistics/delete_14.png");
+		this.modelName = modelName;
 	}
 
 	public void addRow(List rowData){
@@ -83,6 +79,7 @@ public class MyTableModel extends AbstractTableModel {
 	}
 
 	public void removeRowInterval(int[] selection, JTable selectionTable){
+		System.out.println("removing rows");
 		MyTableModel model = (MyTableModel) selectionTable.getModel();
 		for(int i = selection.length; --i >= 0;){
 			List row = this.getRow(selection[i]);
@@ -94,9 +91,10 @@ public class MyTableModel extends AbstractTableModel {
 			}
 			if(data.size()>0) data.remove(selection[i]);
 		}
+		fireTableDataChanged(); // New
 	}
 	
-	public void removeAllRows(){ // NEW
+	public void removeAllRows(){ // New, seems to work
 		data.clear();
 		fireTableDataChanged();
 	}
@@ -143,5 +141,9 @@ public class MyTableModel extends AbstractTableModel {
 
 	public List getRow(int i) {
 		return data.get(i);
+	}
+	
+	public String getModelName() {
+		return modelName;
 	}
 }
