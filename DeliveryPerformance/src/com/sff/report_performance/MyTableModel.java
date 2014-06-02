@@ -79,7 +79,6 @@ public class MyTableModel extends AbstractTableModel {
 	}
 
 	public void removeRowInterval(int[] selection, JTable selectionTable){
-		System.out.println("removing rows");
 		MyTableModel model = (MyTableModel) selectionTable.getModel();
 		for(int i = selection.length; --i >= 0;){
 			List row = this.getRow(selection[i]);

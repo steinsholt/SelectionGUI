@@ -386,7 +386,7 @@ public class GUI {
 		table.getTableHeader().setReorderingAllowed(false);
 		table.getTableHeader().setResizingAllowed(false);
 		TableColumn tc = table.getColumnModel().getColumn(0);
-		tc.setHeaderValue("All");
+		tc.setHeaderValue("ALL");
 		if(table.getName().equals("selection")){
 			tc.setCellEditor(table.getDefaultEditor(Boolean.class));
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
