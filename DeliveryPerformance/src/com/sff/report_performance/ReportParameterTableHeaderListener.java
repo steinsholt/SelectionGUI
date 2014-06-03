@@ -16,8 +16,9 @@ public class ReportParameterTableHeaderListener implements ItemListener{
 	}
 	
 	public void itemStateChanged(ItemEvent e){
+//		System.out.println("display");
 		MyTableModel model = Active.getActiveDisplayModel();
-		if(e.getStateChange() == ItemEvent.SELECTED && model != null){
+		if(e.getStateChange() == ItemEvent.SELECTED && model != null){ 
 			JTable display = Active.getActiveDisplayTable();
 			if(model.getRowData().isEmpty()){
 				((CheckBoxHeader) display.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);

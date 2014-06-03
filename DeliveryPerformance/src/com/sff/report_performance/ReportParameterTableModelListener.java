@@ -32,9 +32,9 @@ public class ReportParameterTableModelListener implements TableModelListener {
 		if(displayModel!=null) {
 			selectionModel.removeAllRows();
 			displayModel.removeAllRows();
-//			CheckBoxHeader checkBoxHeader = (CheckBoxHeader) displayTable.getColumnModel().getColumn(0).getHeaderRenderer();
+			CheckBoxHeader checkBoxHeader = (CheckBoxHeader) displayTable.getColumnModel().getColumn(0).getHeaderRenderer();
 //			System.out.println(checkBoxHeader.isSelected());
-//			checkBoxHeader.setSelected(true);
+			checkBoxHeader.setSelected(true);
 			displayTable.getColumnModel().getColumn(0).setHeaderValue("ALL");
 			displayTable.getParent().getParent().repaint();
 		}

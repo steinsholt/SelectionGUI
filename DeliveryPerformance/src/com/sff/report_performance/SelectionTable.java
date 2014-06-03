@@ -34,7 +34,9 @@ public class SelectionTable extends JTable {
 			}
 			headerClick = false;
 			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(checked);
-			this.getParent().getParent().repaint();
+			this.getTableHeader().repaint(); //new
+			this.repaint(); //new
+//			this.getParent().getParent().repaint();    //old
 			headerClick = true;
 		}
 	}
