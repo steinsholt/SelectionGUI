@@ -34,11 +34,11 @@ public class SelectionTable extends JTable {
 			}
 			headerClick = false;
 			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(checked);
-			this.getTableHeader().repaint(); //new
-			this.repaint(); //new
 //			this.getParent().getParent().repaint();    //old
 			headerClick = true;
 		}
+		this.getTableHeader().repaint(); //new
+		this.repaint(); //new
 	}
 	
 	public boolean isHeaderClicked(){

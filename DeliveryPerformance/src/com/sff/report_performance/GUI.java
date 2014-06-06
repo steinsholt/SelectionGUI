@@ -183,7 +183,6 @@ public class GUI {
 		frame.pack();
 
 		DatabaseConnection db = new DatabaseConnection();
-		
 	}
 
 	private JPanel createDisplayPanel() {
@@ -367,7 +366,8 @@ public class GUI {
 		intervalSelectionTable.setName("selection");
 		intervalSelectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(intervalSelectionTable));
 		TableColumn tc = configureTableColumns(intervalSelectionTable);
-		header = new CheckBoxHeader(new SelectionTableHeaderListener(intervalSelectionTable));
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(intervalSelectionTable)); // disable header when no items in list?
+		header.setSelected(true);
 		tc.setHeaderRenderer(header);
 
 		singleSelectionTable = new JTable(selectFrameAgrModel);
@@ -379,7 +379,7 @@ public class GUI {
 		return scrollPane;
 	}
 
-	public TableColumn configureTableColumns(JTable table) {
+	public TableColumn configureTableColumns(JTable table) { 
 		if(table.getColumnCount()==3) intervalSelectionTable.getColumnModel().getColumn(1).setMaxWidth(75);
 		table.getColumnModel().getColumn(0).setMinWidth(60); 
 		table.getColumnModel().getColumn(0).setMaxWidth(60);
@@ -392,7 +392,7 @@ public class GUI {
 			tc.setCellRenderer(table.getDefaultRenderer(Boolean.class));
 		}else{
 			tc.setCellRenderer(table.getDefaultRenderer(Icon.class));
-			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterTableHeaderListener(intervalSelectionTable));
+			CheckBoxHeader checkboxHeader = new CheckBoxHeader(new ReportParameterTableHeaderListener(intervalSelectionTable, (ReportParameterTable) table)); // new
 			checkboxHeader.setEnabled(false);
 			checkboxHeader.setSelected(true);
 			tc.setHeaderRenderer(checkboxHeader);

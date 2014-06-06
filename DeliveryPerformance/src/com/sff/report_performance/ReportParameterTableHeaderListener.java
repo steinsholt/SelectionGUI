@@ -10,15 +10,16 @@ import com.sff.report_performance.GUI.Active;
 public class ReportParameterTableHeaderListener implements ItemListener{
 	
 	private SelectionTable selectionTable;
+	private ReportParameterTable displayTable;
 	
-	public ReportParameterTableHeaderListener(SelectionTable selectionTable){
+	public ReportParameterTableHeaderListener(SelectionTable selectionTable, ReportParameterTable displayTable){
 		this.selectionTable = selectionTable;
+		this.displayTable = displayTable;
 	}
 	
 	public void itemStateChanged(ItemEvent e){
-//		System.out.println("display");
 		MyTableModel model = Active.getActiveDisplayModel();
-		if(e.getStateChange() == ItemEvent.SELECTED && model != null){ 
+		if(e.getStateChange() == ItemEvent.SELECTED && model != null && displayTable.isHeaderClicked()){ 
 			JTable display = Active.getActiveDisplayTable();
 			if(model.getRowData().isEmpty()){
 				((CheckBoxHeader) display.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);

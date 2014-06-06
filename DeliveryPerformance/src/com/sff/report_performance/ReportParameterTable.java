@@ -13,6 +13,7 @@ public class ReportParameterTable extends JTable {
 	private NullSelectionModel nullSelectionModel;
 	private Color lighterGray;
 	private Color darkerGray;
+	private boolean isHeaderClicked;
 	
 	public ReportParameterTable(PartialSelectionModel partialSelectionModel, NullSelectionModel nullSelectionModel, MyTableModel model, Color lighterGray, Color darkerGray){
 		super(model);
@@ -20,6 +21,7 @@ public class ReportParameterTable extends JTable {
 		this.nullSelectionModel = nullSelectionModel;
 		this.lighterGray = lighterGray;
 		this.darkerGray = darkerGray;
+		isHeaderClicked = true;
 	}
 	
 	public PartialSelectionModel getPartialSelectionModel() {
@@ -59,5 +61,12 @@ public class ReportParameterTable extends JTable {
 //			column.setHeaderValue("All");
 			this.getParent().getParent().repaint();
 		}
+	}
+	
+	public boolean isHeaderClicked(){
+		return isHeaderClicked;
+	}
+	public void setHeaderClicked(boolean clicked){
+		this.isHeaderClicked = clicked;
 	}
 }

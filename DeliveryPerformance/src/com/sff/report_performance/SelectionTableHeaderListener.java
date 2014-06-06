@@ -16,7 +16,6 @@ public class SelectionTableHeaderListener implements ItemListener{
 	}
 	
 	public void itemStateChanged(ItemEvent e){
-//		System.out.println("selection");
 		if(table.isHeaderClicked()){
 			
 			int[] selection = new int [table.getRowCount()];
