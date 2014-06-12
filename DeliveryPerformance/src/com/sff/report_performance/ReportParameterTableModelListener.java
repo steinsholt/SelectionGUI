@@ -37,7 +37,6 @@ public class ReportParameterTableModelListener implements TableModelListener {
 			checkBoxHeader.setSelected(true);
 			displayTable.setHeaderClicked(true);
 			displayTable.getTableHeader().repaint();
-			// after table change, if table is empty disable header and set selected. Enable and deselect on search
 		}
 	}
 }

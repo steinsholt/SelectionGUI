@@ -25,7 +25,10 @@ public class SelectionTable extends JTable {
 	
 	public void synchronizeHeader(){
 		boolean checked = true;
-		if(this.getRowCount() == 0)((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(false);
+		if(this.getRowCount() == 0){
+			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(true);
+			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(false);
+		}
 		else{ 
 			for(int x = 0; x < this.getRowCount(); x++){
 				if(!(boolean) this.getValueAt(x, 0)){
@@ -34,6 +37,7 @@ public class SelectionTable extends JTable {
 			}
 			headerClick = false;
 			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setSelected(checked);
+			((CheckBoxHeader)this.getColumnModel().getColumn(0).getHeaderRenderer()).setEnabled(true);
 //			this.getParent().getParent().repaint();    //old
 			headerClick = true;
 		}
@@ -43,6 +47,10 @@ public class SelectionTable extends JTable {
 	
 	public boolean isHeaderClicked(){
 		return headerClick;
+	}
+	
+	public void setHeaderClicked(boolean headerClick){
+		this.headerClick = headerClick;
 	}
 	
 	@Override

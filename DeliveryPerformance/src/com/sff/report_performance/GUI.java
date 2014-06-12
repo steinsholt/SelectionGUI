@@ -366,8 +366,9 @@ public class GUI {
 		intervalSelectionTable.setName("selection");
 		intervalSelectionTable.getSelectionModel().addListSelectionListener(new SelectionTableListSelectionListener(intervalSelectionTable));
 		TableColumn tc = configureTableColumns(intervalSelectionTable);
-		header = new CheckBoxHeader(new SelectionTableHeaderListener(intervalSelectionTable)); // disable header when no items in list?
+		header = new CheckBoxHeader(new SelectionTableHeaderListener(intervalSelectionTable)); 
 		header.setSelected(true);
+		header.setEnabled(false);
 		tc.setHeaderRenderer(header);
 
 		singleSelectionTable = new JTable(selectFrameAgrModel);
