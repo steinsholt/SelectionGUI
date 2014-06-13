@@ -145,9 +145,17 @@ public class GUI {
 
 		selectClientModel = new MyTableModel(clientColumnNames, "Select client Model");
 		selectProjectModel = new MyTableModel(projectColumnNames, "Select project Model");
-		selectFrameAgrModel = new DefaultTableModel();
+		selectFrameAgrModel = new DefaultTableModel(){
+			public boolean isCellEditable(int rowIndex, int mColIndex) {
+		        return false;
+		      }
+		};
 		selectFrameAgrModel.addColumn("Name");
-		selectCategoryModel = new DefaultTableModel();
+		selectCategoryModel = new DefaultTableModel(){
+			public boolean isCellEditable(int rowIndex, int mColIndex) {
+		        return false;
+		      }
+		};
 		selectCategoryModel.addColumn("Name");
 
 		reportParameterProjectModel = new MyTableModel(projectColumnNames, "Report Parameter Project Model");
