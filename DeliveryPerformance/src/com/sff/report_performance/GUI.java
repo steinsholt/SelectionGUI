@@ -270,8 +270,9 @@ public class GUI {
 		reportParameterLabel = new JLabel("Report Parameters");
 		reportParameterLabel.setFont(new Font("Serif", Font.PLAIN, 24));
 		helpPanel.add(reportParameterLabel, "center, push");
-		helpButton = new JButton("Help");
-		helpPanel.add(helpButton);
+		// TODO: Add function to button
+//		helpButton = new JButton("Help");
+//		helpPanel.add(helpButton);
 
 		return helpPanel;
 	}
@@ -380,6 +381,7 @@ public class GUI {
 		tc.setHeaderRenderer(header);
 
 		singleSelectionTable = new JTable(selectFrameAgrModel);
+		singleSelectionTable.getTableHeader().setReorderingAllowed(false);
 		singleSelectionTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		singleSelectionTable.getSelectionModel().addListSelectionListener(new SingleSelectionListener(singleSelectionTable));
 		scrollPane.setViewportView(singleSelectionTable);

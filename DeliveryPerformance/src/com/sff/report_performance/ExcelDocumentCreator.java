@@ -57,6 +57,10 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private JTextField category; 
 	private JTextField frameAgreement;
 	private JCheckBox markErrorsCheckBox;
+	private Set<String> projectSet = new HashSet<String>();
+	private Set<String> millSet = new HashSet<String>();
+	private Set<String> currencySet = new HashSet<String>();
+	private String[] columnNames;
 
 	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JCheckBox markErrorsCheckBox, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
 		this.customerData = customerData;
@@ -182,9 +186,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				/*
 				 * Sets only allow unique entries. Thus when we need to display one graph per supplier we utilize the sets.
 				 */
-				Set<String> projectSet = new HashSet<String>();
-				Set<String> millSet = new HashSet<String>();
-				Set<String> currencySet = new HashSet<String>();
+				projectSet = new HashSet<String>();
+				millSet = new HashSet<String>();
+				currencySet = new HashSet<String>();
 
 				/*
 				 * We iterate over the data set and insert the results into the arrays while publishing the progress to the progress bar.
@@ -226,7 +230,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					processed++;
 					dataSet.next();
 				}
-				String[] columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
+				columnNames = dataSet.getColumnNames(dataSet.getColumnCount()); 
 				dataSet.close();
 
 				/*
