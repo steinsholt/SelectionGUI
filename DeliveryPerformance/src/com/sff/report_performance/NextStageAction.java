@@ -37,6 +37,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getFrameAgrField().setDisabledTextColor(darkerGray);
 			gui.getProjectsButton().setForeground(Color.black);
 			gui.getFrameAgrButton().setForeground(Color.lightGray);
+			gui.getNameField().setText("");
 			
 			gui.getScrollPane().setViewportView(gui.getIntervalSelectionTable());
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
@@ -55,6 +56,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getClientTable().setEnabled(true);
 			gui.getProjectsButton().setForeground(Color.lightGray);
 			gui.getClientsButton().setForeground(Color.black);
+			gui.getNameField().setText("");
 			
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
@@ -62,6 +64,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getIntervalSelectionTable().synchronizeHeader();
 			
 			break;
+			// TODO: Clear text fields when switching states
 		case CATEGORY:
 			gui.getNextStepButton().setEnabled(false);
 			gui.getSelectionHeadline().setText("Select Category");
@@ -74,6 +77,7 @@ public class NextStageAction extends AbstractAction {
 			gui.getCategoryField().setDisabledTextColor(Color.black);
 			gui.getClientsButton().setForeground(Color.lightGray);
 			gui.getCategoryButton().setForeground(Color.black);
+			gui.getNameField().setText("");
 			
 			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());

@@ -35,6 +35,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getFrameAgrField().setDisabledTextColor(Color.black);
 			gui.getProjectsButton().setForeground(Color.lightGray);
 			gui.getFrameAgrButton().setForeground(Color.black);
+			gui.getNameField().setText("");
 			
 			gui.getSingleSelectionTable().setModel(Active.getActiveSimpleSelectModel());
 			gui.getScrollPane().setViewportView(gui.getSingleSelectionTable());
@@ -49,6 +50,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getClientTable().setEnabled(false);
 			gui.getClientsButton().setForeground(Color.lightGray);
 			gui.getProjectsButton().setForeground(Color.black);
+			gui.getNameField().setText("");
 			
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
 			TableColumn tc = gui.configureTableColumns(gui.getIntervalSelectionTable());
@@ -67,6 +69,7 @@ public class PreviousStateAction extends AbstractAction {
 			gui.getCategoryField().setDisabledTextColor(darkerGray);
 			gui.getClientsButton().setForeground(Color.black);
 			gui.getCategoryButton().setForeground(Color.lightGray);
+			gui.getNameField().setText("");
 			
 			gui.getScrollPane().setViewportView(gui.getIntervalSelectionTable());
 			gui.getIntervalSelectionTable().setModel(Active.getActiveSelectModel());
