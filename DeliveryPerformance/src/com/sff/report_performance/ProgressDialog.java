@@ -30,7 +30,7 @@ public class ProgressDialog extends JDialog {
 	private static final long serialVersionUID = 1L;
 	
 	@SuppressWarnings("rawtypes")
-	public static void runReport(List<List> customerData, List<List> projectData, JCheckBox markErrorsCheckBox,JTextField frameAgreement, JTextField category, File output, JFrame frame){
+	public static void runReport(List<List> customerData, List<List> projectData, JCheckBox markErrorsCheckBox, JCheckBox includeCreateItemListCheckBox,JTextField frameAgreement, JTextField category, File output, JFrame frame){
 		
 		final JDialog dialog = new JDialog();
 		final ExcelDocumentCreator creator;
@@ -102,7 +102,7 @@ public class ProgressDialog extends JDialog {
 		progressBar.setIndeterminate(true);
 		
 		creator = new ExcelDocumentCreator(customerData, 
-				projectData, frameAgreement, markErrorsCheckBox, category, stateField, progressField, output);
+				projectData, frameAgreement, markErrorsCheckBox, includeCreateItemListCheckBox, category, stateField, progressField, output);
 		creator.addPropertyChangeListener(new PropertyChangeListener(){
 			@Override
             public void propertyChange(PropertyChangeEvent evt) {

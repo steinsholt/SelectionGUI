@@ -48,6 +48,7 @@ public class GUI {
 	private JLabel selectionHeadlineLabel;
 	private JLabel reportParameterLabel;
 	private JLabel markErrorsLabel;
+	private JLabel includeCreatedItemListLabel;
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPaneCustomers;
 	private JScrollPane scrollPaneProjects;
@@ -88,6 +89,7 @@ public class GUI {
 	private KeyAdapter SearchKeyListener;
 	private DatabaseSearch databaseSearch;
 	private JCheckBox markErrorsCheckBox;
+	private JCheckBox includeCreatedItemListCheckBox;
 	private Color lighterGray = new Color(200,200,200);
 	private Color darkerGray = new Color(75,75,75);
 
@@ -251,12 +253,16 @@ public class GUI {
 		reportPanel = new JPanel(new MigLayout("fillx, insets 0"));
 		generateReportButton = new JButton();
 		markErrorsCheckBox = new JCheckBox();
+		includeCreatedItemListLabel = new JLabel("Include Created item status");
+		includeCreatedItemListCheckBox = new JCheckBox();
 		markErrorsLabel = new JLabel("Mark erroneous rows");
 		reportPanel.add(markErrorsCheckBox, "split 2, center");
-		reportPanel.add(markErrorsLabel, "push");
+		reportPanel.add(markErrorsLabel, "wrap");
+		reportPanel.add(includeCreatedItemListCheckBox, "split 2, center");
+		reportPanel.add(includeCreatedItemListLabel, "push");
 		reportPanel.add(generateReportButton);
 
-		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, markErrorsCheckBox, categoryField, frame));
+		generateReportButton.setAction(new GenerateReportAction(reportParameterClientModel.getRowData(), reportParameterProjectModel.getRowData(), frameAgrField, markErrorsCheckBox, includeCreatedItemListCheckBox, categoryField, frame));
 		generateReportButton.setForeground(Color.blue);
 		generateReportButton.setFont(bold);
 		generateReportButton.setText("Generate Report");

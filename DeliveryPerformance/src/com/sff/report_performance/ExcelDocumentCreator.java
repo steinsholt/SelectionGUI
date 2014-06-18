@@ -57,12 +57,13 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 	private JTextField category; 
 	private JTextField frameAgreement;
 	private JCheckBox markErrorsCheckBox;
+	private JCheckBox includeCreateItemListCheckBox;
 	private Set<String> projectSet = new HashSet<String>();
 	private Set<String> millSet = new HashSet<String>();
 	private Set<String> currencySet = new HashSet<String>();
 	private String[] columnNames;
 
-	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JCheckBox markErrorsCheckBox, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
+	public ExcelDocumentCreator(List<List> customerData, List<List> projectData, JTextField frameAgreement, JCheckBox markErrorsCheckBox, JCheckBox includeCreateItemListCheckBox, JTextField category, JTextField publishedOutput, JTextField progressField, File output){
 		this.customerData = customerData;
 		this.projectData = projectData;
 		this.publishedOutput = publishedOutput;
@@ -70,6 +71,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		this.frameAgreement = frameAgreement;
 		this.category = category;
 		this.markErrorsCheckBox = markErrorsCheckBox;
+		this.includeCreateItemListCheckBox = includeCreateItemListCheckBox;
 
 		try {
 			/*
@@ -171,6 +173,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				int[][] vendorNr = new int[rowCount][1];
 				String[][] description = new String[rowCount][1];
 				String[][] supplier = new String[rowCount][1];
+				double[][] unitWeight = new double[rowCount][1]; // New
+				double[][] totalWeight = new double[rowCount][1]; // New
 				double[][] qty = new double[rowCount][1];
 				double[][] unitPrice = new double[rowCount][1];
 				double[][] totalPrice = new double[rowCount][1];
@@ -214,6 +218,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					description[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
 					millSet.add(correctSpecialCharacters(dataSet.getString(column).trim()));
 					supplier[processed][0] = correctSpecialCharacters(dataSet.getString(column++).trim());
+					unitWeight[processed][0] = dataSet.getDouble(column++); // New
+					totalWeight[processed][0] = dataSet.getDouble(column++); // New
 					qty[processed][0] = dataSet.getDouble(column++); 
 					unitPrice[processed][0] = dataSet.getDouble(column++);
 					totalPrice[processed][0] = dataSet.getDouble(column++);
@@ -239,30 +245,32 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * are interpreted correctly but the application will slow down greatly. 
 				 */
 				// TODO: If empty report, let user know?
-				sheetTable.getRange("A1", "A"+rowCount).setValues(frameAgr);
-				sheetTable.getRange("B1", "B"+rowCount).setValues(project);
-				sheetTable.getRange("C1", "C"+rowCount).setValues(client);
-				sheetTable.getRange("D1", "D"+rowCount).setValues(category);
-				sheetTable.getRange("E1", "E"+rowCount).setValues(clientRef);
-				sheetTable.getRange("F1", "F"+rowCount).setValues(orderNr);
-				sheetTable.getRange("G1", "G"+rowCount).setValues(orderRegDate);
-				sheetTable.getRange("H1", "H"+rowCount).setValues(orderCdd);
-				sheetTable.getRange("I1", "I"+rowCount).setValues(itemNr);
-				sheetTable.getRange("J1", "J"+rowCount).setValues(clientArtCode);
-				sheetTable.getRange("K1", "K"+rowCount).setValues(vendorNr);
-				sheetTable.getRange("L1", "L"+rowCount).setValues(description);
-				sheetTable.getRange("M1", "M"+rowCount).setValues(supplier); 
-				sheetTable.getRange("N1", "N"+rowCount).setValues(qty);
-				sheetTable.getRange("O1", "O"+rowCount).setValues(unitPrice);
-				sheetTable.getRange("P1", "P"+rowCount).setValues(totalPrice);
-				sheetTable.getRange("Q1", "Q"+rowCount).setValues(currency);
-				sheetTable.getRange("R1", "R"+rowCount).setValues(cRate);
-				sheetTable.getRange("S1", "S"+rowCount).setValues(cdd);
-				sheetTable.getRange("T1", "T"+rowCount).setValues(edd);
-				sheetTable.getRange("U1", "U"+rowCount).setValues(rfi);
-				sheetTable.getRange("V1", "V"+rowCount).setValues(ccd);
-				sheetTable.getRange("W1", "W"+rowCount).setValues(ecd);
-				sheetTable.getRange("X1", "X"+rowCount).setValues(itemStatus);
+				sheetTable.getRange("A2", "A"+rowCount+1).setValues(frameAgr);
+				sheetTable.getRange("B2", "B"+rowCount+1).setValues(project);
+				sheetTable.getRange("C2", "C"+rowCount+1).setValues(client);
+				sheetTable.getRange("D2", "D"+rowCount+1).setValues(category);
+				sheetTable.getRange("E2", "E"+rowCount+1).setValues(clientRef);
+				sheetTable.getRange("F2", "F"+rowCount+1).setValues(orderNr);
+				sheetTable.getRange("G2", "G"+rowCount+1).setValues(orderRegDate);
+				sheetTable.getRange("H2", "H"+rowCount+1).setValues(orderCdd);
+				sheetTable.getRange("I2", "I"+rowCount+1).setValues(itemNr);
+				sheetTable.getRange("J2", "J"+rowCount+1).setValues(clientArtCode);
+				sheetTable.getRange("K2", "K"+rowCount+1).setValues(vendorNr);
+				sheetTable.getRange("L2", "L"+rowCount+1).setValues(description);
+				sheetTable.getRange("M2", "M"+rowCount+1).setValues(supplier);
+				sheetTable.getRange("N2", "N"+rowCount+1).setValues(unitWeight); // New
+				sheetTable.getRange("O2", "O"+rowCount+1).setValues(totalWeight); // New
+				sheetTable.getRange("P2", "P"+rowCount+1).setValues(qty);
+				sheetTable.getRange("Q2", "Q"+rowCount+1).setValues(unitPrice);
+				sheetTable.getRange("R2", "R"+rowCount+1).setValues(totalPrice);
+				sheetTable.getRange("S2", "S"+rowCount+1).setValues(currency);
+				sheetTable.getRange("T2", "T"+rowCount+1).setValues(cRate);
+				sheetTable.getRange("U2", "U"+rowCount+1).setValues(cdd);
+				sheetTable.getRange("V2", "V"+rowCount+1).setValues(edd);
+				sheetTable.getRange("W2", "W"+rowCount+1).setValues(rfi);
+				sheetTable.getRange("X2", "X"+rowCount+1).setValues(ccd);
+				sheetTable.getRange("Y2", "Y"+rowCount+1).setValues(ecd);
+				sheetTable.getRange("Z2", "Z"+rowCount+1).setValues(itemStatus);
 
 				/*
 				 * To account for the incorrect interpretation of UTF-8 characters the actual characters are translated back to the expected characters.
@@ -287,6 +295,8 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 //				if(entireTableSheet.find("Ò")!=null) entireTableSheet.replace("Ò", "�");
 //				if(entireTableSheet.find("ò")!=null) entireTableSheet.replace("ò", "�");
 
+				
+				sheetTable.getRange("A1", "Z1").setValue("temp"); // This temporary value is set to get the correct end off entire column
 				String firstHeaderCell = "A1";
 				String currentHeaderCell = firstHeaderCell;
 				String formulaStartCell = "A2";
@@ -296,7 +306,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 * Creates the header row in the "Table"-sheet by using the column names in the data set.
 				 */
 				for(String column : columnNames){
-					String headerName = column.replaceAll("\\s+", "");
+					String headerName = column.replaceAll("\\s+", ""); // TODO: Only remove space at end
 					sheetTable.getRange(currentHeaderCell).setValue(headerName);
 					sheetTable.getRange(currentHeaderCell, currentEndCell).setName(headerName);
 					currentHeaderCell = sheetTable.getRange(headerName).getNext().getAddress();
@@ -331,7 +341,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				String startCell = formulaStartCell;
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("Total_EUR");
 				sheetTable.getRange(currentHeaderCell).setValue("Total [EUR]");
-				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(HVIS(Q2=\"EUR\";P2;(P2/" + convertedSellRate + ")*R2);0)"); 
+				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(HVIS(S2=\"EUR\";R2;(R2/" + convertedSellRate + ")*T2);0)"); 
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
@@ -341,7 +351,7 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 				 */
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("RFICDD");
 				sheetTable.getRange(currentHeaderCell).setValue("RFI-CDD");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(S2=\"\"; 0; ((U2-S2)/7)))"); 
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(W2=\"\"; 0; HVIS(U2=\"\"; 0; ((W2-U2)/7)))"); 
 				sheetTable.getRange(formulaStartCell).setNumberFormat("Standard");
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
@@ -349,23 +359,23 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("DelayRFICDD");
 				sheetTable.getRange(currentHeaderCell).setValue("Delay(RFI-CDD)");
-				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(Z2;0)");
+				sheetTable.getRange(formulaStartCell).setFormula("=AVRUND(AB2;0)");
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("RFIOrderDate");
 				sheetTable.getRange(currentHeaderCell).setValue("RFI-Order Date");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((U2-G2)/7);0)))");
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(W2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((W2-G2)/7);0)))");
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
 				currentHeaderCell = sheetTable.getRange(currentHeaderCell).getNext().getAddress();
 
 				sheetTable.getRange(currentHeaderCell, currentEndCell).setName("CDDOrderdate");
 				sheetTable.getRange(currentHeaderCell).setValue("CDD-Order date");
-				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(S2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((S2-G2)/7);0)))");
+				sheetTable.getRange(formulaStartCell).setFormula("=HVIS(U2=\"\"; 0; HVIS(G2=\"\"; 0; AVRUND(((U2-G2)/7);0)))");
 				Range yellow = sheetTable.getRange(startCell, currentEndCell);
-				yellow.fillDown();  
+				if(rowCount>1)yellow.fillDown();  // New
 
 				currentEndCell = sheetTable.getRange(currentEndCell).getNext().getAddress();
 				formulaStartCell = sheetTable.getRange(formulaStartCell).getNext().getAddress();
@@ -871,10 +881,11 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 					chartY+=270;
 				}
 
+				publishedOutput.setText("Creating chart filters");
+				progressField.setText("");
 				sheetDelMill.getRange("H1").setValue("Filter");
 				sheetDelMill.getRange("H1").getInterior().setColor(Color.green);
 				sheetDelMill.getRange("H1", "H"+rowPointer).autoFilter(1);
-
 
 				/*
 				 * Creates and populates the "Mill"-sheet
@@ -1036,6 +1047,9 @@ public class ExcelDocumentCreator extends SwingWorker<String, Integer> {
 		}
 		if(!allFrameAgrSelected){
 			query.append(" and Frame_agr_catalog.frame_cat_name like ''" + frameAgrName.getText() + "''");
+		}
+		if(!includeCreateItemListCheckBox.isSelected()){
+			query.append(" and Tr_dtl_status.tr_dtl_status > 0");
 		}
 		return query;
 	}
